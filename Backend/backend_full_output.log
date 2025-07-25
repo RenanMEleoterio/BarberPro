@@ -1,0 +1,33 @@
+nohup: ignoring input
+/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj : warning NU1902: Package 'System.IdentityModel.Tokens.Jwt' 7.0.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-59j7-ghrg-fj52
+/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj : warning NU1902: Package 'System.IdentityModel.Tokens.Jwt' 7.0.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-59j7-ghrg-fj52
+/home/ubuntu/BarbeariaSaaS/Backend/DTOs/AgendamentoDto.cs(16,22): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj]
+/home/ubuntu/BarbeariaSaaS/Backend/DTOs/AgendamentoDto.cs(28,22): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj]
+/home/ubuntu/BarbeariaSaaS/Backend/DTOs/AgendamentoDto.cs(36,22): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj]
+/home/ubuntu/BarbeariaSaaS/Backend/Models/Agendamento.cs(36,22): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj]
+/home/ubuntu/BarbeariaSaaS/Backend/DTOs/AgendamentoDto.cs(59,22): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj]
+/home/ubuntu/BarbeariaSaaS/Backend/DTOs/AgendamentoDto.cs(60,22): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj]
+/home/ubuntu/BarbeariaSaaS/Backend/DTOs/AgendamentoDto.cs(61,22): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj]
+/home/ubuntu/BarbeariaSaaS/Backend/Models/Barbearia.cs(31,22): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj]
+/home/ubuntu/BarbeariaSaaS/Backend/DTOs/LoginDto.cs(18,22): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj]
+/home/ubuntu/BarbeariaSaaS/Backend/DTOs/LoginDto.cs(19,22): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj]
+/home/ubuntu/BarbeariaSaaS/Backend/DTOs/LoginDto.cs(20,22): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj]
+/home/ubuntu/BarbeariaSaaS/Backend/DTOs/LoginDto.cs(22,22): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj]
+/home/ubuntu/BarbeariaSaaS/Backend/DTOs/LoginDto.cs(23,22): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj]
+/home/ubuntu/BarbeariaSaaS/Backend/DTOs/LoginDto.cs(59,22): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj]
+/home/ubuntu/BarbeariaSaaS/Backend/DTOs/LoginDto.cs(60,22): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj]
+/home/ubuntu/BarbeariaSaaS/Backend/Models/Usuario.cs(40,33): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj]
+/home/ubuntu/BarbeariaSaaS/Backend/Models/Usuario.cs(44,22): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj]
+/home/ubuntu/BarbeariaSaaS/Backend/Models/Usuario.cs(47,22): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj]
+/home/ubuntu/BarbeariaSaaS/Backend/Models/Usuario.cs(50,22): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj]
+/home/ubuntu/BarbeariaSaaS/Backend/DTOs/LoginDto.cs(81,22): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj]
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5000
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Production
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: /home/ubuntu/BarbeariaSaaS/Backend
+info: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...

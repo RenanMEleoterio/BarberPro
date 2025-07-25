@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barber Click</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo-container">
+                <div class="logo-image">✂️</div>
+                <h1 class="logo">Barber Click</h1>
+                <p class="subtitle">Sistema moderno de agendamentos para barbearias. Conecte clientes e profissionais de forma simples e eficiente.</p>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="login-options">
+                <div class="login-card" onclick="showLoginForm('cliente')">
+                    <div class="card-icon">👤</div>
+                    <h3>Sou Cliente</h3>
+                    <p>Agende seu horário com facilidade</p>
+                    <button class="access-btn">Acessar</button>
+                </div>
+
+                <div class="login-card barbeiro" onclick="showLoginForm('barbeiro')">
+                    <div class="card-icon">✂️</div>
+                    <h3>Sou Barbeiro</h3>
+                    <p>Gerencie sua agenda profissional</p>
+                    <button class="access-btn">Acessar</button>
+                </div>
+
+                <div class="login-card" onclick="showLoginForm('gerente')">
+                    <div class="card-icon">🛡️</div>
+                    <h3>Acesso Gerente</h3>
+                    <p>Administre sua barbearia</p>
+                    <button class="access-btn">Acessar</button>
+                </div>
+            </div>
+
+            <div class="why-choose-section">
+                <h2>Por que escolher nosso sistema?</h2>
+                <p>Tecnologia moderna para uma experiência superior</p>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">⏰</div>
+                        <h3>Agendamento Rápido</h3>
+                        <p>Sistema intuitivo para agendar horários</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">⭐</div>
+                        <h3>Profissionais Qualificados</h3>
+                        <p>Barbeiros experientes e especializados</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">📍</div>
+                        <h3>Múltiplas Localizações</h3>
+                        <p>Encontre a barbearia mais próxima</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal de Login -->
+            <div id="loginModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeLoginModal()">&times;</span>
+                    <h2 id="modalTitle">Login</h2>
+                    
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="senha">Senha:</label>
+                            <input type="password" id="senha" name="senha" required>
+                        </div>
+
+                        <!-- Campo específico para barbeiro -->
+                        <div class="form-group" id="codigoConviteGroup" style="display: none;">
+                            <label for="codigoConvite">Código de Convite:</label>
+                            <input type="text" id="codigoConvite" name="codigoConvite" placeholder="Ex: BARB1234">
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">Entrar</button>
+                    </form>
+
+                    <div class="form-footer">
+                        <p id="registerLink">
+                    <a href="#" onclick="showRegisterForm(\'barbeiro\')">Não tem conta? Cadastre-se</a>                    </p>
+                        <p id="createBarbeariaLink" style="display: none;">
+                            <a href="#" onclick="showBarbeariaForm()">Criar nova barbearia</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal de Cadastro -->
+            <div id="registerModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeRegisterModal()">&times;</span>
+                    <h2 id="registerTitle">Cadastro</h2>
+                    
+                    <form id="registerForm"></form>
+
+                    <div class="form-footer">
+                        <p>
+                            <a href="#" onclick="backToLogin()">Já tem conta? Faça login</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal de Cadastro de Barbearia -->
+            <div id="barbeariaModal" class="modal">
+                <div class="modal-content large">
+                    <span class="close" onclick="closeBarbeariaModal()">&times;</span>
+                    <h2>Cadastrar Nova Barbearia</h2>
+                    
+                    <form id="barbeariaForm">
+                        <div class="form-section">
+                            <h3>Dados da Barbearia</h3>
+                            
+                            <div class="form-group">
+                                <label for="barbNome">Nome da Barbearia:</label>
+                                <input type="text" id="barbNome" name="nome" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="barbEndereco">Endereço:</label>
+                                <input type="text" id="barbEndereco" name="endereco" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="barbTelefone">Telefone:</label>
+                                <input type="tel" id="barbTelefone" name="telefone" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="barbEmail">Email da Barbearia:</label>
+                                <input type="email" id="barbEmail" name="email" required>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Dados do Gerente</h3>
+                            
+                            <div class="form-group">
+                                <label for="gerenteNome">Nome do Gerente:</label>
+                                <input type="text" id="gerenteNome" name="nomeGerente" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="gerenteEmail">Email do Gerente:</label>
+                                <input type="email" id="gerenteEmail" name="emailGerente" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="gerenteSenha">Senha do Gerente:</label>
+                                <input type="password" id="gerenteSenha" name="senhaGerente" required minlength="6">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">Criar Barbearia</button>
+                    </form>
+
+                    <div class="form-footer">
+                        <p>
+                            <a href="#" onclick="backToLogin()">Voltar ao login</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal de Sucesso -->
+            <div id="successModal" class="modal">
+                <div class="modal-content">
+                    <h2>Barbearia Criada com Sucesso!</h2>
+                    <div id="successContent"></div>
+                    <div class="codigo-convite-section" style="margin: 20px 0; padding: 15px; background: #2a2a2a; border-radius: 8px; border: 1px solid #d4af37;">
+                        <p style="color: #d4af37; font-weight: bold; margin-bottom: 10px;">Código de Convite para Barbeiros:</p>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="text" id="codigoConviteDisplay" readonly style="flex: 1; padding: 10px; background: #1a1a1a; border: 1px solid #444; color: #d4af37; font-weight: bold; font-size: 16px; text-align: center;">
+                            <button onclick="copyCodigoConvite()" class="btn-copy" style="padding: 10px 15px; background: #d4af37; color: #000; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">📋 Copiar</button>
+                        </div>
+                        <p style="color: #ccc; font-size: 12px; margin-top: 8px;">Compartilhe este código com os barbeiros para que possam se cadastrar na sua barbearia.</p>
+                    </div>
+                    <button onclick="closeSuccessModal()" class="btn-primary">Continuar</button>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2024 BarberShop. Todos os direitos reservados.</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barbearia SaaS</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo-container">
+                <h1 class="logo">Barbearia SaaS</h1>
+                <p class="subtitle">Sistema de Agendamento para Barbearias</p>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="welcome-section">
+                <h2>Bem-vindo ao nosso sistema</h2>
+                <p>Escolha como deseja acessar:</p>
+            </div>
+
+            <div class="login-options">
+                <div class="login-card" onclick="showLoginForm('cliente')">
+                    <div class="card-icon">👤</div>
+                    <h3>Sou Cliente</h3>
+                    <p>Agende seu corte com facilidade</p>
+                </div>
+
+                <div class="login-card" onclick="showLoginForm('barbeiro')">
+                    <div class="card-icon">✂️</div>
+                    <h3>Sou Barbeiro</h3>
+                    <p>Gerencie seus horários e clientes</p>
+                </div>
+
+                <div class="login-card" onclick="showLoginForm('gerente')">
+                    <div class="card-icon">👔</div>
+                    <h3>Sou Gerente</h3>
+                    <p>Administre sua barbearia</p>
+                </div>
+            </div>
+
+            <!-- Modal de Login -->
+            <div id="loginModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal()">&times;</span>
+                    <h2 id="modalTitle">Login</h2>
+                    
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="senha">Senha:</label>
+                            <input type="password" id="senha" name="senha" required>
+                        </div>
+
+                        <!-- Campo específico para barbeiro -->
+                        <div class="form-group" id="codigoConviteGroup" style="display: none;">
+                            <label for="codigoConvite">Código de Convite:</label>
+                            <input type="text" id="codigoConvite" name="codigoConvite" placeholder="Ex: BARB1234">
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">Entrar</button>
+                    </form>
+
+                    <div class="form-footer">
+                        <p id="registerLink">
+                            <a href="#" onclick="showRegisterForm()">Não tem conta? Cadastre-se</a>
+                        </p>
+                        <p id="createBarbeariaLink" style="display: none;">
+                            <a href="#" onclick="showBarbeariaForm()">Criar nova barbearia</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal de Cadastro -->
+            <div id="registerModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeRegisterModal()">&times;</span>
+                    <h2 id="registerTitle">Cadastro</h2>
+                    
+                    <form id="registerForm">
+                        <div class="form-group">
+                            <label for="regNome">Nome:</label>
+                            <input type="text" id="regNome" name="nome" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="regEmail">Email:</label>
+                            <input type="email" id="regEmail" name="email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="regSenha">Senha:</label>
+                            <input type="password" id="regSenha" name="senha" required minlength="6">
+                        </div>
+
+                        <!-- Campos específicos para barbeiro -->
+                        <div class="barbeiro-fields" style="display: none;">
+                            <div class="form-group">
+                                <label for="regCodigoConvite">Código de Convite:</label>
+                                <input type="text" id="regCodigoConvite" name="codigoConvite" placeholder="Ex: BARB1234">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="especialidades">Especialidades:</label>
+                                <input type="text" id="especialidades" name="especialidades" placeholder="Ex: Corte masculino, Barba">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="descricao">Descrição:</label>
+                                <textarea id="descricao" name="descricao" placeholder="Conte um pouco sobre você..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">Cadastrar</button>
+                    </form>
+
+                    <div class="form-footer">
+                        <p>
+                            <a href="#" onclick="backToLogin()">Já tem conta? Faça login</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal de Cadastro de Barbearia -->
+            <div id="barbeariaModal" class="modal">
+                <div class="modal-content large">
+                    <span class="close" onclick="closeBarbeariaModal()">&times;</span>
+                    <h2>Cadastrar Nova Barbearia</h2>
+                    
+                    <form id="barbeariaForm">
+                        <div class="form-section">
+                            <h3>Dados da Barbearia</h3>
+                            
+                            <div class="form-group">
+                                <label for="barbNome">Nome da Barbearia:</label>
+                                <input type="text" id="barbNome" name="nome" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="barbEndereco">Endereço:</label>
+                                <input type="text" id="barbEndereco" name="endereco" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="barbTelefone">Telefone:</label>
+                                <input type="tel" id="barbTelefone" name="telefone" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="barbEmail">Email da Barbearia:</label>
+                                <input type="email" id="barbEmail" name="email" required>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Dados do Gerente</h3>
+                            
+                            <div class="form-group">
+                                <label for="gerenteNome">Nome do Gerente:</label>
+                                <input type="text" id="gerenteNome" name="nomeGerente" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="gerenteEmail">Email do Gerente:</label>
+                                <input type="email" id="gerenteEmail" name="emailGerente" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="gerenteSenha">Senha do Gerente:</label>
+                                <input type="password" id="gerenteSenha" name="senhaGerente" required minlength="6">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">Criar Barbearia</button>
+                    </form>
+
+                    <div class="form-footer">
+                        <p>
+                            <a href="#" onclick="backToLogin()">Voltar ao login</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal de Sucesso -->
+            <div id="successModal" class="modal">
+                <div class="modal-content">
+                    <h2>Barbearia Criada com Sucesso!</h2>
+                    <div id="successContent"></div>
+                    <button onclick="closeSuccessModal()" class="btn-primary">Continuar</button>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2024 Barbearia SaaS. Todos os direitos reservados.</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+

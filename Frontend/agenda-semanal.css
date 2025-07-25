@@ -1,0 +1,168 @@
+/* Agenda Semanal - Estilo baseado na imagem fornecida */
+.agenda-semanal {
+    width: 100%;
+    max-width: 1000px;
+    margin: 20px auto;
+    background: #1a1a1a;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.agenda-header {
+    background: #2a2a2a;
+    padding: 15px;
+    border-bottom: 2px solid #d4af37;
+}
+
+.agenda-title {
+    color: #d4af37;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    margin: 0;
+}
+
+.agenda-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #1a1a1a;
+}
+
+.agenda-table th {
+    background: #3a5998;
+    color: white;
+    padding: 12px 8px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 14px;
+    border: 1px solid #2a4a88;
+}
+
+.agenda-table th:first-child {
+    background: #2a4a88;
+    width: 80px;
+}
+
+.agenda-table td {
+    padding: 8px;
+    text-align: center;
+    border: 1px solid #333;
+    height: 40px;
+    vertical-align: middle;
+    background: #2a2a2a;
+    color: #ffffff;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.agenda-table td:first-child {
+    background: #2a4a88;
+    color: white;
+    font-weight: bold;
+    font-size: 11px;
+}
+
+.agenda-table td.horario-disponivel {
+    background: #2a2a2a;
+    cursor: pointer;
+}
+
+.agenda-table td.horario-disponivel:hover {
+    background: #3a3a3a;
+    border-color: #d4af37;
+}
+
+.agenda-table td.horario-ocupado {
+    background: #4a2a2a;
+    color: #ff6b6b;
+    cursor: not-allowed;
+}
+
+.agenda-table td.horario-selecionado {
+    background: #d4af37;
+    color: #000;
+    font-weight: bold;
+}
+
+.agenda-table td.horario-agendado {
+    background: #2a4a2a;
+    color: #4ecdc4;
+    font-weight: bold;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .agenda-semanal {
+        margin: 10px;
+        font-size: 12px;
+    }
+    
+    .agenda-table th,
+    .agenda-table td {
+        padding: 6px 4px;
+        font-size: 10px;
+    }
+    
+    .agenda-table td:first-child {
+        width: 60px;
+        font-size: 9px;
+    }
+}
+
+/* Legenda */
+.agenda-legenda {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 15px;
+    background: #2a2a2a;
+    border-top: 1px solid #333;
+    flex-wrap: wrap;
+}
+
+.legenda-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #ffffff;
+    font-size: 12px;
+}
+
+.legenda-cor {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    border: 1px solid #333;
+}
+
+.legenda-cor.disponivel {
+    background: #2a2a2a;
+}
+
+.legenda-cor.ocupado {
+    background: #4a2a2a;
+}
+
+.legenda-cor.selecionado {
+    background: #d4af37;
+}
+
+.legenda-cor.agendado {
+    background: #2a4a2a;
+}
+
+/* Animações */
+.agenda-table td {
+    transition: all 0.2s ease;
+}
+
+.agenda-table td:hover {
+    transform: scale(1.05);
+}
+
+.agenda-table td.horario-ocupado:hover,
+.agenda-table td:first-child:hover {
+    transform: none;
+}
+
