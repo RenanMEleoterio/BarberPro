@@ -1,10 +1,10 @@
-using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BarbeariaSaaS.Data;
-using BarbeariaSaaS.DTOs;
+using BarbeariaSaaS.Models;
 
 namespace BarbeariaSaaS.Controllers
 {
@@ -20,56 +20,32 @@ namespace BarbeariaSaaS.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<BarbeariaDto>>> GetBarbearias()
+        public async Task<ActionResult<IEnumerable<Barbearia>>> GetBarbearias()
         {
             var barbearias = await _context.Barbearias
-                .Select(b => new BarbeariaDto
-                {
-                    Id = b.Id,
-                    Nome = b.Nome,
-                    Endereco = b.Endereco,
-                    Telefone = b.Telefone,
-                    Email = b.Email
+                .Select(b => new {
+                    b.Id,
+                    b.Nome,
+                    b.Endereco,
+                    b.Telefone,
+                    b.Email
                 })
                 .ToListAsync();
 
             return Ok(barbearias);
         }
 
-        [HttpGet("search")]
-        public async Task<ActionResult<List<BarbeariaDto>>> SearchBarbearias([FromQuery] string nome)
-        {
-            if (string.IsNullOrWhiteSpace(nome))
-            {
-                return await GetBarbearias();
-            }
-
-            var barbearias = await _context.Barbearias
-                .Where(b => b.Nome.ToLower().Contains(nome.ToLower()))
-                .Select(b => new BarbeariaDto
-                {
-                    Id = b.Id,
-                    Nome = b.Nome,
-                    Endereco = b.Endereco,
-                    Telefone = b.Telefone,
-                    Email = b.Email
-                })
-                .ToListAsync();
-
-            return Ok(barbearias);
-        }
-
-        [HttpGet("{barbeariaId}/barbeiros")]
-        public async Task<ActionResult<List<BarbeiroDto>>> GetBarbeirosByBarbearia(int barbeariaId)
+        [HttpGet("{id}/barbeiros")]
+        public async Task<ActionResult<IEnumerable<Usuario>>> GetBarbeirosPorBarbearia(int id)
         {
             var barbeiros = await _context.Usuarios
-                .Where(u => u.TipoUsuario == Models.TipoUsuario.Barbeiro && u.BarbeariaId == barbeariaId)
-                .Select(u => new BarbeiroDto
-                {
-                    Id = u.Id,
-                    Nome = u.Nome,
-                    Especialidades = u.Especialidades,
-                    Descricao = u.Descricao
+                .Where(u => u.BarbeariaId == id && u.TipoUsuario == TipoUsuario.Barbeiro)
+                .Select(u => new {
+                    u.Id,
+                    u.Nome,
+                    u.Email,
+                    u.Especialidades,
+                    u.Descricao
                 })
                 .ToListAsync();
 

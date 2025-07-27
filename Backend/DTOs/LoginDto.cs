@@ -10,17 +10,20 @@ namespace BarbeariaSaaS.DTOs
 
         [Required]
         public string Senha { get; set; }
+
+        [Required]
+        public string TipoUsuario { get; set; }
     }
 
     public class LoginResponseDto
     {
         public int Id { get; set; }
-        public string? Nome { get; set; }
-        public string? Email { get; set; }
-        public string? TipoUsuario { get; set; }
+        public string Nome { get; set; }
+        public string Email { get; set; }
+        public string TipoUsuario { get; set; }
         public int? BarbeariaId { get; set; }
-        public string? NomeBarbearia { get; set; }
-        public string? Token { get; set; }
+        public string NomeBarbearia { get; set; }
+        public string Token { get; set; }
     }
 
     public class CadastroClienteDto
@@ -58,8 +61,8 @@ namespace BarbeariaSaaS.DTOs
         [StringLength(10)]
         public string CodigoConvite { get; set; }
 
-        public string? Especialidades { get; set; }
-        public string? Descricao { get; set; }
+        public string Especialidades { get; set; }
+        public string Descricao { get; set; }
     }
 
     public class CadastroBarbeariaDto
@@ -80,20 +83,7 @@ namespace BarbeariaSaaS.DTOs
         [EmailAddress]
         public string Email { get; set; }
 
-        public string? Logo { get; set; }
-
-        // Dados do gerente
-        [Required]
-        [StringLength(100)]
-        public string NomeGerente { get; set; }
-
-        [Required]
-        [EmailAddress]
-        public string EmailGerente { get; set; }
-
-        [Required]
-        [MinLength(6)]
-        public string SenhaGerente { get; set; }
+        public string Logo { get; set; }
     }
 
     public class CadastroBarbeariaResponseDto
@@ -101,7 +91,6 @@ namespace BarbeariaSaaS.DTOs
         public int BarbeariaId { get; set; }
         public string NomeBarbearia { get; set; }
         public string CodigoConvite { get; set; }
-        public LoginResponseDto Gerente { get; set; }
     }
 }
 

@@ -213,7 +213,8 @@
                 <form id="agendamentoForm">
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="barbeariaSelect">Escolha uma Barbearia:</label>
+                            <label for="barbeariaSearch">Pesquisar Barbearia:</label>
+                            <input type="text" id="barbeariaSearch" placeholder="Digite o nome da barbearia..." style="margin-bottom: 10px;">
                             <select id="barbeariaSelect" name="barbeariaId" required>
                                 <option value="">Carregando barbearias...</option>
                             </select>
@@ -252,10 +253,11 @@
 
     <script>
         // Configuração da API
-        const API_BASE_URL = 'https://5000-iym83pneqf7royvem6rpv-8444f3f7.manusvm.computer/api';
+        const API_BASE_URL = 'https://5000-ivevl7nqegw0u0r4mrbj3-0cf01204.manusvm.computer';
         
         // Dados do usuário logado
         let currentUser = null;
+        let todasBarbearias = []; // Array para armazenar todas as barbearias
 
         // Carregar dados do usuário do localStorage
         function loadUserData() {
@@ -284,7 +286,7 @@
         // Carregar barbearias
         async function loadBarbearias() {
             try {
-                const response = await fetch(`${API_BASE_URL}/barbearia`, {
+                const response = await fetch(`${API_BASE_URL}/api/barbearia`, {
                     headers: {
                         'Authorization': `Bearer ${currentUser.token}`
                     }
@@ -292,16 +294,8 @@
 
                 if (response.ok) {
                     const barbearias = await response.json();
-                    const select = document.getElementById('barbeariaSelect');
-                    
-                    select.innerHTML = '<option value="">Selecione uma barbearia</option>';
-                    
-                    barbearias.forEach(barbearia => {
-                        const option = document.createElement('option');
-                        option.value = barbearia.id;
-                        option.textContent = barbearia.nome;
-                        select.appendChild(option);
-                    });
+                    todasBarbearias = barbearias; // Armazenar todas as barbearias
+                    displayBarbearias(barbearias);
                 } else {
                     document.getElementById('barbeariaSelect').innerHTML = '<option value="">Erro ao carregar barbearias</option>';
                 }
@@ -310,6 +304,41 @@
                 document.getElementById('barbeariaSelect').innerHTML = '<option value="">Erro ao carregar barbearias</option>';
             }
         }
+
+        // Exibir barbearias no select
+        function displayBarbearias(barbearias) {
+            const select = document.getElementById('barbeariaSelect');
+            
+            select.innerHTML = '<option value="">Selecione uma barbearia</option>';
+            
+            barbearias.forEach(barbearia => {
+                const option = document.createElement('option');
+                option.value = barbearia.id;
+                option.textContent = `${barbearia.nome} - ${barbearia.endereco}`;
+                select.appendChild(option);
+            });
+
+            if (barbearias.length === 0) {
+                select.innerHTML = '<option value="">Nenhuma barbearia encontrada</option>';
+            }
+        }
+
+        // Implementar pesquisa de barbearias
+        document.getElementById('barbeariaSearch').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            if (searchTerm === '') {
+                // Se não há termo de pesquisa, mostrar todas as barbearias
+                displayBarbearias(todasBarbearias);
+            } else {
+                // Filtrar barbearias pelo nome
+                const barbeariasFiltradas = todasBarbearias.filter(barbearia => 
+                    barbearia.nome.toLowerCase().includes(searchTerm) ||
+                    barbearia.endereco.toLowerCase().includes(searchTerm)
+                );
+                displayBarbearias(barbeariasFiltradas);
+            }
+        });
 
         // Carregar barbeiros da barbearia selecionada
         async function loadBarbeirosPorBarbearia(barbeariaId) {

@@ -33,7 +33,7 @@ namespace BarbeariaSaaS.Models
         public DateTime DataHora { get; set; }
 
         [StringLength(500)]
-        public string? Observacoes { get; set; }
+        public string Observacoes { get; set; }
 
         [Required]
         public StatusAgendamento Status { get; set; } = StatusAgendamento.Confirmado;

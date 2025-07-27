@@ -28,7 +28,7 @@ namespace BarbeariaSaaS.Models
         public string Email { get; set; }
 
         [StringLength(500)]
-        public string? Logo { get; set; }
+        public string Logo { get; set; }
 
         [Required]
         [StringLength(10)]

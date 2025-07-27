@@ -37,17 +37,16 @@ namespace BarbeariaSaaS.Models
         public int? BarbeariaId { get; set; }
 
         [ForeignKey("BarbeariaId")]
-        public virtual Barbearia? Barbearia { get; set; }
+        public virtual Barbearia Barbearia { get; set; }
 
         // Propriedades específicas para Barbeiro
         [StringLength(500)]
-        public string? Foto { get; set; }
-
+        public string Foto { get; set; }
         [StringLength(500)]
-        public string? Especialidades { get; set; }
+       public string Especialidades { get; set; }
 
         [StringLength(1000)]
-        public string? Descricao { get; set; }
+       public string Descricao { get; set; }
 
         public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
 

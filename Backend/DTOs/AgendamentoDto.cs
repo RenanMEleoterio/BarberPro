@@ -13,7 +13,7 @@ namespace BarbeariaSaaS.DTOs
         [Required]
         public DateTime DataHora { get; set; }
 
-        public string? Observacoes { get; set; }
+        public string Observacoes { get; set; }
     }
 
     public class AgendamentoDto
@@ -25,7 +25,7 @@ namespace BarbeariaSaaS.DTOs
         public int BarbeiroId { get; set; }
         public string NomeBarbeiro { get; set; }
         public DateTime DataHora { get; set; }
-        public string? Observacoes { get; set; }
+        public string Observacoes { get; set; }
         public string Status { get; set; }
         public DateTime DataCriacao { get; set; }
     }
@@ -33,7 +33,7 @@ namespace BarbeariaSaaS.DTOs
     public class AtualizarAgendamentoDto
     {
         public DateTime? NovaDataHora { get; set; }
-        public string? Observacoes { get; set; }
+        public string Observacoes { get; set; }
         public StatusAgendamento? Status { get; set; }
     }
 
@@ -56,9 +56,9 @@ namespace BarbeariaSaaS.DTOs
     {
         public int Id { get; set; }
         public string Nome { get; set; }
-        public string? Foto { get; set; }
-        public string? Especialidades { get; set; }
-        public string? Descricao { get; set; }
+        public string Foto { get; set; }
+        public string Especialidades { get; set; }
+        public string Descricao { get; set; }
         public List<HorarioDisponivelDto> HorariosDisponiveis { get; set; } = new List<HorarioDisponivelDto>();
     }
 }

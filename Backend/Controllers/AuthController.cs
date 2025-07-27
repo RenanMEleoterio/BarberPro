@@ -72,7 +72,7 @@ namespace BarbeariaSaaS.Controllers
 
             var token = _authService.GenerateJwtToken(usuario);
 
-            string? nomeBarbearia = null;
+            string nomeBarbearia = null;
             if (cadastroDto.BarbeariaId.HasValue)
             {
                 var barbearia = await _context.Barbearias.FindAsync(cadastroDto.BarbeariaId.Value);
@@ -139,14 +139,51 @@ namespace BarbeariaSaaS.Controllers
             return Ok(response);
         }
 
+        [HttpPost("cadastro-gerente")]
+        public async Task<ActionResult<LoginResponseDto>> CadastroGerente(CadastroGerenteDto cadastroDto)
+        {
+            if (await _context.Usuarios.AnyAsync(u => u.Email == cadastroDto.Email))
+            {
+                return BadRequest(new { message = "Email já está em uso" });
+            }
+
+            var barbearia = await _context.Barbearias.FindAsync(cadastroDto.BarbeariaId);
+            if (barbearia == null)
+            {
+                return BadRequest(new { message = "Barbearia não encontrada" });
+            }
+
+            var gerente = new Usuario
+            {
+                Nome = cadastroDto.Nome,
+                Email = cadastroDto.Email,
+                SenhaHash = _authService.HashPassword(cadastroDto.Senha),
+                TipoUsuario = TipoUsuario.Gerente,
+                BarbeariaId = cadastroDto.BarbeariaId
+            };
+
+            _context.Usuarios.Add(gerente);
+            await _context.SaveChangesAsync();
+
+            var token = _authService.GenerateJwtToken(gerente);
+
+            var response = new LoginResponseDto
+            {
+                Id = gerente.Id,
+                Nome = gerente.Nome,
+                Email = gerente.Email,
+                TipoUsuario = gerente.TipoUsuario.ToString(),
+                BarbeariaId = gerente.BarbeariaId,
+                NomeBarbearia = barbearia.Nome,
+                Token = token
+            };
+
+            return Ok(response);
+        }
+
         [HttpPost("cadastro-barbearia")]
         public async Task<ActionResult<CadastroBarbeariaResponseDto>> CadastroBarbearia(CadastroBarbeariaDto cadastroDto)
         {
-            if (await _context.Usuarios.AnyAsync(u => u.Email == cadastroDto.EmailGerente))
-            {
-                return BadRequest(new { message = "Email do gerente já está em uso" });
-            }
-
             if (await _context.Barbearias.AnyAsync(b => b.Email == cadastroDto.Email))
             {
                 return BadRequest(new { message = "Email da barbearia já está em uso" });
@@ -170,38 +207,15 @@ namespace BarbeariaSaaS.Controllers
                 _context.Barbearias.Add(barbearia);
                 await _context.SaveChangesAsync();
 
-                // Criar gerente
-                var gerente = new Usuario
-                {
-                    Nome = cadastroDto.NomeGerente,
-                    Email = cadastroDto.EmailGerente,
-                    SenhaHash = _authService.HashPassword(cadastroDto.SenhaGerente),
-                    TipoUsuario = TipoUsuario.Gerente,
-                    BarbeariaId = barbearia.Id
-                };
 
-                _context.Usuarios.Add(gerente);
-                await _context.SaveChangesAsync();
 
                 await transaction.CommitAsync();
-
-                var token = _authService.GenerateJwtToken(gerente);
 
                 var response = new CadastroBarbeariaResponseDto
                 {
                     BarbeariaId = barbearia.Id,
                     NomeBarbearia = barbearia.Nome,
-                    CodigoConvite = barbearia.CodigoConvite,
-                    Gerente = new LoginResponseDto
-                    {
-                        Id = gerente.Id,
-                        Nome = gerente.Nome,
-                        Email = gerente.Email,
-                        TipoUsuario = gerente.TipoUsuario.ToString(),
-                        BarbeariaId = gerente.BarbeariaId,
-                        NomeBarbearia = barbearia.Nome,
-                        Token = token
-                    }
+                    CodigoConvite = barbearia.CodigoConvite
                 };
 
                 return Ok(response);

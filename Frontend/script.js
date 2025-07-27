@@ -1,5 +1,4 @@
-// Configuração da API
-const API_BASE_URL = 'https://5000-ijmdl4waa9fls869qb8uw-0cf01204.manusvm.computer/api';
+const API_BASE_URL = 'https://5000-ivevl7nqegw0u0r4mrbj3-0cf01204.manusvm.computer';
 
 // Variáveis globais
 let currentUser = null;
@@ -47,10 +46,24 @@ function redirectToDashboard(tipoUsuario) {
 function showLoginForm(userType) {
     currentRegisterType = userType;
     document.getElementById('loginModal').style.display = 'block';
-    document.getElementById('loginTitle').textContent = `Login - ${userType}`;
+    document.getElementById("modalTitle").textContent = `Login - ${userType}`;
+    
+    // Atualizar o link de cadastro baseado no tipo de usuário
+    const registerLink = document.getElementById("registerLink");
+    if (userType === "gerente") {
+        registerLink.innerHTML = 
+            `<a href="#" id="createBarbeariaLink">Criar nova barbearia</a>`;
+    } else if (userType === "barbeiro") {
+        registerLink.innerHTML = 
+            `<a href="#" id="registerBarbeiroLink">Não tem conta? Cadastre-se</a>`;
+    } else {
+        registerLink.innerHTML = 
+            `<a href="#" id="registerClienteLink">Não tem conta? Cadastre-se</a>`;
+    }
 }
 
 function showRegisterForm(userType) {
+    console.log('showRegisterForm called with userType:', userType);
     currentRegisterType = userType;
     const modal = document.getElementById('registerModal');
     const title = document.getElementById('registerTitle');
@@ -114,50 +127,11 @@ function showRegisterForm(userType) {
             
             <button type="submit" class="btn-primary">Cadastrar</button>
         `;
-    } else if (userType === 'gerente') {
-        title.textContent = 'Cadastrar Nova Barbearia';
-        form.innerHTML = `
-            <div class="form-group">
-                <label for="nomeBarbearia">Nome da Barbearia:</label>
-                <input type="text" id="nomeBarbearia" name="nomeBarbearia" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="endereco">Endereço:</label>
-                <input type="text" id="endereco" name="endereco" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="telefone">Telefone:</label>
-                <input type="tel" id="telefone" name="telefone" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="emailBarbearia">Email da Barbearia:</label>
-                <input type="email" id="emailBarbearia" name="emailBarbearia" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="nomeGerente">Nome do Gerente:</label>
-                <input type="text" id="nomeGerente" name="nomeGerente" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="emailGerente">Email do Gerente:</label>
-                <input type="email" id="emailGerente" name="emailGerente" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="senhaGerente">Senha do Gerente:</label>
-                <input type="password" id="senhaGerente" name="senhaGerente" required>
-            </div>
-            
-            <button type="submit" class="btn-primary">Criar Barbearia</button>
-        `;
     }
     
     modal.style.display = 'block';
 }
+
 function closeLoginModal() {
     document.getElementById('loginModal').style.display = 'none';
 }
@@ -166,25 +140,35 @@ function closeRegisterModal() {
     document.getElementById('registerModal').style.display = 'none';
 }
 
-function closeBarbeariaSuccessModal() {
-    document.getElementById('barbeariaSuccessModal').style.display = 'none';
+function closeBarbeariaModal() {
+    document.getElementById('barbeariaModal').style.display = 'none';
+}
+
+function closeSuccessModal() {
+    document.getElementById('successModal').style.display = 'none';
+}
+
+function backToLogin() {
+    closeRegisterModal();
+    closeBarbeariaModal();
+    showLoginForm(currentRegisterType);
 }
 
 // Função para copiar código
-function copyInviteCode() {
-    const codeElement = document.getElementById('inviteCode');
-    const code = codeElement.textContent;
+function copyCodigoConvite() {
+    const codeElement = document.getElementById('codigoConviteDisplay');
+    const code = codeElement.value;
     
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(code).then(() => {
-            const button = document.querySelector('#barbeariaSuccessModal .btn-copy');
+            const button = document.querySelector('.btn-copy');
             const originalText = button.textContent;
             button.textContent = '✅ Copiado!';
             button.style.backgroundColor = '#28a745';
             
             setTimeout(() => {
                 button.textContent = originalText;
-                button.style.backgroundColor = '';
+                button.style.backgroundColor = '#d4af37';
             }, 2000);
         }).catch(() => {
             fallbackCopyTextToClipboard(code);
@@ -227,7 +211,8 @@ async function handleLogin(event) {
     };
 
     try {
-        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        console.log('Attempting login with data:', loginData);
+        const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -236,6 +221,8 @@ async function handleLogin(event) {
         });
 
         const result = await response.json();
+        console.log("Login response status:", response.status);
+        console.log("Login response data:", result);
         
         if (response.ok) {
             // Salvar dados do usuário
@@ -254,8 +241,15 @@ async function handleLogin(event) {
             showMessage(result.message || 'Erro ao fazer login');
         }
     } catch (error) {
-        console.error('Erro na requisição de login:', error);
-        showMessage('Erro de conexão. Tente novamente.');
+        console.error("Erro na requisição de login:", error);
+        if (error instanceof TypeError) {
+            console.error("Provável erro de rede ou CORS.");
+        } else if (error.response) {
+            console.error("Erro de resposta do servidor:", error.response.status, error.response.data);
+        } else {
+            console.error("Erro desconhecido:", error.message);
+        }
+        showMessage("Erro de conexão. Tente novamente.");
     }
 }
 
@@ -274,7 +268,7 @@ async function handleRegister(event) {
                 tipoUsuario: 'Cliente'
             };
 
-            response = await fetch(`${API_BASE_URL}/auth/register`, {
+            response = await fetch(`${API_BASE_URL}/api/auth/cadastro-cliente`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -292,54 +286,29 @@ async function handleRegister(event) {
                 tipoUsuario: 'Barbeiro'
             };
 
-            response = await fetch(`${API_BASE_URL}/auth/register`, {
+            response = await fetch(`${API_BASE_URL}/api/auth/cadastro-barbeiro`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(barbeiroData)
             });
-        } else if (currentRegisterType === 'gerente') {
-            const barbeariaData = {
-                nome: formData.get('nomeBarbearia'),
-                endereco: formData.get('endereco'),
-                telefone: formData.get('telefone'),
-                email: formData.get("emailBarbearia"),
-                nomeGerente: formData.get('nomeGerente'),
-                emailGerente: formData.get('emailGerente'),
-                senhaGerente: formData.get('senhaGerente')
-            };
-
-            response = await fetch(`${API_BASE_URL}/auth/cadastro-barbearia`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(barbeariaData)
-            });
         }
 
         const result = await response.json();
         
         if (response.ok) {
-            if (currentRegisterType === 'gerente') {
-                // Mostrar modal de sucesso com código de convite
-                document.getElementById('inviteCode').textContent = result.codigoConvite;
+            // Salvar dados do usuário e redirecionar
+            localStorage.setItem('token', result.token);
+            localStorage.setItem('user', JSON.stringify(result));
+            currentUser = result;
+            
+            showMessage('Cadastro realizado com sucesso!', 'success');
+            
+            setTimeout(() => {
                 closeRegisterModal();
-                document.getElementById('barbeariaSuccessModal').style.display = 'block';
-            } else {
-                // Salvar dados do usuário e redirecionar
-                localStorage.setItem('token', result.token);
-                localStorage.setItem('user', JSON.stringify(result));
-                currentUser = result;
-                
-                showMessage('Cadastro realizado com sucesso!', 'success');
-                
-                setTimeout(() => {
-                    closeRegisterModal();
-                    redirectToDashboard(result.tipoUsuario);
-                }, 1500);
-            }
+                redirectToDashboard(result.tipoUsuario);
+            }, 1500);
         } else {
             showMessage(result.message || 'Erro ao fazer cadastro');
         }
@@ -349,13 +318,51 @@ async function handleRegister(event) {
     }
 }
 
-function handleBarbeariaRegister() {
-    showRegisterForm('gerente');
-}
+async function handleBarbeariaRegister(event) {
+    event.preventDefault();
+    
+    const formData = new FormData(event.target);
+    const barbeariaData = {
+        nome: formData.get("nome"),
+        endereco: formData.get("endereco"),
+        telefone: formData.get("telefone"),
+        email: formData.get("email")
+    };
 
-function continueToDashboard() {
-    closeBarbeariaSuccessModal();
-    window.location.href = 'gerente-dashboard.html';
+    try {
+        console.log('Attempting barbearia register with data:', barbeariaData);
+        const response = await fetch(`${API_BASE_URL}/api/auth/cadastro-barbearia`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(barbeariaData)
+        });
+
+        const result = await response.json();
+        console.log("Barbearia register response status:", response.status);
+        console.log("Barbearia register response data:", result);
+        
+        if (response.ok) {
+            // Redirecionar para o dashboard da barbearia com o ID da barbearia
+            closeBarbeariaModal();
+            localStorage.setItem("barbeariaId", result.barbeariaId);
+            localStorage.setItem("codigoConvite", result.codigoConvite);
+            window.location.href = `barbearia-dashboard.html?barbeariaId=${result.barbeariaId}`;
+        } else {
+            showMessage(result.message || "Erro ao fazer cadastro da barbearia");
+        }
+    } catch (error) {
+        console.error("Erro na requisição de cadastro da barbearia:", error);
+        if (error instanceof TypeError) {
+            console.error("Provável erro de rede ou CORS.");
+        } else if (error.response) {
+            console.error("Erro de resposta do servidor:", error.response.status, error.response.data);
+        } else {
+            console.error("Erro desconhecido:", error.message);
+        }
+        showMessage("Erro de conexão. Tente novamente.");
+    }
 }
 
 // Event listeners
@@ -372,11 +379,35 @@ document.addEventListener('DOMContentLoaded', function() {
         registerForm.addEventListener('submit', handleRegister);
     }
 
+    // Formulário de barbearia
+    const barbeariaForm = document.getElementById('barbeariaForm');
+    if (barbeariaForm) {
+        barbeariaForm.addEventListener('submit', handleBarbeariaRegister);
+    }
+
+    // Event listeners para links de cadastro
+    document.addEventListener('click', function(event) {
+        if (event.target && event.target.id === 'registerClienteLink') {
+            event.preventDefault();
+            showRegisterForm('cliente');
+        }
+        if (event.target && event.target.id === 'registerBarbeiroLink') {
+            event.preventDefault();
+            showRegisterForm('barbeiro');
+        }
+        if (event.target && event.target.id === 'createBarbeariaLink') {
+            event.preventDefault();
+            closeLoginModal();
+            document.getElementById('barbeariaModal').style.display = 'block';
+        }
+    });
+
     // Fechar modais ao clicar fora
     window.addEventListener('click', function(event) {
         const loginModal = document.getElementById('loginModal');
         const registerModal = document.getElementById('registerModal');
-        const barbeariaModal = document.getElementById('barbeariaSuccessModal');
+        const barbeariaModal = document.getElementById('barbeariaModal');
+        const successModal = document.getElementById('successModal');
         
         if (event.target === loginModal) {
             closeLoginModal();
@@ -385,7 +416,10 @@ document.addEventListener('DOMContentLoaded', function() {
             closeRegisterModal();
         }
         if (event.target === barbeariaModal) {
-            closeBarbeariaSuccessModal();
+            closeBarbeariaModal();
+        }
+        if (event.target === successModal) {
+            closeSuccessModal();
         }
     });
 });

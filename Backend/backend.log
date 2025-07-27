@@ -1,1 +1,199 @@
 nohup: ignoring input
+/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj : warning NU1902: Package 'System.IdentityModel.Tokens.Jwt' 7.0.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-59j7-ghrg-fj52
+/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj : warning NU1902: Package 'System.IdentityModel.Tokens.Jwt' 7.0.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-59j7-ghrg-fj52
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://0.0.0.0:5000
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Production
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: /home/ubuntu/BarbeariaSaaS/Backend
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (63ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
+      FROM "Usuarios" AS u
+      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
+      WHERE u."Email" = @__loginDto_Email_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
+      FROM "Usuarios" AS u
+      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
+      WHERE u."Email" = @__loginDto_Email_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
+      FROM "Usuarios" AS u
+      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
+      WHERE u."Email" = @__loginDto_Email_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
+      FROM "Usuarios" AS u
+      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
+      WHERE u."Email" = @__loginDto_Email_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
+      FROM "Usuarios" AS u
+      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
+      WHERE u."Email" = @__loginDto_Email_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
+      FROM "Usuarios" AS u
+      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
+      WHERE u."Email" = @__loginDto_Email_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
+      FROM "Usuarios" AS u
+      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
+      WHERE u."Email" = @__loginDto_Email_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__cadastroDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "Barbearias" AS b
+          WHERE b."Email" = @__cadastroDto_Email_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@p0='?', @p1='?' (DbType = DateTime), @p2='?', @p3='?', @p4='?', @p5='?', @p6='?'], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Barbearias" ("CodigoConvite", "DataCriacao", "Email", "Endereco", "Logo", "Nome", "Telefone")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6)
+      RETURNING "Id";
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__cadastroDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "Barbearias" AS b
+          WHERE b."Email" = @__cadastroDto_Email_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__cadastroDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "Barbearias" AS b
+          WHERE b."Email" = @__cadastroDto_Email_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?' (DbType = DateTime), @p2='?', @p3='?', @p4='?', @p5='?', @p6='?'], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Barbearias" ("CodigoConvite", "DataCriacao", "Email", "Endereco", "Logo", "Nome", "Telefone")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6)
+      RETURNING "Id";
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__cadastroDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "Usuarios" AS u
+          WHERE u."Email" = @__cadastroDto_Email_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (DbType = DateTime), @p2='?', @p3='?', @p4='?', @p5='?', @p6='?', @p7='?', @p8='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Usuarios" ("BarbeariaId", "DataCriacao", "Descricao", "Email", "Especialidades", "Foto", "Nome", "SenhaHash", "TipoUsuario")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8)
+      RETURNING "Id";
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT b."Id", b."Nome", b."Endereco", b."Telefone", b."Email"
+      FROM "Barbearias" AS b
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
+      FROM "Usuarios" AS u
+      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
+      WHERE u."Email" = @__loginDto_Email_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT b."Id", b."Nome", b."Endereco", b."Telefone", b."Email"
+      FROM "Barbearias" AS b
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@__cadastroDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "Barbearias" AS b
+          WHERE b."Email" = @__cadastroDto_Email_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?' (DbType = DateTime), @p2='?', @p3='?', @p4='?', @p5='?', @p6='?'], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Barbearias" ("CodigoConvite", "DataCriacao", "Email", "Endereco", "Logo", "Nome", "Telefone")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6)
+      RETURNING "Id";
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
+      FROM "Usuarios" AS u
+      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
+      WHERE u."Email" = @__loginDto_Email_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__cadastroDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "Barbearias" AS b
+          WHERE b."Email" = @__cadastroDto_Email_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?' (DbType = DateTime), @p2='?', @p3='?', @p4='?', @p5='?', @p6='?'], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Barbearias" ("CodigoConvite", "DataCriacao", "Email", "Endereco", "Logo", "Nome", "Telefone")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6)
+      RETURNING "Id";
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
+      FROM "Usuarios" AS u
+      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
+      WHERE u."Email" = @__loginDto_Email_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
+      FROM "Usuarios" AS u
+      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
+      WHERE u."Email" = @__loginDto_Email_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
+      FROM "Usuarios" AS u
+      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
+      WHERE u."Email" = @__loginDto_Email_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
+      FROM "Usuarios" AS u
+      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
+      WHERE u."Email" = @__loginDto_Email_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
+      FROM "Usuarios" AS u
+      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
+      WHERE u."Email" = @__loginDto_Email_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
+      FROM "Usuarios" AS u
+      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
+      WHERE u."Email" = @__loginDto_Email_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
+      FROM "Usuarios" AS u
+      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
+      WHERE u."Email" = @__loginDto_Email_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
+      FROM "Usuarios" AS u
+      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
+      WHERE u."Email" = @__loginDto_Email_0
+      LIMIT 1

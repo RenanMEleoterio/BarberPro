@@ -111,3 +111,4 @@
 /home/ubuntu/BarbeariaSaaS/Backend/obj/Debug/net8.0/BarbeariaSaaS.pdb
 /home/ubuntu/BarbeariaSaaS/Backend/obj/Debug/net8.0/BarbeariaSaaS.genruntimeconfig.cache
 /home/ubuntu/BarbeariaSaaS/Backend/obj/Debug/net8.0/ref/BarbeariaSaaS.dll
+/home/ubuntu/BarbeariaSaaS/Backend/obj/Debug/net8.0/BarbeariaSaaS.sourcelink.json

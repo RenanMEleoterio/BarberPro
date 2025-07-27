@@ -93,10 +93,8 @@
 
                     <div class="form-footer">
                         <p id="registerLink">
-                    <a href="#" onclick="showRegisterForm(\'barbeiro\')">Não tem conta? Cadastre-se</a>                    </p>
-                        <p id="createBarbeariaLink" style="display: none;">
-                            <a href="#" onclick="showBarbeariaForm()">Criar nova barbearia</a>
-                        </p>
+                    <a href="#" id="registerClienteLink">Não tem conta? Cadastre-se</a>                    </p>
+
                     </div>
                 </div>
             </div>
@@ -148,24 +146,7 @@
                             </div>
                         </div>
 
-                        <div class="form-section">
-                            <h3>Dados do Gerente</h3>
-                            
-                            <div class="form-group">
-                                <label for="gerenteNome">Nome do Gerente:</label>
-                                <input type="text" id="gerenteNome" name="nomeGerente" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="gerenteEmail">Email do Gerente:</label>
-                                <input type="email" id="gerenteEmail" name="emailGerente" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="gerenteSenha">Senha do Gerente:</label>
-                                <input type="password" id="gerenteSenha" name="senhaGerente" required minlength="6">
-                            </div>
-                        </div>
+
                         
                         <button type="submit" class="btn-primary">Criar Barbearia</button>
                     </form>
