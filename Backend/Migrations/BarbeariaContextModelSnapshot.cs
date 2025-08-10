@@ -51,12 +51,23 @@ namespace BarbeariaSaaS.Migrations
                     b.Property<int?>("HorarioDisponivelId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("MetodoPagamento")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
                     b.Property<string>("Observacoes")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<decimal?>("PrecoServico")
+                        .HasColumnType("decimal(10,2)");
+
                     b.Property<int>("Status")
                         .HasColumnType("integer");
+
+                    b.Property<string>("TipoServico")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.HasKey("Id");
 

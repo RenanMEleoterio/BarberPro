@@ -42,55 +42,5 @@ namespace BarbeariaSaaS.DTOs
 
         public int? BarbeariaId { get; set; }
     }
-
-    public class CadastroBarbeiroDto
-    {
-        [Required]
-        [StringLength(100)]
-        public string Nome { get; set; }
-
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; }
-
-        [Required]
-        [MinLength(6)]
-        public string Senha { get; set; }
-
-        [Required]
-        [StringLength(10)]
-        public string CodigoConvite { get; set; }
-
-        public string Especialidades { get; set; }
-        public string Descricao { get; set; }
-    }
-
-    public class CadastroBarbeariaDto
-    {
-        [Required]
-        [StringLength(100)]
-        public string Nome { get; set; }
-
-        [Required]
-        [StringLength(200)]
-        public string Endereco { get; set; }
-
-        [Required]
-        [StringLength(20)]
-        public string Telefone { get; set; }
-
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; }
-
-        public string Logo { get; set; }
-    }
-
-    public class CadastroBarbeariaResponseDto
-    {
-        public int BarbeariaId { get; set; }
-        public string NomeBarbearia { get; set; }
-        public string CodigoConvite { get; set; }
-    }
 }
 

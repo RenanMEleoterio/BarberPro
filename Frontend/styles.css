@@ -560,3 +560,30 @@ body {
     background: #c82333;
 }
 
+
+
+.search-results {
+    border: 1px solid #333;
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: #1a1a1a;
+    border-radius: 8px;
+    margin-top: 5px;
+}
+
+.search-result-item {
+    padding: 10px;
+    cursor: pointer;
+    color: #ffffff;
+    border-bottom: 1px solid #333;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-item:hover {
+    background-color: #333;
+    color: #d4af37;
+}
+

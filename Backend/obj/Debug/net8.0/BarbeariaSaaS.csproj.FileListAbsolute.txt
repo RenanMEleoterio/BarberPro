@@ -97,6 +97,7 @@
 /home/ubuntu/BarbeariaSaaS/Backend/obj/Debug/net8.0/BarbeariaSaaS.csproj.CoreCompileInputs.cache
 /home/ubuntu/BarbeariaSaaS/Backend/obj/Debug/net8.0/BarbeariaSaaS.MvcApplicationPartsAssemblyInfo.cs
 /home/ubuntu/BarbeariaSaaS/Backend/obj/Debug/net8.0/BarbeariaSaaS.MvcApplicationPartsAssemblyInfo.cache
+/home/ubuntu/BarbeariaSaaS/Backend/obj/Debug/net8.0/BarbeariaSaaS.sourcelink.json
 /home/ubuntu/BarbeariaSaaS/Backend/obj/Debug/net8.0/staticwebassets.build.json
 /home/ubuntu/BarbeariaSaaS/Backend/obj/Debug/net8.0/staticwebassets.development.json
 /home/ubuntu/BarbeariaSaaS/Backend/obj/Debug/net8.0/staticwebassets/msbuild.BarbeariaSaaS.Microsoft.AspNetCore.StaticWebAssets.props
@@ -111,4 +112,7 @@
 /home/ubuntu/BarbeariaSaaS/Backend/obj/Debug/net8.0/BarbeariaSaaS.pdb
 /home/ubuntu/BarbeariaSaaS/Backend/obj/Debug/net8.0/BarbeariaSaaS.genruntimeconfig.cache
 /home/ubuntu/BarbeariaSaaS/Backend/obj/Debug/net8.0/ref/BarbeariaSaaS.dll
-/home/ubuntu/BarbeariaSaaS/Backend/obj/Debug/net8.0/BarbeariaSaaS.sourcelink.json
+/home/ubuntu/BarbeariaSaaS/Backend/bin/Debug/net8.0/out/web.config
+/home/ubuntu/BarbeariaSaaS/Backend/bin/Debug/net8.0/out/appsettings.json
+/home/ubuntu/BarbeariaSaaS/Backend/bin/Debug/net8.0/out/BarbeariaSaaS.deps.json
+/home/ubuntu/BarbeariaSaaS/Backend/bin/Debug/net8.0/out/BarbeariaSaaS.runtimeconfig.json

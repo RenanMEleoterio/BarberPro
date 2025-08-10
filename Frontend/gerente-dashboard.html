@@ -533,126 +533,31 @@
             }).join('');
         }
 
-         // Logout
-        function logout() {
-            localStorage.removeItem("user");
-            localStorage.removeItem("token");
-            window.location.href = "index.html";
-        }
-
-        // Função para copiar código de convite no dashboard do gerente
+        // Função para copiar código de convite
         function copyCodigoConviteGerente() {
             const codigoElement = document.getElementById('codigoConvite');
             const codigo = codigoElement.textContent;
             
-            if (navigator.clipboard && window.isSecureContext) {
-                // Usar a API moderna de clipboard
+            if (codigo && codigo !== 'Carregando...' && codigo !== 'Erro ao carregar') {
                 navigator.clipboard.writeText(codigo).then(() => {
-                    showMessage('Código copiado para a área de transferência!', 'success');
-                    
-                    // Feedback visual no botão
-                    const button = event.target;
-                    const originalText = button.innerHTML;
-                    button.innerHTML = '✅ Copiado!';
-                    button.style.background = '#28a745';
-                    
-                    setTimeout(() => {
-                        button.innerHTML = originalText;
-                        button.style.background = '#d4af37';
-                    }, 2000);
-                }).catch(err => {
-                    console.error('Erro ao copiar:', err);
-                    fallbackCopyTextToClipboard(codigo);
+                    alert('Código copiado para a área de transferência!');
+                }).catch(() => {
+                    // Fallback para navegadores mais antigos
+                    const textArea = document.createElement('textarea');
+                    textArea.value = codigo;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    alert('Código copiado para a área de transferência!');
                 });
-            } else {
-                // Fallback para navegadores mais antigos
-                fallbackCopyTextToClipboard(codigo);
             }
         }
 
-        // Função fallback para copiar texto
-        function fallbackCopyTextToClipboard(text) {
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            
-            // Evitar scroll para o topo da página no iOS
-            textArea.style.top = "0";
-            textArea.style.left = "0";
-            textArea.style.position = "fixed";
-            
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            
-            try {
-                const successful = document.execCommand('copy');
-                if (successful) {
-                    showMessage('Código copiado para a área de transferência!', 'success');
-                    
-                    // Feedback visual no botão
-                    const button = event.target;
-                    const originalText = button.innerHTML;
-                    button.innerHTML = '✅ Copiado!';
-                    button.style.background = '#28a745';
-                    
-                    setTimeout(() => {
-                        button.innerHTML = originalText;
-                        button.style.background = '#d4af37';
-                    }, 2000);
-                } else {
-                    showMessage('Não foi possível copiar o código. Copie manualmente.', 'error');
-                }
-            } catch (err) {
-                console.error('Fallback: Erro ao copiar', err);
-                showMessage('Não foi possível copiar o código. Copie manualmente.', 'error');
-            }
-            
-            document.body.removeChild(textArea);
-        }
-
-        // Função para mostrar mensagens
-        function showMessage(message, type = 'info') {
-            // Criar elemento de mensagem
-            const messageDiv = document.createElement('div');
-            messageDiv.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 15px 20px;
-                border-radius: 5px;
-                color: white;
-                font-weight: bold;
-                z-index: 10000;
-                max-width: 300px;
-                word-wrap: break-word;
-            `;
-            
-            // Definir cor baseada no tipo
-            switch(type) {
-                case 'success':
-                    messageDiv.style.backgroundColor = '#28a745';
-                    break;
-                case 'error':
-                    messageDiv.style.backgroundColor = '#dc3545';
-                    break;
-                default:
-                    messageDiv.style.backgroundColor = '#007bff';
-            }
-            
-            messageDiv.textContent = message;
-            document.body.appendChild(messageDiv);
-            
-            // Remover mensagem após 3 segundos
-            setTimeout(() => {
-                if (messageDiv.parentNode) {
-                    messageDiv.parentNode.removeChild(messageDiv);
-                }
-            }, 3000);
-        }
-        
-        // Carregar dados quando a página carregar
-        document.addEventListener('DOMContentLoaded', loadUserData);
+        // Inicializar quando a página carregar
+        window.addEventListener('DOMContentLoaded', loadUserData);
     </script>
+    <script src="logout.js"></script>
 </body>
 </html>
 

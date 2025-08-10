@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Cliente - Barbearia SaaS</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .dashboard-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 900px;
+            margin: 40px auto;
+            text-align: left;
+        }
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+        .dashboard-header h1 {
+            color: #333;
+            font-size: 2.2rem;
+        }
+        .dashboard-header button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+        .dashboard-header button:hover {
+            background-color: #c82333;
+        }
+        .section-title {
+            font-size: 1.8rem;
+            color: #555;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+            padding-left: 10px;
+        }
+        .barbeiro-list, .agendamento-list {
+            display: grid;
+            gap: 20px;
+        }
+        .barbeiro-card, .agendamento-card {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        .barbeiro-card h3, .agendamento-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .barbeiro-card p, .agendamento-card p {
+            margin-bottom: 5px;
+            color: #666;
+        }
+        .horarios-list {
+            margin-top: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .horario-item {
+            background-color: #e9ecef;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .horario-item:hover {
+            background-color: #667eea;
+            color: white;
+        }
+        .agendamento-card.cancelado {
+            background-color: #ffe0e0;
+            border-color: #ffc0c0;
+        }
+        .agendamento-card.realizado {
+            background-color: #e0ffe0;
+            border-color: #c0ffc0;
+        }
+        .agendamento-card.confirmado {
+            background-color: #e0e0ff;
+            border-color: #c0c0ff;
+        }
+        .agendamento-card .status {
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .agendamento-card.cancelado .status {
+            color: #dc3545;
+        }
+        .agendamento-card.realizado .status {
+            color: #28a745;
+        }
+        .agendamento-card.confirmado .status {
+            color: #007bff;
+        }
+        .no-data {
+            text-align: center;
+            color: #888;
+            padding: 30px;
+            font-size: 1.1rem;
+        }
+        .form-agendamento {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo-container">
+                <h1 class="logo">Barbearia SaaS</h1>
+                <p class="subtitle">Dashboard do Cliente</p>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="dashboard-container">
+                <div class="dashboard-header">
+                    <h1 id="welcomeMessage">Bem-vindo, Cliente!</h1>
+                    <button onclick="logout()">Sair</button>
+                </div>
+
+                <section>
+                    <h2 class="section-title">Agendar Novo Horário</h2>
+                    <div class="form-agendamento">
+                        <div class="form-group">
+                            <label for="selectBarbeiro">Escolha um Barbeiro:</label>
+                            <select id="selectBarbeiro" class="form-control">
+                                <option value="">Carregando barbeiros...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="selectHorario">Escolha um Horário:</label>
+                            <select id="selectHorario" class="form-control" disabled>
+                                <option value="">Selecione um barbeiro primeiro</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="observacoes">Observações (opcional):</label>
+                            <textarea id="observacoes" class="form-control" rows="3"></textarea>
+                        </div>
+                        <button class="btn-primary" onclick="agendarHorario()">Agendar</button>
+                    </div>
+                </section>
+
+                <section style="margin-top: 40px;">
+                    <h2 class="section-title">Meus Agendamentos</h2>
+                    <div id="agendamentosList" class="agendamento-list">
+                        <p class="no-data">Carregando agendamentos...</p>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2024 Barbearia SaaS. Todos os direitos reservados.</p>
+        </footer>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://5000-its3wwx7cjrkd95okkecn-8444f3f7.manusvm.computer/api';
+        const token = localStorage.getItem("token");
+        const user = JSON.parse(localStorage.getItem("user"));
+
+        if (!token || !user || user.tipoUsuario.toLowerCase() !== 'cliente') {
+            window.location.href = 'index.html';
+        }
+
+        document.getElementById('welcomeMessage').textContent = `Bem-vindo, ${user.nome}!`;
+
+        async function fetchBarbeiros() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/agendamento/barbeiros`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const barbeiros = await response.json();
+                const selectBarbeiro = document.getElementById('selectBarbeiro');
+                selectBarbeiro.innerHTML = '<option value="">Selecione um barbeiro</option>';
+                barbeiros.forEach(barbeiro => {
+                    const option = document.createElement('option');
+                    option.value = barbeiro.id;
+                    option.textContent = barbeiro.nome;
+                    option.dataset.horarios = JSON.stringify(barbeiro.horariosDisponiveis);
+                    selectBarbeiro.appendChild(option);
+                });
+                selectBarbeiro.onchange = populateHorarios;
+            } catch (error) {
+                console.error('Erro ao buscar barbeiros:', error);
+                alert('Erro ao carregar barbeiros. Tente novamente mais tarde.');
+            }
+        }
+
+        function populateHorarios() {
+            const selectBarbeiro = document.getElementById('selectBarbeiro');
+            const selectHorario = document.getElementById('selectHorario');
+            selectHorario.innerHTML = '<option value="">Selecione um horário</option>';
+            selectHorario.disabled = true;
+
+            const selectedOption = selectBarbeiro.options[selectBarbeiro.selectedIndex];
+            if (selectedOption.value) {
+                const horarios = JSON.parse(selectedOption.dataset.horarios);
+                horarios.sort((a, b) => new Date(a.dataHora) - new Date(b.dataHora));
+                horarios.forEach(horario => {
+                    const option = document.createElement('option');
+                    option.value = horario.dataHora;
+                    option.textContent = new Date(horario.dataHora).toLocaleString('pt-BR');
+                    selectHorario.appendChild(option);
+                });
+                selectHorario.disabled = false;
+            }
+        }
+
+        async function agendarHorario() {
+            const barbeiroId = document.getElementById('selectBarbeiro').value;
+            const dataHora = document.getElementById('selectHorario').value;
+            const observacoes = document.getElementById('observacoes').value;
+
+            if (!barbeiroId || !dataHora) {
+                alert('Por favor, selecione um barbeiro e um horário.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/agendamento`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        barbeiroId: parseInt(barbeiroId),
+                        dataHora: dataHora,
+                        observacoes: observacoes
+                    })
+                });
+
+                if (response.ok) {
+                    alert('Agendamento realizado com sucesso!');
+                    fetchAgendamentos();
+                    fetchBarbeiros(); // Recarregar barbeiros para atualizar horários disponíveis
+                    document.getElementById('selectBarbeiro').value = '';
+                    document.getElementById('selectHorario').innerHTML = '<option value="">Selecione um barbeiro primeiro</option>';
+                    document.getElementById('selectHorario').disabled = true;
+                    document.getElementById('observacoes').value = '';
+                } else {
+                    const errorData = await response.json();
+                    alert(`Erro ao agendar: ${errorData.message || response.statusText}`);
+                }
+            } catch (error) {
+                console.error('Erro ao agendar horário:', error);
+                alert('Erro de conexão ao agendar horário. Tente novamente.');
+            }
+        }
+
+        async function fetchAgendamentos() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/agendamento/meus-agendamentos`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const agendamentos = await response.json();
+                const agendamentosList = document.getElementById('agendamentosList');
+                agendamentosList.innerHTML = '';
+
+                if (agendamentos.length === 0) {
+                    agendamentosList.innerHTML = '<p class="no-data">Você não possui agendamentos.</p>';
+                    return;
+                }
+
+                agendamentos.forEach(agendamento => {
+                    const card = document.createElement('div');
+                    card.className = `agendamento-card ${agendamento.status.toLowerCase()}`;
+                    card.innerHTML = `
+                        <h3>Agendamento com ${agendamento.nomeBarbeiro}</h3>
+                        <p><strong>Data e Hora:</strong> ${new Date(agendamento.dataHora).toLocaleString('pt-BR')}</p>
+                        <p><strong>Status:</strong> <span class="status">${agendamento.status}</span></p>
+                        ${agendamento.observacoes ? `<p><strong>Observações:</strong> ${agendamento.observacoes}</p>` : ''}
+                        <p><small>Criado em: ${new Date(agendamento.dataCriacao).toLocaleString('pt-BR')}</small></p>
+                    `;
+                    agendamentosList.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Erro ao buscar agendamentos:', error);
+                agendamentosList.innerHTML = '<p class="no-data">Erro ao carregar agendamentos.</p>';
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        // Carregar dados ao iniciar
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchBarbeiros();
+            fetchAgendamentos();
+        });
+    </script>
+</body>
+</html>
+

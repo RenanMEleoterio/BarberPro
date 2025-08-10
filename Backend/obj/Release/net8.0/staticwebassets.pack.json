@@ -1,0 +1,45 @@
+{
+  "Files": [
+    {
+      "Id": "/home/ubuntu/BarbeariaSaaS/Backend/wwwroot/barbeiro-dashboard.html",
+      "PackagePath": "staticwebassets/barbeiro-dashboard.html"
+    },
+    {
+      "Id": "/home/ubuntu/BarbeariaSaaS/Backend/wwwroot/cliente-dashboard.html",
+      "PackagePath": "staticwebassets/cliente-dashboard.html"
+    },
+    {
+      "Id": "/home/ubuntu/BarbeariaSaaS/Backend/wwwroot/gerente-dashboard.html",
+      "PackagePath": "staticwebassets/gerente-dashboard.html"
+    },
+    {
+      "Id": "/home/ubuntu/BarbeariaSaaS/Backend/wwwroot/index.html",
+      "PackagePath": "staticwebassets/index.html"
+    },
+    {
+      "Id": "/home/ubuntu/BarbeariaSaaS/Backend/wwwroot/script.js",
+      "PackagePath": "staticwebassets/script.js"
+    },
+    {
+      "Id": "/home/ubuntu/BarbeariaSaaS/Backend/wwwroot/styles.css",
+      "PackagePath": "staticwebassets/styles.css"
+    },
+    {
+      "Id": "obj/Release/net8.0/staticwebassets/msbuild.BarbeariaSaaS.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj/Release/net8.0/staticwebassets/msbuild.build.BarbeariaSaaS.props",
+      "PackagePath": "build\\BarbeariaSaaS.props"
+    },
+    {
+      "Id": "obj/Release/net8.0/staticwebassets/msbuild.buildMultiTargeting.BarbeariaSaaS.props",
+      "PackagePath": "buildMultiTargeting\\BarbeariaSaaS.props"
+    },
+    {
+      "Id": "obj/Release/net8.0/staticwebassets/msbuild.buildTransitive.BarbeariaSaaS.props",
+      "PackagePath": "buildTransitive\\BarbeariaSaaS.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

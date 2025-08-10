@@ -215,9 +215,7 @@
                         <div class="form-group">
                             <label for="barbeariaSearch">Pesquisar Barbearia:</label>
                             <input type="text" id="barbeariaSearch" placeholder="Digite o nome da barbearia..." style="margin-bottom: 10px;">
-                            <select id="barbeariaSelect" name="barbeariaId" required>
-                                <option value="">Carregando barbearias...</option>
-                            </select>
+                            <div id="barbeariaSearchResults" class="search-results"></div>
                         </div>
                         
                         <div class="form-group">
@@ -253,7 +251,7 @@
 
     <script>
         // Configuração da API
-        const API_BASE_URL = 'https://5000-ivevl7nqegw0u0r4mrbj3-0cf01204.manusvm.computer';
+        const API_BASE_URL = 'https://5000-is488tjmsi2rao7bi8b82-557558dc.manusvm.computer';
         
         // Dados do usuário logado
         let currentUser = null;
@@ -288,42 +286,53 @@
             try {
                 const response = await fetch(`${API_BASE_URL}/api/barbearia`, {
                     headers: {
-                        'Authorization': `Bearer ${currentUser.token}`
+                        'Authorization': `Bearer ${token}`
                     }
                 });
 
-                if (response.ok) {
+                 if (response.ok) {
                     const barbearias = await response.json();
                     todasBarbearias = barbearias; // Armazenar todas as barbearias
-                    displayBarbearias(barbearias);
+                    displayBarbearias(barbearias); // Exibir todas as barbearias inicialmente
                 } else {
-                    document.getElementById('barbeariaSelect').innerHTML = '<option value="">Erro ao carregar barbearias</option>';
+                    document.getElementById("barbeariaSearchResults").innerHTML = `<div class="search-result-item">Erro ao carregar barbearias</div>`;
                 }
             } catch (error) {
-                console.error('Erro ao carregar barbearias:', error);
-                document.getElementById('barbeariaSelect').innerHTML = '<option value="">Erro ao carregar barbearias</option>';
+                console.error("Erro ao carregar barbearias:", error);
+                document.getElementById("barbeariaSearchResults").innerHTML = `<div class="search-result-item">Erro ao carregar barbearias</div>`;
             }
         }
 
-        // Exibir barbearias no select
+        // Exibir barbearias nos resultados da busca
         function displayBarbearias(barbearias) {
-            const select = document.getElementById('barbeariaSelect');
-            
-            select.innerHTML = '<option value="">Selecione uma barbearia</option>';
-            
-            barbearias.forEach(barbearia => {
-                const option = document.createElement('option');
-                option.value = barbearia.id;
-                option.textContent = `${barbearia.nome} - ${barbearia.endereco}`;
-                select.appendChild(option);
-            });
+            const searchResultsDiv = document.getElementById("barbeariaSearchResults");
+            searchResultsDiv.innerHTML = ""; // Limpar resultados anteriores
 
             if (barbearias.length === 0) {
-                select.innerHTML = '<option value="">Nenhuma barbearia encontrada</option>';
+                searchResultsDiv.innerHTML = 
+                    `<div class="search-result-item">Nenhuma barbearia encontrada</div>`;
+                return;
             }
+
+            barbearias.forEach(barbearia => {
+                const item = document.createElement("div");
+                item.className = "search-result-item";
+                item.textContent = `${barbearia.nome} - ${barbearia.endereco}`;
+                item.dataset.barbeariaId = barbearia.id; // Armazenar o ID para seleção
+                item.addEventListener("click", () => {
+                    selectBarbearia(barbearia);
+                });
+                searchResultsDiv.appendChild(item);
+            });
         }
 
-        // Implementar pesquisa de barbearias
+        // Função para selecionar uma barbearia dos resultados da busca
+        function selectBarbearia(barbearia) {
+            document.getElementById("barbeariaSearch").value = `${barbearia.nome} - ${barbearia.endereco}`;
+            document.getElementById("barbeariaSearchResults").innerHTML = ""; // Limpar resultados
+            // Chamar a função para carregar barbeiros com o ID da barbearia selecionada
+            loadBarbeirosPorBarbearia(barbearia.id);
+        }        // Implementar pesquisa de barbearias
         document.getElementById('barbeariaSearch').addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
             
@@ -345,7 +354,7 @@
             try {
                 const response = await fetch(`${API_BASE_URL}/barbearia/${barbeariaId}/barbeiros`, {
                     headers: {
-                        'Authorization': `Bearer ${currentUser.token}`
+                        'Authorization': `Bearer ${token}`
                     }
                 });
 
@@ -367,28 +376,10 @@
             } catch (error) {
                 console.error('Erro ao carregar barbeiros:', error);
                 document.getElementById('barbeiroSelect').innerHTML = '<option value="">Erro ao carregar barbeiros</option>';
-            }
-        }
+               // Event listeners para os selects
+        // Removido o event listener para barbeariaSelect, pois agora a seleção é feita via input de busca
 
-        // Event listeners para os selects
-        document.getElementById('barbeariaSelect').addEventListener('change', function() {
-            const barbeariaId = this.value;
-            const barbeiroSelect = document.getElementById('barbeiroSelect');
-            const agendaContainer = document.getElementById('agendaSelecaoContainer');
-            const btnAgendar = document.getElementById('btnAgendar');
-            
-            if (barbeariaId) {
-                loadBarbeirosPorBarbearia(barbeariaId);
-            } else {
-                barbeiroSelect.innerHTML = '<option value="">Selecione uma barbearia primeiro</option>';
-                agendaContainer.style.display = 'none';
-                btnAgendar.disabled = true;
-            }
-        });
-
-        let agendaSelecao = null;
-
-        document.getElementById('barbeiroSelect').addEventListener('change', function() {
+        let agendaSelecao = null;       document.getElementById('barbeiroSelect').addEventListener('change', function() {
             const barbeiroId = this.value;
             const agendaContainer = document.getElementById('agendaSelecaoContainer');
             const btnAgendar = document.getElementById('btnAgendar');
@@ -422,7 +413,7 @@
             try {
                 const response = await fetch(`${API_BASE_URL}/agendamentos/barbeiro/${barbeiroId}`, {
                     headers: {
-                        'Authorization': `Bearer ${currentUser.token}`
+                        'Authorization': `Bearer ${token}`
                     }
                 });
 
@@ -456,7 +447,7 @@
                 
                 const response = await fetch(`${API_BASE_URL}/horarios/barbeiro/${barbeiroId}`, {
                     headers: {
-                        'Authorization': `Bearer ${currentUser.token}`
+                        'Authorization': `Bearer ${token}`
                     }
                 });
 
@@ -490,7 +481,7 @@
             try {
                 const response = await fetch(`${API_BASE_URL}/agendamentos/cliente/${currentUser.id}`, {
                     headers: {
-                        'Authorization': `Bearer ${currentUser.token}`
+                        'Authorization': `Bearer ${token}`
                     }
                 });
 
@@ -566,7 +557,7 @@
             try {
                 const response = await fetch(`${API_BASE_URL}/agendamentos/cliente/${currentUser.id}`, {
                     headers: {
-                        'Authorization': `Bearer ${currentUser.token}`
+                        'Authorization': `Bearer ${token}`
                     }
                 });
 
@@ -644,7 +635,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentUser.token}`
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
                         barbeiroId: parseInt(barbeiroId),
@@ -668,16 +659,10 @@
             }
         });
 
-        // Logout
-        function logout() {
-            localStorage.removeItem("user");
-            localStorage.removeItem("token");
-            window.location.href = "index.html";
-        }
-
-        // Carregar dados quando a página carregar
-        document.addEventListener('DOMContentLoaded', loadUserData);
+        // Inicializar quando a página carregar
+        window.addEventListener('DOMContentLoaded', loadUserData);
     </script>
     <script src="agenda-semanal.js"></script>
+    <script src="logout.js"></script>
 </body>
 </html>

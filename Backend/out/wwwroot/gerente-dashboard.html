@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Gerente - Barbearia SaaS</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .dashboard-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 1200px;
+            margin: 40px auto;
+            text-align: left;
+        }
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+        .dashboard-header h1 {
+            color: #333;
+            font-size: 2.2rem;
+        }
+        .dashboard-header button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+        .dashboard-header button:hover {
+            background-color: #c82333;
+        }
+        .section-title {
+            font-size: 1.8rem;
+            color: #555;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+            padding-left: 10px;
+        }
+        .info-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .info-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        .info-card h3 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .info-card p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        .codigo-convite-section {
+            background-color: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 2px solid #e9ecef;
+        }
+        .codigo-convite {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            letter-spacing: 3px;
+            margin: 15px 0;
+            border: 2px solid #667eea;
+        }
+        .agendamentos-list {
+            display: grid;
+            gap: 15px;
+        }
+        .agendamento-card {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        .agendamento-card.cancelado {
+            background-color: #ffe0e0;
+            border-color: #ffc0c0;
+        }
+        .agendamento-card.realizado {
+            background-color: #e0ffe0;
+            border-color: #c0ffc0;
+        }
+        .agendamento-card.confirmado {
+            background-color: #e0e0ff;
+            border-color: #c0c0ff;
+        }
+        .agendamento-card h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .agendamento-card p {
+            margin: 5px 0;
+            color: #666;
+        }
+        .status-badge {
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .status-badge.confirmado {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+        .status-badge.cancelado {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .status-badge.realizado {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .no-data {
+            text-align: center;
+            color: #888;
+            padding: 30px;
+            font-size: 1.1rem;
+        }
+        .filters {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .filters h4 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+        }
+        .filter-row .form-group {
+            flex: 1;
+        }
+        .filter-row button {
+            background-color: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+        .filter-row button:hover {
+            background-color: #5a6fd8;
+        }
+        @media (max-width: 768px) {
+            .filter-row {
+                flex-direction: column;
+            }
+            .info-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo-container">
+                <h1 class="logo">Barbearia SaaS</h1>
+                <p class="subtitle">Dashboard do Gerente</p>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="dashboard-container">
+                <div class="dashboard-header">
+                    <h1 id="welcomeMessage">Bem-vindo, Gerente!</h1>
+                    <button onclick="logout()">Sair</button>
+                </div>
+
+                <section>
+                    <h2 class="section-title">Informações da Barbearia</h2>
+                    <div class="info-cards">
+                        <div class="info-card">
+                            <h3 id="totalAgendamentos">0</h3>
+                            <p>Total de Agendamentos</p>
+                        </div>
+                        <div class="info-card">
+                            <h3 id="agendamentosHoje">0</h3>
+                            <p>Agendamentos Hoje</p>
+                        </div>
+                        <div class="info-card">
+                            <h3 id="totalBarbeiros">0</h3>
+                            <p>Barbeiros Cadastrados</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h2 class="section-title">Código de Convite para Barbeiros</h2>
+                    <div class="codigo-convite-section">
+                        <p><strong>Compartilhe este código com seus barbeiros para que eles possam se cadastrar:</strong></p>
+                        <div class="codigo-convite" id="codigoConvite">Carregando...</div>
+                        <p><small>Este código é único da sua barbearia e permite que barbeiros se vinculem ao seu estabelecimento.</small></p>
+                    </div>
+                </section>
+
+                <section>
+                    <h2 class="section-title">Agendamentos da Barbearia</h2>
+                    <div class="filters">
+                        <h4>Filtros</h4>
+                        <div class="filter-row">
+                            <div class="form-group">
+                                <label for="filterData">Data:</label>
+                                <input type="date" id="filterData" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="filterStatus">Status:</label>
+                                <select id="filterStatus" class="form-control">
+                                    <option value="">Todos</option>
+                                    <option value="Confirmado">Confirmado</option>
+                                    <option value="Cancelado">Cancelado</option>
+                                    <option value="Realizado">Realizado</option>
+                                </select>
+                            </div>
+                            <button onclick="aplicarFiltros()">Filtrar</button>
+                        </div>
+                    </div>
+                    <div id="agendamentosList" class="agendamentos-list">
+                        <p class="no-data">Carregando agendamentos...</p>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2024 Barbearia SaaS. Todos os direitos reservados.</p>
+        </footer>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://5000-its3wwx7cjrkd95okkecn-8444f3f7.manusvm.computer/api';
+        const token = localStorage.getItem("token");
+        const user = JSON.parse(localStorage.getItem("user"));
+
+        if (!token || !user || user.tipoUsuario.toLowerCase() !== 'gerente') {
+            window.location.href = 'index.html';
+        }
+
+        document.getElementById('welcomeMessage').textContent = `Bem-vindo, ${user.nome}!`;
+        document.getElementById('codigoConvite').textContent = user.codigoConvite || 'N/A';
+
+        let todosAgendamentos = [];
+
+        async function fetchAgendamentos() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/agendamento/meus-agendamentos`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const agendamentos = await response.json();
+                todosAgendamentos = agendamentos;
+                
+                // Atualizar estatísticas
+                atualizarEstatisticas(agendamentos);
+                
+                // Exibir agendamentos
+                exibirAgendamentos(agendamentos);
+                
+            } catch (error) {
+                console.error('Erro ao buscar agendamentos:', error);
+                document.getElementById('agendamentosList').innerHTML = '<p class="no-data">Erro ao carregar agendamentos.</p>';
+            }
+        }
+
+        function atualizarEstatisticas(agendamentos) {
+            const hoje = new Date().toDateString();
+            const agendamentosHoje = agendamentos.filter(a => 
+                new Date(a.dataHora).toDateString() === hoje
+            );
+            
+            document.getElementById('totalAgendamentos').textContent = agendamentos.length;
+            document.getElementById('agendamentosHoje').textContent = agendamentosHoje.length;
+            
+            // Contar barbeiros únicos
+            const barbeirosUnicos = new Set(agendamentos.map(a => a.barbeiroId));
+            document.getElementById('totalBarbeiros').textContent = barbeirosUnicos.size;
+        }
+
+        function exibirAgendamentos(agendamentos) {
+            const agendamentosList = document.getElementById('agendamentosList');
+            agendamentosList.innerHTML = '';
+
+            if (agendamentos.length === 0) {
+                agendamentosList.innerHTML = '<p class="no-data">Nenhum agendamento encontrado.</p>';
+                return;
+            }
+
+            // Ordenar por data mais recente
+            agendamentos.sort((a, b) => new Date(b.dataHora) - new Date(a.dataHora));
+
+            agendamentos.forEach(agendamento => {
+                const card = document.createElement('div');
+                card.className = `agendamento-card ${agendamento.status.toLowerCase()}`;
+                card.innerHTML = `
+                    <h4>Cliente: ${agendamento.nomeCliente}</h4>
+                    <p><strong>Barbeiro:</strong> ${agendamento.nomeBarbeiro}</p>
+                    <p><strong>Data e Hora:</strong> ${new Date(agendamento.dataHora).toLocaleString('pt-BR')}</p>
+                    <p><strong>Status:</strong> <span class="status-badge ${agendamento.status.toLowerCase()}">${agendamento.status}</span></p>
+                    ${agendamento.observacoes ? `<p><strong>Observações:</strong> ${agendamento.observacoes}</p>` : ''}
+                    <p><small>Email do Cliente: ${agendamento.emailCliente}</small></p>
+                    <p><small>Criado em: ${new Date(agendamento.dataCriacao).toLocaleString('pt-BR')}</small></p>
+                `;
+                agendamentosList.appendChild(card);
+            });
+        }
+
+        function aplicarFiltros() {
+            const filterData = document.getElementById('filterData').value;
+            const filterStatus = document.getElementById('filterStatus').value;
+
+            let agendamentosFiltrados = [...todosAgendamentos];
+
+            if (filterData) {
+                const dataFiltro = new Date(filterData).toDateString();
+                agendamentosFiltrados = agendamentosFiltrados.filter(a => 
+                    new Date(a.dataHora).toDateString() === dataFiltro
+                );
+            }
+
+            if (filterStatus) {
+                agendamentosFiltrados = agendamentosFiltrados.filter(a => 
+                    a.status === filterStatus
+                );
+            }
+
+            exibirAgendamentos(agendamentosFiltrados);
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        // Carregar dados ao iniciar
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchAgendamentos();
+        });
+    </script>
+</body>
+</html>
+

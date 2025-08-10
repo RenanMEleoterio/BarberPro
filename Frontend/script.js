@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://5000-ivevl7nqegw0u0r4mrbj3-0cf01204.manusvm.computer';
+const API_BASE_URL = 'https://5000-is488tjmsi2rao7bi8b82-557558dc.manusvm.computer';
 
 // Variáveis globais
 let currentUser = null;

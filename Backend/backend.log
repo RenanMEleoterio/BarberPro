@@ -10,54 +10,16 @@ info: Microsoft.Hosting.Lifetime[0]
 info: Microsoft.Hosting.Lifetime[0]
       Content root path: /home/ubuntu/BarbeariaSaaS/Backend
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (63ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
-      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
-      FROM "Usuarios" AS u
-      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
-      WHERE u."Email" = @__loginDto_Email_0
-      LIMIT 1
+      Executed DbCommand (66ms) [Parameters=[@__cadastroDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "Barbearias" AS b
+          WHERE b."Email" = @__cadastroDto_Email_0)
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (5ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
-      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
-      FROM "Usuarios" AS u
-      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
-      WHERE u."Email" = @__loginDto_Email_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (3ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
-      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
-      FROM "Usuarios" AS u
-      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
-      WHERE u."Email" = @__loginDto_Email_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
-      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
-      FROM "Usuarios" AS u
-      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
-      WHERE u."Email" = @__loginDto_Email_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
-      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
-      FROM "Usuarios" AS u
-      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
-      WHERE u."Email" = @__loginDto_Email_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (2ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
-      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
-      FROM "Usuarios" AS u
-      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
-      WHERE u."Email" = @__loginDto_Email_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
-      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
-      FROM "Usuarios" AS u
-      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
-      WHERE u."Email" = @__loginDto_Email_0
-      LIMIT 1
+      Executed DbCommand (8ms) [Parameters=[@p0='?', @p1='?' (DbType = DateTime), @p2='?', @p3='?', @p4='?', @p5='?', @p6='?'], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Barbearias" ("CodigoConvite", "DataCriacao", "Email", "Endereco", "Logo", "Nome", "Telefone")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6)
+      RETURNING "Id";
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       Executed DbCommand (1ms) [Parameters=[@__cadastroDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
       SELECT EXISTS (
@@ -65,16 +27,10 @@ info: Microsoft.EntityFrameworkCore.Database.Command[20101]
           FROM "Barbearias" AS b
           WHERE b."Email" = @__cadastroDto_Email_0)
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (3ms) [Parameters=[@p0='?', @p1='?' (DbType = DateTime), @p2='?', @p3='?', @p4='?', @p5='?', @p6='?'], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?' (DbType = DateTime), @p2='?', @p3='?', @p4='?', @p5='?', @p6='?'], CommandType='Text', CommandTimeout='30']
       INSERT INTO "Barbearias" ("CodigoConvite", "DataCriacao", "Email", "Endereco", "Logo", "Nome", "Telefone")
       VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6)
       RETURNING "Id";
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (2ms) [Parameters=[@__cadastroDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
-      SELECT EXISTS (
-          SELECT 1
-          FROM "Barbearias" AS b
-          WHERE b."Email" = @__cadastroDto_Email_0)
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       Executed DbCommand (1ms) [Parameters=[@__cadastroDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
       SELECT EXISTS (
@@ -98,30 +54,77 @@ info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8)
       RETURNING "Id";
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT b."Id", b."Nome", b."Endereco", b."Telefone", b."Email"
-      FROM "Barbearias" AS b
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (3ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
-      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
-      FROM "Usuarios" AS u
-      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
-      WHERE u."Email" = @__loginDto_Email_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT b."Id", b."Nome", b."Endereco", b."Telefone", b."Email"
-      FROM "Barbearias" AS b
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (6ms) [Parameters=[@__cadastroDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (1ms) [Parameters=[@__cadastroDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
       SELECT EXISTS (
           SELECT 1
-          FROM "Barbearias" AS b
-          WHERE b."Email" = @__cadastroDto_Email_0)
+          FROM "Usuarios" AS u
+          WHERE u."Email" = @__cadastroDto_Email_0)
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?' (DbType = DateTime), @p2='?', @p3='?', @p4='?', @p5='?', @p6='?'], CommandType='Text', CommandTimeout='30']
-      INSERT INTO "Barbearias" ("CodigoConvite", "DataCriacao", "Email", "Endereco", "Logo", "Nome", "Telefone")
-      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6)
+      Executed DbCommand (2ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (DbType = DateTime), @p2='?', @p3='?', @p4='?', @p5='?', @p6='?', @p7='?', @p8='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Usuarios" ("BarbeariaId", "DataCriacao", "Descricao", "Email", "Especialidades", "Foto", "Nome", "SenhaHash", "TipoUsuario")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8)
+      RETURNING "Id";
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__cadastroDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "Usuarios" AS u
+          WHERE u."Email" = @__cadastroDto_Email_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (DbType = DateTime), @p2='?', @p3='?', @p4='?', @p5='?', @p6='?', @p7='?', @p8='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Usuarios" ("BarbeariaId", "DataCriacao", "Descricao", "Email", "Especialidades", "Foto", "Nome", "SenhaHash", "TipoUsuario")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8)
+      RETURNING "Id";
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__cadastroDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "Usuarios" AS u
+          WHERE u."Email" = @__cadastroDto_Email_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__cadastroDto_CodigoConvite_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
+      FROM "Barbearias" AS b
+      WHERE b."CodigoConvite" = @__cadastroDto_CodigoConvite_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (DbType = DateTime), @p2='?', @p3='?', @p4='?', @p5='?', @p6='?', @p7='?', @p8='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Usuarios" ("BarbeariaId", "DataCriacao", "Descricao", "Email", "Especialidades", "Foto", "Nome", "SenhaHash", "TipoUsuario")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8)
+      RETURNING "Id";
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__cadastroDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "Usuarios" AS u
+          WHERE u."Email" = @__cadastroDto_Email_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__cadastroDto_CodigoConvite_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
+      FROM "Barbearias" AS b
+      WHERE b."CodigoConvite" = @__cadastroDto_CodigoConvite_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (DbType = DateTime), @p2='?', @p3='?', @p4='?', @p5='?', @p6='?', @p7='?', @p8='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Usuarios" ("BarbeariaId", "DataCriacao", "Descricao", "Email", "Especialidades", "Foto", "Nome", "SenhaHash", "TipoUsuario")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8)
+      RETURNING "Id";
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__cadastroDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "Usuarios" AS u
+          WHERE u."Email" = @__cadastroDto_Email_0)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__cadastroDto_CodigoConvite_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
+      FROM "Barbearias" AS b
+      WHERE b."CodigoConvite" = @__cadastroDto_CodigoConvite_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (DbType = DateTime), @p2='?', @p3='?', @p4='?', @p5='?', @p6='?', @p7='?', @p8='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Usuarios" ("BarbeariaId", "DataCriacao", "Descricao", "Email", "Especialidades", "Foto", "Nome", "SenhaHash", "TipoUsuario")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8)
       RETURNING "Id";
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       Executed DbCommand (2ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
@@ -131,69 +134,114 @@ info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       WHERE u."Email" = @__loginDto_Email_0
       LIMIT 1
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (2ms) [Parameters=[@__cadastroDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
-      SELECT EXISTS (
-          SELECT 1
-          FROM "Barbearias" AS b
-          WHERE b."Email" = @__cadastroDto_Email_0)
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?' (DbType = DateTime), @p2='?', @p3='?', @p4='?', @p5='?', @p6='?'], CommandType='Text', CommandTimeout='30']
-      INSERT INTO "Barbearias" ("CodigoConvite", "DataCriacao", "Email", "Endereco", "Logo", "Nome", "Telefone")
-      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6)
-      RETURNING "Id";
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (1ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
       SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
       FROM "Usuarios" AS u
       LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
-      WHERE u."Email" = @__loginDto_Email_0
+      WHERE u."Id" = @__id_0 AND u."TipoUsuario" = 1
       LIMIT 1
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (2ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
-      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
-      FROM "Usuarios" AS u
-      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
-      WHERE u."Email" = @__loginDto_Email_0
+      Executed DbCommand (640ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT count(*)::int
+      FROM "Agendamentos" AS a
+      WHERE a."ClienteId" = @__id_0
+fail: Microsoft.EntityFrameworkCore.Database.Command[20102]
+      Failed executing DbCommand (118ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SELECT a."Id", a."BarbeariaId", a."BarbeiroId", a."ClienteId", a."DataAtualizacao", a."DataCriacao", a."DataHora", a."HorarioDisponivelId", a."MetodoPagamento", a."Observacoes", a."PrecoServico", a."Status", a."TipoServico", u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
+      FROM "Agendamentos" AS a
+      INNER JOIN "Usuarios" AS u ON a."BarbeiroId" = u."Id"
+      INNER JOIN "Barbearias" AS b ON a."BarbeariaId" = b."Id"
+      WHERE a."ClienteId" = @__id_0 AND a."DataHora" > now()
+      ORDER BY a."DataHora"
       LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (2ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
-      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
-      FROM "Usuarios" AS u
-      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
-      WHERE u."Email" = @__loginDto_Email_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (8ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
-      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
-      FROM "Usuarios" AS u
-      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
-      WHERE u."Email" = @__loginDto_Email_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
-      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
-      FROM "Usuarios" AS u
-      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
-      WHERE u."Email" = @__loginDto_Email_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
-      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
-      FROM "Usuarios" AS u
-      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
-      WHERE u."Email" = @__loginDto_Email_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (2ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
-      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
-      FROM "Usuarios" AS u
-      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
-      WHERE u."Email" = @__loginDto_Email_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[@__loginDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
-      SELECT u."Id", u."BarbeariaId", u."DataCriacao", u."Descricao", u."Email", u."Especialidades", u."Foto", u."Nome", u."SenhaHash", u."TipoUsuario", b."Id", b."CodigoConvite", b."DataCriacao", b."Email", b."Endereco", b."Logo", b."Nome", b."Telefone"
-      FROM "Usuarios" AS u
-      LEFT JOIN "Barbearias" AS b ON u."BarbeariaId" = b."Id"
-      WHERE u."Email" = @__loginDto_Email_0
-      LIMIT 1
+fail: Microsoft.EntityFrameworkCore.Query[10100]
+      An exception occurred while iterating over the results of a query for context type 'BarbeariaSaaS.Data.BarbeariaContext'.
+      Npgsql.PostgresException (0x80004005): 42703: column a.MetodoPagamento does not exist
+      
+      POSITION: 141
+         at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+         at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+         at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+        Exception data:
+          Severity: ERROR
+          SqlState: 42703
+          MessageText: column a.MetodoPagamento does not exist
+          Position: 141
+          File: parse_relation.c
+          Line: 3647
+          Routine: errorMissingColumn
+      Npgsql.PostgresException (0x80004005): 42703: column a.MetodoPagamento does not exist
+      
+      POSITION: 141
+         at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+         at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+         at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+        Exception data:
+          Severity: ERROR
+          SqlState: 42703
+          MessageText: column a.MetodoPagamento does not exist
+          Position: 141
+          File: parse_relation.c
+          Line: 3647
+          Routine: errorMissingColumn
+fail: Microsoft.AspNetCore.Server.Kestrel[13]
+      Connection id "0HNEI6GS8NMA1", Request id "0HNEI6GS8NMA1:00000001": An unhandled exception was thrown by the application.
+      Npgsql.PostgresException (0x80004005): 42703: column a.MetodoPagamento does not exist
+      
+      POSITION: 141
+         at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+         at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+         at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+         at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+         at BarbeariaSaaS.Controllers.DashboardController.GetClientDashboard(Int32 id) in /home/ubuntu/BarbeariaSaaS/Backend/Controllers/DashboardController.cs:line 38
+         at lambda_method299(Closure, Object)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+         at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+         at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+         at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpProtocol.ProcessRequests[TContext](IHttpApplication`1 application)
+        Exception data:
+          Severity: ERROR
+          SqlState: 42703
+          MessageText: column a.MetodoPagamento does not exist
+          Position: 141
+          File: parse_relation.c
+          Line: 3647
+          Routine: errorMissingColumn
+info: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...

@@ -47,6 +47,16 @@ namespace BarbeariaSaaS.Models
 
         [ForeignKey("BarbeariaId")]
         public virtual Barbearia Barbearia { get; set; }
+
+        // Campos adicionais para integração
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal? PrecoServico { get; set; }
+
+        [StringLength(50)]
+        public string MetodoPagamento { get; set; } // "Dinheiro", "Cartao", "Pix"
+
+        [StringLength(200)]
+        public string TipoServico { get; set; } // "Corte", "Barba", "Corte + Barba", etc.
     }
 }
 

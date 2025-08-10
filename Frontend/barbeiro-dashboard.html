@@ -545,55 +545,22 @@
             }
         });
 
-        // Logout
-        function logout() {
-            localStorage.removeItem("user");
-            localStorage.removeItem("token");
-            window.location.href = "index.html";
-        }
-
-        // Carregar dados quando a página carregar
-        document.addEventListener('DOMContentLoaded', loadUserData);
-
         // Inicializar agenda semanal
-        let agendaSemanal = null;
-
         function initAgendaSemanal() {
-            if (currentUser && currentUser.id) {
-                agendaSemanal = criarAgendaSemanal('agendaSemanal', {
-                    modo: 'visualizacao',
-                    barbeiroId: currentUser.id,
-                    agendamentos: [],
-                    horaInicio: 8,
-                    horaFim: 19,
-                    intervalo: 30
-                });
-                
-                // Carregar agendamentos para a agenda
-                loadAgendamentosParaAgenda();
-            }
+            // Implementar agenda semanal para barbeiro
+            // Por enquanto, apenas um placeholder
+            document.getElementById('agendaSemanal').innerHTML = `
+                <div style="background: #1a1a1a; padding: 20px; border-radius: 10px; text-align: center; color: #888;">
+                    <p>Agenda semanal será implementada aqui</p>
+                </div>
+            `;
         }
 
-        async function loadAgendamentosParaAgenda() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/agendamentos/barbeiro/${currentUser.id}`, {
-                    headers: {
-                        'Authorization': `Bearer ${currentUser.token}`
-                    }
-                });
-
-                if (response.ok) {
-                    const agendamentos = await response.json();
-                    if (agendaSemanal) {
-                        agendaSemanal.atualizarAgendamentos(agendamentos);
-                    }
-                }
-            } catch (error) {
-                console.error('Erro ao carregar agendamentos para agenda:', error);
-            }
-        }
+        // Inicializar quando a página carregar
+        window.addEventListener('DOMContentLoaded', loadUserData);
     </script>
     <script src="agenda-semanal.js"></script>
+    <script src="logout.js"></script>
 </body>
 </html>
 

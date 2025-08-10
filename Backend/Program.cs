@@ -14,6 +14,9 @@ using System.Collections.Generic;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure URLs to listen on HTTP only
+builder.WebHost.UseUrls("http://0.0.0.0:5000");
+
 // Add services to the container.
 builder.Services.AddControllers();
 
@@ -74,12 +77,29 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Serve static files
+app.UseStaticFiles();
+
+
+
+// Verificar barbearias se o argumento for passado
+if (args.Length > 0 && args[0] == "check-barbearias")
+{
+    await CheckBarbearias.Run(app.Services);
+    return;
+}
 
 
 
 
 
-app.Run("http://0.0.0.0:5000");
 
 
+
+
+
+
+
+
+
+app.Run();
 
