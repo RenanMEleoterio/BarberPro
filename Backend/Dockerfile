@@ -19,4 +19,4 @@ COPY --from=build /app/out .
 EXPOSE 5000
 
 # Defina o ponto de entrada da aplicação
-ENTRYPOINT ["dotnet", "BarberPro.dll"]
+ENTRYPOINT ["dotnet", "BarbeariaSaaS.dll"]
