@@ -17,6 +17,7 @@ namespace BarbeariaSaaS.Services
         bool VerifyPassword(string password, string hash);
         string GenerateJwtToken(Usuario usuario);
         string GenerateCodigoConvite();
+        string GenerateCodigoBarbearia();
     }
 
     public class AuthService : IAuthService
@@ -71,10 +72,44 @@ namespace BarbeariaSaaS.Services
 
         public string GenerateCodigoConvite()
         {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            var random = new Random();
-            return new string(Enumerable.Repeat(chars, 8)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
+            // Usar caracteres alfanuméricos (excluindo caracteres confusos como 0, O, I, 1)
+            const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+            
+            // Usar RNGCryptoServiceProvider para geração criptograficamente segura
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                var bytes = new byte[8];
+                var result = new char[8];
+                
+                for (int i = 0; i < 8; i++)
+                {
+                    rng.GetBytes(bytes);
+                    result[i] = chars[bytes[0] % chars.Length];
+                }
+                
+                return new string(result);
+            }
+        }
+
+        public string GenerateCodigoBarbearia()
+        {
+            // Usar caracteres alfanuméricos (incluindo números e letras maiúsculas e minúsculas)
+            const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+            
+            // Usar RNGCryptoServiceProvider para geração criptograficamente segura
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                var bytes = new byte[8];
+                var result = new char[8];
+                
+                for (int i = 0; i < 8; i++)
+                {
+                    rng.GetBytes(bytes);
+                    result[i] = chars[bytes[0] % chars.Length];
+                }
+                
+                return new string(result);
+            }
         }
     }
 }

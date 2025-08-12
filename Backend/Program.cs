@@ -42,6 +42,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
 
 // CORS
 builder.Services.AddCors(options =>

@@ -34,6 +34,10 @@ namespace BarbeariaSaaS.Models
         [StringLength(10)]
         public string CodigoConvite { get; set; }
 
+        [Required]
+        [StringLength(8)]
+        public string CodigoBarbearia { get; set; }
+
         public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
 
         // Relacionamentos

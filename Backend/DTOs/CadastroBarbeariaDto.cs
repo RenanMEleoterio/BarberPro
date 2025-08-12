@@ -19,6 +19,10 @@ namespace BarbeariaSaaS.DTOs
         [EmailAddress(ErrorMessage = "Formato de email inválido.")]
         public string Email { get; set; }
 
+        [Required(ErrorMessage = "A senha é obrigatória.")]
+        [MinLength(6, ErrorMessage = "A senha deve ter pelo menos 6 caracteres.")]
+        public string Senha { get; set; }
+
         public string Logo { get; set; }
     }
 
@@ -27,6 +31,7 @@ namespace BarbeariaSaaS.DTOs
         public int BarbeariaId { get; set; }
         public string NomeBarbearia { get; set; }
         public string CodigoConvite { get; set; }
+        public string CodigoBarbearia { get; set; }
     }
 }
 

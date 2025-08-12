@@ -293,6 +293,7 @@ namespace BarbeariaSaaS.Controllers
                     Id = barbearia.Id,
                     Nome = barbearia.Nome,
                     CodigoConvite = barbearia.CodigoConvite,
+                    CodigoBarbearia = barbearia.CodigoBarbearia,
                     Endereco = barbearia.Endereco,
                     Telefone = barbearia.Telefone,
                     Email = barbearia.Email

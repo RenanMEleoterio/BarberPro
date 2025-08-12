@@ -26,9 +26,11 @@ namespace BarbeariaSaaS.Models
         [StringLength(100)]
         public string Email { get; set; }
 
-        [Required]
         [StringLength(255)]
-        public string SenhaHash { get; set; }
+        public string? SenhaHash { get; set; } // Opcional para usuários do Google
+
+        [StringLength(100)]
+        public string? GoogleId { get; set; } // ID do usuário no Google
 
         [Required]
         public TipoUsuario TipoUsuario { get; set; }
