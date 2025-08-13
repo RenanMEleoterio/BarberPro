@@ -140,7 +140,8 @@ class ApiService {
       endereco: address,
       telefone: phone,
       email,
-      senha: password
+      senha: password,
+      nomeGerente: managerName
     };
 
     return this.request<LoginResponse>("/auth/cadastro-barbearia", {
