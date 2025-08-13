@@ -69,9 +69,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseRouting();
-
 app.UseCors("AllowFrontend"); // CORS seguro - apenas frontend autorizado
+
+app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
