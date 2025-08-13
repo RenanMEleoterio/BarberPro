@@ -44,24 +44,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
 
-// CORS - Configuração segura para produção
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontend", policy =>
-    {
-        policy.WithOrigins("https://barberproapp.netlify.app")
-              .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials(); // Permite cookies/autenticação
-    });
-});
+
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 
 
 var app = builder.Build();
 
-app.UseCors("AllowFrontend"); // CORS seguro - apenas frontend autorizado
+app.UseCors(policy => policy.WithOrigins("https://barberproapp.netlify.app")
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .AllowCredentials());
 
 if (app.Environment.IsDevelopment())
 {
