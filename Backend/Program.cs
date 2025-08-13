@@ -68,9 +68,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("AllowAll"); // CORS antes de UseRouting
-
 app.UseRouting();
+
+app.UseCors("AllowAll"); // CORS após UseRouting
 
 app.UseAuthentication();
 app.UseAuthorization();
