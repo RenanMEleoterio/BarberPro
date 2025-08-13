@@ -51,10 +51,9 @@ builder.Services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
 
 var app = builder.Build();
 
-app.UseCors(policy => policy.WithOrigins("https://barberproapp.netlify.app")
+app.UseCors(policy => policy.AllowAnyOrigin()
     .AllowAnyMethod()
-    .AllowAnyHeader()
-    .AllowCredentials());
+    .AllowAnyHeader());
 
 if (app.Environment.IsDevelopment())
 {
