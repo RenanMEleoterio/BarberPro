@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://5000-i6hlr8op2p9tna9zvgf0u-625be998.manusvm.computer/api';
+const API_BASE_URL = 'https://barberpro-op6v.onrender.com/';
 
 interface LoginRequest {
   email: string;
