@@ -44,14 +44,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
 
-// CORS
+// CORS - Configuração segura para produção
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("https://barberproapp.netlify.app")
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .AllowCredentials(); // Permite cookies/autenticação
     });
 });
 
@@ -70,7 +71,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseRouting();
 
-app.UseCors("AllowAll"); // CORS após UseRouting
+app.UseCors("AllowFrontend"); // CORS seguro - apenas frontend autorizado
 
 app.UseAuthentication();
 app.UseAuthorization();
