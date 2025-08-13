@@ -88,7 +88,7 @@ export default function AuthForm() {
         } else if (formData.role === 'client') {
           user = await signUp(formData.email, formData.password, formData.name, 'client');
         } else if (formData.role === 'manager') {
-          user = await signUpBarbershop(formData.name, formData.email, formData.password, formData.address, formData.phone);
+          user = await signUpBarbershop(formData.name, formData.address, formData.phone, formData.email, formData.password);
         }
         toast.success('Conta criada com sucesso!');
       }
@@ -171,7 +171,7 @@ export default function AuthForm() {
               <>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Nome Completo
+                    {formData.role === 'manager' ? 'Nome da Barbearia' : 'Nome Completo'}
                   </label>
                   <input
                     type="text"
@@ -183,7 +183,7 @@ export default function AuthForm() {
                         ? 'border-red-500 dark:border-red-500' 
                         : 'border-gray-300 dark:border-gray-600'
                     }`}
-                    placeholder="Seu nome completo"
+                    placeholder={formData.role === 'manager' ? 'Nome da Barbearia' : 'Seu nome completo'}
                   />
                   {(getFieldError("name") || getFieldError("nome")) && (
                     <p className="mt-1 text-sm text-red-600 dark:text-red-400">
@@ -194,7 +194,7 @@ export default function AuthForm() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Tipo de Conta
+                    {formData.role === 'manager' ? 'Nome da Barbearia' : 'Nome Completo'}
                   </label>
                   <select
                     value={formData.role}
