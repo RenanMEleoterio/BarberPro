@@ -85,10 +85,16 @@ class ApiService {
     });
   }
 
-  async register(email: string, password: string, name: string, role: 'client' | 'barber' | 'manager', barbershopCode?: string): Promise<LoginResponse> {
-    const endpoint = role === 'client' ? '/auth/cadastro-cliente' : 
-                    role === 'barber' ? '/auth/cadastro-barbeiro' : 
-                    '/auth/cadastro-gerente';
+  async register(email: string, password: string, name: string, role: 'client' | 'barber' | 'manager', barbershopCode?: string, barbershopName?: string, barbershopAddress?: string, barbershopPhone?: string): Promise<LoginResponse> {
+    if (role === 'manager') {
+      // Para gerente, usar o endpoint de cadastro de barbearia
+      if (!barbershopName || !barbershopAddress || !barbershopPhone) {
+        throw new Error('Nome, endereço e telefone da barbearia são obrigatórios para gerentes');
+      }
+      return this.registerBarbershop(barbershopName, barbershopAddress, barbershopPhone, email, password);
+    }
+
+    const endpoint = role === 'client' ? '/auth/cadastro-cliente' : '/auth/cadastro-barbeiro';
     
     const body: any = {
       nome: name,
@@ -104,8 +110,6 @@ class ApiService {
       body.codigoConvite = barbershopCode;
       body.especialidades = '';
       body.descricao = '';
-    } else if (role === 'manager') {
-      body.barbeariaId = 1; // ID temporário - deve ser fornecido pelo usuário
     }
 
     return this.request<LoginResponse>(endpoint, {
@@ -130,9 +134,9 @@ class ApiService {
     });
   }
 
-  async registerBarbershop(name: string, address: string, phone: string, email: string, password: string): Promise<LoginResponse> {
+  async registerBarbershop(name: string, address: string, phone: string, email: string, password: string, managerName?: string): Promise<LoginResponse> {
     const body = {
-      nome: name,
+      nome: name, // Nome da barbearia
       endereco: address,
       telefone: phone,
       email,
