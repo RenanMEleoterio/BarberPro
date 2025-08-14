@@ -49,19 +49,29 @@ builder.Services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin",
+        builder =>
+        {
+            builder.WithOrigins("https://barberproapp.netlify.app")
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
+
 var app = builder.Build();
 
-app.UseCors(policy => policy.AllowAnyOrigin()
-    .AllowAnyMethod()
-    .AllowAnyHeader());
+// Use CORS policy before UseRouting
+app.UseCors("AllowSpecificOrigin");
+
+app.UseRouting();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -94,4 +104,6 @@ if (args.Length > 0 && args[0] == "check-barbearias")
 
 
 app.Run();
+
+
 
