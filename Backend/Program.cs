@@ -56,7 +56,8 @@ builder.Services.AddCors(options =>
         {
             builder.WithOrigins("https://barberproapp.netlify.app")
                    .AllowAnyMethod()
-                   .AllowAnyHeader();
+                   .AllowAnyHeader()
+                   .AllowCredentials();
         });
 });
 
