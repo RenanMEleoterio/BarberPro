@@ -134,7 +134,7 @@ class ApiService {
     });
   }
 
-  async registerBarbershop(name: string, address: string, phone: string, email: string, password: string, managerName?: string): Promise<LoginResponse> {
+  async registerBarbershop(name: string, email: string, password: string, address: string, phone: string): Promise<LoginResponse> {
     const body = {
       nome: name, // Nome da barbearia
       endereco: address,
