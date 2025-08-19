@@ -175,8 +175,8 @@ namespace BarbeariaSaaS.Controllers
                 .Where(u => u.BarbeariaId == barbeariaId && u.TipoUsuario == TipoUsuario.Barbeiro)
                 .CountAsync();
 
-            var hoje = DateTime.Today;
-            var inicioMes = new DateTime(hoje.Year, hoje.Month, 1);
+            var hoje = DateTime.UtcNow.Date;
+            var inicioMes = new DateTime(hoje.Year, hoje.Month, 1, 0, 0, 0, DateTimeKind.Utc);
             var fimMes = inicioMes.AddMonths(1);
 
             var agendamentosMes = await _context.Agendamentos
@@ -204,10 +204,10 @@ namespace BarbeariaSaaS.Controllers
             var performanceSemanal = new int[7];
             for (int i = 0; i < 7; i++)
             {
-                var dia = inicioSemana.AddDays(i);
+                var dia = inicioSemana.AddDays(i).ToUniversalTime();
                 performanceSemanal[i] = await _context.Agendamentos
                     .Where(a => a.BarbeariaId == barbeariaId && 
-                               a.DataHora.Date == dia && 
+                               a.DataHora.Date == dia.Date && 
                                a.Status == StatusAgendamento.Realizado)
                     .CountAsync();
             }
@@ -228,21 +228,21 @@ namespace BarbeariaSaaS.Controllers
             {
                 var agendamentosBarbeiro = await _context.Agendamentos
                     .Where(a => a.BarbeiroId == barbeiro.Id && 
-                               a.DataHora >= inicioSemana && 
-                               a.DataHora < inicioSemana.AddDays(7))
+                               a.DataHora >= inicioSemana.ToUniversalTime() && 
+                               a.DataHora < inicioSemana.AddDays(7).ToUniversalTime())
                     .CountAsync();
 
                 var agendamentosConcluidosBarbeiro = await _context.Agendamentos
                     .Where(a => a.BarbeiroId == barbeiro.Id && 
-                               a.DataHora >= inicioSemana && 
-                               a.DataHora < inicioSemana.AddDays(7) && 
+                               a.DataHora >= inicioSemana.ToUniversalTime() && 
+                               a.DataHora < inicioSemana.AddDays(7).ToUniversalTime() && 
                                a.Status == StatusAgendamento.Realizado)
                     .CountAsync();
 
                 var ganhosSemana = await _context.Agendamentos
                     .Where(a => a.BarbeiroId == barbeiro.Id && 
-                               a.DataHora >= inicioSemana && 
-                               a.DataHora < inicioSemana.AddDays(7) && 
+                               a.DataHora >= inicioSemana.ToUniversalTime() && 
+                               a.DataHora < inicioSemana.AddDays(7).ToUniversalTime() && 
                                a.Status == StatusAgendamento.Realizado)
                     .SumAsync(a => a.PrecoServico ?? 0);
 
