@@ -14,6 +14,7 @@ RUN dotnet publish -c Release -o out
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/out .
+COPY start.sh .
 
 # Exponha a porta que a aplicação ASP.NET Core irá escutar
 EXPOSE 5000
