@@ -112,3 +112,13 @@ app.Run();
 
 
 
+
+
+// Apply migrations on startup
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<BarbeariaContext>();
+    dbContext.Database.Migrate();
+}
+
+
