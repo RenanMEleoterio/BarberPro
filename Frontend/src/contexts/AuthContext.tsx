@@ -74,6 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: response.email,
         name: response.nome,
         role: mapTipoUsuarioToRole(response.tipoUsuario),
+        barbeariaId: response.barbeariaId,
         created_at: new Date().toISOString(),
       };
       
@@ -105,6 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: response.email,
         name: response.nome,
         role: mapTipoUsuarioToRole(response.tipoUsuario),
+        barbeariaId: response.barbeariaId,
         created_at: new Date().toISOString(),
       };
       
@@ -136,6 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: response.email,
         name: response.nome,
         role: mapTipoUsuarioToRole(response.tipoUsuario),
+        barbeariaId: response.barbeariaId,
         created_at: new Date().toISOString(),
       };
       
@@ -163,6 +166,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: response.email,
         name: response.nome,
         role: mapTipoUsuarioToRole(response.tipoUsuario),
+        barbeariaId: response.barbeariaId,
         created_at: new Date().toISOString(),
       };
       
@@ -203,6 +207,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: response.email,
         name: response.nome,
         role: mapTipoUsuarioToRole(response.tipoUsuario),
+        barbeariaId: response.barbeariaId,
         created_at: new Date().toISOString(),
       };
       

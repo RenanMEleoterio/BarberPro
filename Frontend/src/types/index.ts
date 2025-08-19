@@ -4,6 +4,7 @@ export interface User {
   name: string;
   avatar_url?: string;
   role: 'client' | 'barber' | 'manager';
+  barbeariaId?: number;
   created_at: string;
 }
 
