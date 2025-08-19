@@ -12,16 +12,22 @@ export default function ManagerDashboard() {
   const { user } = useAuth();
 
   useEffect(() => {
+    console.log("User no ManagerDashboard:", user);
     loadDashboardData();
-  }, []);
+  }, [user]);
 
   const loadDashboardData = async () => {
     try {
       setLoading(true);
       setError(null);
       if (user?.barbeariaId) {
+        console.log("Carregando dashboard para barbeariaId:", user.barbeariaId);
         const data = await apiService.getManagerDashboard(user.barbeariaId);
+        console.log("Dados do dashboard recebidos:", data);
         setDashboardData(data);
+      } else {
+        console.log("User ou barbeariaId não disponível.", user);
+        setError("ID da barbearia não encontrado para carregar o dashboard.");
       }
     } catch (err: any) {
       console.error("Erro ao carregar dados do dashboard:", err);
@@ -40,20 +46,20 @@ export default function ManagerDashboard() {
   };
   const paymentData = dashboardData?.formasPagamento ? [
     { name: 'PIX', value: dashboardData.formasPagamento.pix, color: '#8b5cf6' },
-    { name: 'Cartão', value: dashboardData.FormasPagamento.Cartao, color: '#06b6d4' },
-    { name: 'Dinheiro', value: dashboardData.FormasPagamento.Dinheiro, color: '#eab308' }
+    { name: 'Cartão', value: dashboardData.formasPagamento.cartao, color: '#06b6d4' },
+    { name: 'Dinheiro', value: dashboardData.formasPagamento.dinheiro, color: '#eab308' }
   ].filter(item => item.value > 0) : [];
-  const weeklyData = dashboardData?.PerformanceSemanal ? 
+  const weeklyData = dashboardData?.performanceSemanal ? 
     ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day, index) => ({
       day,
-      appointments: dashboardData.PerformanceSemanal[index] || 0
+      appointments: dashboardData.performanceSemanal[index] || 0
     })) : [];
-  const barbers = dashboardData?.Barbeiros ? dashboardData.Barbeiros.map((barbeiro: any) => ({
-    id: barbeiro.Id,
-    name: barbeiro.Nome,
-    percentage: barbeiro.Porcentagem,
-    weeklyEarnings: barbeiro.GanhosSemana,
-    appointments: barbeiro.Agendamentos
+  const barbers = dashboardData?.barbeiros ? dashboardData.barbeiros.map((barbeiro: any) => ({
+    id: barbeiro.id,
+    name: barbeiro.nome,
+    percentage: barbeiro.porcentagem,
+    weeklyEarnings: barbeiro.ganhosSemana,
+    appointments: barbeiro.agendamentos
   })) : [];
 
   const copyBarbershopCode = () => {
