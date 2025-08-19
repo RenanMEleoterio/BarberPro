@@ -86,7 +86,12 @@ app.MapControllers();
 // Serve static files
 app.UseStaticFiles();
 
-
+// Apply migrations on startup
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<BarbeariaContext>();
+    dbContext.Database.Migrate();
+}
 
 // Verificar barbearias se o argumento for passado
 if (args.Length > 0 && args[0] == "check-barbearias")
@@ -95,30 +100,5 @@ if (args.Length > 0 && args[0] == "check-barbearias")
     return;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 app.Run();
-
-
-
-
-
-// Apply migrations on startup
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<BarbeariaContext>();
-    dbContext.Database.Migrate();
-}
-
 
