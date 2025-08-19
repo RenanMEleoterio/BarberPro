@@ -149,10 +149,10 @@ namespace BarbeariaSaaS.Controllers
                 return BadRequest(new { message = "Senha deve ter pelo menos 6 caracteres", field = "senha" });
             }
 
-            // Validação de código de convite
-            if (string.IsNullOrWhiteSpace(cadastroDto.CodigoConvite))
+            // Validação de código da barbearia
+            if (string.IsNullOrWhiteSpace(cadastroDto.CodigoBarbearia))
             {
-                return BadRequest(new { message = "Código de convite é obrigatório", field = "codigoConvite" });
+                return BadRequest(new { message = "Código da barbearia é obrigatório", field = "codigoBarbearia" });
             }
 
             if (await _context.Usuarios.AnyAsync(u => u.Email == cadastroDto.Email))
@@ -161,11 +161,11 @@ namespace BarbeariaSaaS.Controllers
             }
 
             var barbearia = await _context.Barbearias
-                .FirstOrDefaultAsync(b => b.CodigoConvite == cadastroDto.CodigoConvite);
+                .FirstOrDefaultAsync(b => b.CodigoBarbearia == cadastroDto.CodigoBarbearia);
 
             if (barbearia == null)
             {
-                return BadRequest(new { message = "Código de convite inválido", field = "codigoConvite" });
+                return BadRequest(new { message = "Código da barbearia inválido", field = "codigoBarbearia" });
             }
 
             var usuario = new Usuario

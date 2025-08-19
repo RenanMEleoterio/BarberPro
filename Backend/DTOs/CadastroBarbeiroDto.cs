@@ -18,7 +18,7 @@ namespace BarbeariaSaaS.DTOs
 
         [Required]
         [StringLength(10)]
-        public string CodigoConvite { get; set; }
+        public string CodigoBarbearia { get; set; }
 
         public string? Especialidades { get; set; }
         public string? Descricao { get; set; }
