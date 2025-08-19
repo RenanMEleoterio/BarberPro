@@ -4,6 +4,7 @@ WORKDIR /app
 
 # Copie o arquivo de projeto e restaure as dependências
 COPY *.csproj ./
+COPY start.sh ./
 RUN dotnet restore
 
 # Copie o restante do código fonte e construa a aplicação
