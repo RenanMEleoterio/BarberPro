@@ -31,15 +31,15 @@ export default function ManagerDashboard() {
     }
   };
 
-  const barbershopCode = dashboardData?.Barbearia?.CodigoBarbearia || '';
+  const barbershopCode = dashboardData?.barbearia?.codigoBarbearia || '';
   const stats = {
-    totalBarbers: dashboardData?.TotalBarbeiros || 0,
-    totalAppointments: dashboardData?.AgendamentosMes || 0,
-    completedAppointments: dashboardData?.ConcluídosMes || 0,
-    totalRevenue: dashboardData?.ReceitaTotal || 0
+    totalBarbers: dashboardData?.totalBarbeiros || 0,
+    totalAppointments: dashboardData?.agendamentosMes || 0,
+    completedAppointments: dashboardData?.concluidosMes || 0,
+    totalRevenue: dashboardData?.receitaTotal || 0
   };
-  const paymentData = dashboardData?.FormasPagamento ? [
-    { name: 'PIX', value: dashboardData.FormasPagamento.Pix, color: '#8b5cf6' },
+  const paymentData = dashboardData?.formasPagamento ? [
+    { name: 'PIX', value: dashboardData.formasPagamento.pix, color: '#8b5cf6' },
     { name: 'Cartão', value: dashboardData.FormasPagamento.Cartao, color: '#06b6d4' },
     { name: 'Dinheiro', value: dashboardData.FormasPagamento.Dinheiro, color: '#eab308' }
   ].filter(item => item.value > 0) : [];
