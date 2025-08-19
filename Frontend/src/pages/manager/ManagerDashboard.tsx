@@ -26,34 +26,35 @@ export default function ManagerDashboard() {
     } catch (err: any) {
       console.error("Erro ao carregar dados do dashboard:", err);
       setError("Erro ao carregar dados do dashboard");
-      // Define dados vazios para que o dashboard seja renderizado sem dados
-      setDashboardData({
-        barbershopCode: '',
-        stats: {
-          totalBarbers: 0,
-          totalAppointments: 0,
-          completedAppointments: 0,
-          totalRevenue: 0
-        },
-        paymentData: [],
-        weeklyData: [],
-        barbers: []
-      });
     } finally {
       setLoading(false);
     }
   };
 
-  const barbershopCode = dashboardData?.barbershopCode || '';
-  const stats = dashboardData?.stats || {
-    totalBarbers: 0,
-    totalAppointments: 0,
-    completedAppointments: 0,
-    totalRevenue: 0
+  const barbershopCode = dashboardData?.Barbearia?.CodigoBarbearia || '';
+  const stats = {
+    totalBarbers: dashboardData?.TotalBarbeiros || 0,
+    totalAppointments: dashboardData?.AgendamentosMes || 0,
+    completedAppointments: dashboardData?.ConcluídosMes || 0,
+    totalRevenue: dashboardData?.ReceitaTotal || 0
   };
-  const paymentData = dashboardData?.paymentData || [];
-  const weeklyData = dashboardData?.weeklyData || [];
-  const barbers = dashboardData?.barbers || [];
+  const paymentData = dashboardData?.FormasPagamento ? [
+    { name: 'PIX', value: dashboardData.FormasPagamento.Pix, color: '#8b5cf6' },
+    { name: 'Cartão', value: dashboardData.FormasPagamento.Cartao, color: '#06b6d4' },
+    { name: 'Dinheiro', value: dashboardData.FormasPagamento.Dinheiro, color: '#eab308' }
+  ].filter(item => item.value > 0) : [];
+  const weeklyData = dashboardData?.PerformanceSemanal ? 
+    ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day, index) => ({
+      day,
+      appointments: dashboardData.PerformanceSemanal[index] || 0
+    })) : [];
+  const barbers = dashboardData?.Barbeiros ? dashboardData.Barbeiros.map((barbeiro: any) => ({
+    id: barbeiro.Id,
+    name: barbeiro.Nome,
+    percentage: barbeiro.Porcentagem,
+    weeklyEarnings: barbeiro.GanhosSemana,
+    appointments: barbeiro.Agendamentos
+  })) : [];
 
   const copyBarbershopCode = () => {
     navigator.clipboard.writeText(barbershopCode);
