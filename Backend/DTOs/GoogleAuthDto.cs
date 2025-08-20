@@ -37,3 +37,7 @@ namespace BarbeariaSaaS.DTOs
 }
 
 
+
+// Forcing recompilation
+
+
