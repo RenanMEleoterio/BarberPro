@@ -50,10 +50,10 @@ namespace BarbeariaSaaS.Models
         [StringLength(1000)]
        public string Descricao { get; set; }
 
-        public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
+        public DateTime DataCriacao { get; set; } = DateTime.UtcNow; // Já é UTC
 
         [StringLength(20)]
-        public string? Telefone { get; set; } // Nova propriedade Telefone
+        public string? Telefone { get; set; }
 
         // Relacionamentos
         public virtual ICollection<HorarioDisponivel> HorariosDisponiveis { get; set; } = new List<HorarioDisponivel>();

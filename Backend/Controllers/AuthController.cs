@@ -97,7 +97,8 @@ namespace BarbeariaSaaS.Controllers
                 Email = cadastroDto.Email,
                 SenhaHash = _authService.HashPassword(cadastroDto.Senha),
                 TipoUsuario = TipoUsuario.Cliente,
-                BarbeariaId = null
+                BarbeariaId = null,
+                DataCriacao = DateTime.UtcNow // Garantir que DataCriacao seja UTC
             };
 
             try
@@ -176,7 +177,8 @@ namespace BarbeariaSaaS.Controllers
                 TipoUsuario = TipoUsuario.Barbeiro,
                 BarbeariaId = barbearia.Id,
                 Especialidades = cadastroDto.Especialidades,
-                Descricao = cadastroDto.Descricao
+                Descricao = cadastroDto.Descricao,
+                DataCriacao = DateTime.UtcNow // Garantir que DataCriacao seja UTC
             };
 
             _context.Usuarios.Add(usuario);
@@ -218,7 +220,8 @@ namespace BarbeariaSaaS.Controllers
                 Email = cadastroDto.Email,
                 SenhaHash = _authService.HashPassword(cadastroDto.Senha),
                 TipoUsuario = TipoUsuario.Gerente,
-                BarbeariaId = cadastroDto.BarbeariaId
+                BarbeariaId = cadastroDto.BarbeariaId,
+                DataCriacao = DateTime.UtcNow // Garantir que DataCriacao seja UTC
             };
 
             _context.Usuarios.Add(gerente);
@@ -293,7 +296,8 @@ namespace BarbeariaSaaS.Controllers
                     Email = cadastroDto.Email,
                     Logo = cadastroDto.Logo,
                     CodigoConvite = codigoConvite,
-                    CodigoBarbearia = codigoBarbearia
+                    CodigoBarbearia = codigoBarbearia,
+                    DataCriacao = DateTime.UtcNow // Garantir que DataCriacao seja UTC
                 };
 
                 _context.Barbearias.Add(barbearia);
@@ -306,7 +310,8 @@ namespace BarbeariaSaaS.Controllers
                     Email = cadastroDto.Email, // Usar o email da barbearia como email do gerente
                     SenhaHash = _authService.HashPassword(cadastroDto.Senha), // Usar a senha fornecida
                     TipoUsuario = TipoUsuario.Gerente,
-                    BarbeariaId = barbearia.Id
+                    BarbeariaId = barbearia.Id,
+                    DataCriacao = DateTime.UtcNow // Garantir que DataCriacao seja UTC
                 };
 
                 _context.Usuarios.Add(gerente);
@@ -422,27 +427,38 @@ namespace BarbeariaSaaS.Controllers
                         return await CreateGoogleClient(googleUser, transaction);
 
                     case TipoUsuario.Barbeiro:
-                        if (string.IsNullOrWhiteSpace(googleAuthDto.CodigoConvite))
+                        if (string.IsNullOrEmpty(googleAuthDto.CodigoBarbearia))
                         {
-                            return BadRequest(new { message = "Código de convite é obrigatório para barbeiros", field = "codigoConvite" });
+                            return BadRequest(new { message = "Código da barbearia é obrigatório para barbeiros", field = "codigoBarbearia" });
                         }
-                        return await CreateGoogleBarber(googleUser, googleAuthDto, transaction);
+                        var barbeariaBarbeiro = await _context.Barbearias.FirstOrDefaultAsync(b => b.CodigoBarbearia == googleAuthDto.CodigoBarbearia);
+                        if (barbeariaBarbeiro == null)
+                        {
+                            return BadRequest(new { message = "Código da barbearia inválido", field = "codigoBarbearia" });
+                        }
+                        return await CreateGoogleBarber(googleUser, barbeariaBarbeiro.Id, transaction);
 
                     case TipoUsuario.Gerente:
-                        if (string.IsNullOrWhiteSpace(googleAuthDto.Endereco) || string.IsNullOrWhiteSpace(googleAuthDto.Telefone))
+                        if (!googleAuthDto.BarbeariaId.HasValue)
                         {
-                            return BadRequest(new { message = "Endereço e telefone são obrigatórios para gerentes", field = "endereco" });
+                            return BadRequest(new { message = "ID da barbearia é obrigatório para gerentes", field = "barbeariaId" });
                         }
-                        return await CreateGoogleManager(googleUser, googleAuthDto, transaction);
+                        var barbeariaGerente = await _context.Barbearias.FindAsync(googleAuthDto.BarbeariaId.Value);
+                        if (barbeariaGerente == null)
+                        {
+                            return BadRequest(new { message = "Barbearia não encontrada", field = "barbeariaId" });
+                        }
+                        return await CreateGoogleManager(googleUser, googleAuthDto.BarbeariaId.Value, transaction);
 
                     default:
-                        return BadRequest(new { message = "Tipo de usuário não suportado", field = "tipoUsuario" });
+                        return BadRequest(new { message = "Tipo de usuário não suportado para cadastro via Google", field = "tipoUsuario" });
                 }
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return StatusCode(500, new { message = "Erro interno do servidor ao criar usuário" });
+                Console.WriteLine($"Erro ao criar usuário Google: {ex.Message}\n{ex.StackTrace}");
+                return StatusCode(500, new { message = "Erro interno do servidor ao criar usuário Google" });
             }
         }
 
@@ -453,9 +469,8 @@ namespace BarbeariaSaaS.Controllers
                 Nome = googleUser.Name,
                 Email = googleUser.Email,
                 GoogleId = googleUser.Sub,
-                SenhaHash = null, // Usuários do Google não precisam de senha
                 TipoUsuario = TipoUsuario.Cliente,
-                BarbeariaId = null
+                DataCriacao = DateTime.UtcNow // Garantir que DataCriacao seja UTC
             };
 
             _context.Usuarios.Add(usuario);
@@ -464,40 +479,26 @@ namespace BarbeariaSaaS.Controllers
 
             var token = _authService.GenerateJwtToken(usuario);
 
-            var response = new SecureLoginResponseDto
+            return Ok(new SecureLoginResponseDto
             {
                 Id = usuario.Id,
                 Nome = usuario.Nome,
                 Email = usuario.Email,
                 TipoUsuario = usuario.TipoUsuario.ToString(),
-                BarbeariaId = null,
-                NomeBarbearia = null,
                 Token = token
-            };
-
-            return Ok(response);
+            });
         }
 
-        private async Task<ActionResult<SecureLoginResponseDto>> CreateGoogleBarber(GoogleUserInfo googleUser, GoogleAuthDto googleAuthDto, Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaction)
+        private async Task<ActionResult<SecureLoginResponseDto>> CreateGoogleBarber(GoogleUserInfo googleUser, int barbeariaId, Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaction)
         {
-            var barbearia = await _context.Barbearias
-                .FirstOrDefaultAsync(b => b.CodigoConvite == googleAuthDto.CodigoConvite);
-
-            if (barbearia == null)
-            {
-                return BadRequest(new { message = "Código de convite inválido", field = "codigoConvite" });
-            }
-
             var usuario = new Usuario
             {
                 Nome = googleUser.Name,
                 Email = googleUser.Email,
                 GoogleId = googleUser.Sub,
-                SenhaHash = null, // Usuários do Google não precisam de senha
                 TipoUsuario = TipoUsuario.Barbeiro,
-                BarbeariaId = barbearia.Id,
-                Especialidades = googleAuthDto.Especialidades,
-                Descricao = googleAuthDto.Descricao
+                BarbeariaId = barbeariaId,
+                DataCriacao = DateTime.UtcNow // Garantir que DataCriacao seja UTC
             };
 
             _context.Usuarios.Add(usuario);
@@ -506,82 +507,52 @@ namespace BarbeariaSaaS.Controllers
 
             var token = _authService.GenerateJwtToken(usuario);
 
-            var response = new SecureLoginResponseDto
+            var barbearia = await _context.Barbearias.FindAsync(barbeariaId);
+
+            return Ok(new SecureLoginResponseDto
             {
                 Id = usuario.Id,
                 Nome = usuario.Nome,
                 Email = usuario.Email,
                 TipoUsuario = usuario.TipoUsuario.ToString(),
                 BarbeariaId = usuario.BarbeariaId,
-                NomeBarbearia = barbearia.Nome,
+                NomeBarbearia = barbearia?.Nome,
                 Token = token
-            };
-
-            return Ok(response);
+            });
         }
 
-        private async Task<ActionResult<SecureLoginResponseDto>> CreateGoogleManager(GoogleUserInfo googleUser, GoogleAuthDto googleAuthDto, Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaction)
+        private async Task<ActionResult<SecureLoginResponseDto>> CreateGoogleManager(GoogleUserInfo googleUser, int barbeariaId, Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaction)
         {
-            // Gerar códigos únicos para a barbearia
-            string codigoConvite;
-            do
-            {
-                codigoConvite = _authService.GenerateCodigoConvite();
-            } while (await _context.Barbearias.AnyAsync(b => b.CodigoConvite == codigoConvite));
-
-            string codigoBarbearia;
-            do
-            {
-                codigoBarbearia = _authService.GenerateCodigoBarbearia();
-            } while (await _context.Barbearias.AnyAsync(b => b.CodigoBarbearia == codigoBarbearia));
-
-            // Criar barbearia
-            var barbearia = new Barbearia
-            {
-                Nome = googleUser.Name + " - Barbearia", // Nome padrão baseado no nome do usuário
-                Endereco = googleAuthDto.Endereco,
-                Telefone = googleAuthDto.Telefone,
-                Email = googleUser.Email,
-                Logo = googleUser.Picture, // Usar foto do Google como logo
-                CodigoConvite = codigoConvite,
-                CodigoBarbearia = codigoBarbearia
-            };
-
-            _context.Barbearias.Add(barbearia);
-            await _context.SaveChangesAsync();
-
-            // Criar usuário gerente
-            var gerente = new Usuario
+            var usuario = new Usuario
             {
                 Nome = googleUser.Name,
                 Email = googleUser.Email,
                 GoogleId = googleUser.Sub,
-                SenhaHash = null, // Usuários do Google não precisam de senha
                 TipoUsuario = TipoUsuario.Gerente,
-                BarbeariaId = barbearia.Id
+                BarbeariaId = barbeariaId,
+                DataCriacao = DateTime.UtcNow // Garantir que DataCriacao seja UTC
             };
 
-            _context.Usuarios.Add(gerente);
+            _context.Usuarios.Add(usuario);
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 
-            var token = _authService.GenerateJwtToken(gerente);
+            var token = _authService.GenerateJwtToken(usuario);
 
-            var response = new SecureLoginResponseDto
+            var barbearia = await _context.Barbearias.FindAsync(barbeariaId);
+
+            return Ok(new SecureLoginResponseDto
             {
-                Id = gerente.Id,
-                Nome = gerente.Nome,
-                Email = gerente.Email,
-                TipoUsuario = gerente.TipoUsuario.ToString(),
-                BarbeariaId = gerente.BarbeariaId,
-                NomeBarbearia = barbearia.Nome,
+                Id = usuario.Id,
+                Nome = usuario.Nome,
+                Email = usuario.Email,
+                TipoUsuario = usuario.TipoUsuario.ToString(),
+                BarbeariaId = usuario.BarbeariaId,
+                NomeBarbearia = barbearia?.Nome,
                 Token = token
-            };
-
-            return Ok(response);
+            });
         }
-
-
     }
 }
+
 
