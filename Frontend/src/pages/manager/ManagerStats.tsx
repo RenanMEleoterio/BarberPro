@@ -213,13 +213,13 @@ export default function ManagerStats() {
                 R$ {stats.totalRevenue.toLocaleString()}
               </p>
             </div>
-            <div className="h-12 w-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
-              <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
+            <div className="h-8 w-8 sm:h-12 sm:w-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+              <DollarSign className="h-4 w-4 sm:h-6 sm:w-6 text-green-600 dark:text-green-400" />
             </div>
           </div>
-          <div className="mt-4 flex items-center">
-            <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-            <span className="text-sm text-green-600 dark:text-green-400">
+          <div className="mt-2 sm:mt-4 flex items-center">
+            <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-green-500 mr-1" />
+            <span className="text-xs sm:text-sm text-green-600 dark:text-green-400">
               +{stats.monthlyGrowth}% este mês
             </span>
           </div>
