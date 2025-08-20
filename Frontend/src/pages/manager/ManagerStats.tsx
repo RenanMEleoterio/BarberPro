@@ -206,85 +206,67 @@ export default function ManagerStats() {
             </span>
           </div>
         </div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Receita Total
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
+          <div className="flex items-center justify-between">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">
+                Total de Clientes
               </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                R$ {stats.totalRevenue.toLocaleString()}
+              <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
+                {stats.totalClients}
               </p>
             </div>
-            <div className="h-8 w-8 sm:h-12 sm:w-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
-              <DollarSign className="h-4 w-4 sm:h-6 sm:w-6 text-green-600 dark:text-green-400" />
+            <div className="h-8 w-8 sm:h-12 sm:w-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Users className="h-4 w-4 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
           <div className="mt-2 sm:mt-4 flex items-center">
             <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-green-500 mr-1" />
             <span className="text-xs sm:text-sm text-green-600 dark:text-green-400">
-              +{stats.monthlyGrowth}% este mês
-            </span>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Total de Clientes
-              </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {stats.totalClients}
-              </p>
-            </div>
-            <div className="h-12 w-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
-              <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-            </div>
-          </div>
-          <div className="mt-4 flex items-center">
-            <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-            <span className="text-sm text-green-600 dark:text-green-400">
               +12.3% este mês
             </span>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">
                 Agendamentos
               </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
                 {stats.totalAppointments}
               </p>
             </div>
-            <div className="h-12 w-12 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg flex items-center justify-center">
-              <Calendar className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+            <div className="h-8 w-8 sm:h-12 sm:w-12 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Calendar className="h-4 w-4 sm:h-6 sm:w-6 text-yellow-600 dark:text-yellow-400" />
             </div>
           </div>
-          <div className="mt-4 flex items-center">
-            <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-            <span className="text-sm text-green-600 dark:text-green-400">
+          <div className="mt-2 sm:mt-4 flex items-center">
+            <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-green-500 mr-1" />
+            <span className="text-xs sm:text-sm text-green-600 dark:text-green-400">
               +8.7% este mês
             </span>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">
                 Avaliação Média
               </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
                 {stats.averageRating.toFixed(1)}
               </p>
             </div>
-            <div className="h-12 w-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
-              <Star className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+            <div className="h-8 w-8 sm:h-12 sm:w-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Star className="h-4 w-4 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
             </div>
           </div>
-          <div className="mt-4 flex items-center">
-            <span className="text-sm text-yellow-500">
+          <div className="mt-2 sm:mt-4 flex items-center">
+            <span className="text-xs sm:text-sm text-yellow-500">
               ⭐⭐⭐⭐⭐
             </span>
           </div>
@@ -415,16 +397,12 @@ export default function ManagerStats() {
                 
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">Receita:</span>
-                    <span className="text-xs font-medium text-gray-900 dark:text-white">
-                      R$ {barber.revenue.toLocaleString()}
-                    </span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Receita:</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">R$ {barber.revenue.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">Clientes:</span>
-                    <span className="text-xs font-medium text-gray-900 dark:text-white">
-                      {barber.clients}
-                    </span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Clientes:</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">{barber.clients}</span>
                   </div>
                 </div>
               </div>
@@ -433,112 +411,67 @@ export default function ManagerStats() {
         </div>
       </div>
 
-      {/* Performance Insights */}
+      {/* Monthly Goal, Efficiency, Satisfaction */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Monthly Goal */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="h-10 w-10 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
-              <Target className="h-5 w-5 text-green-600 dark:text-green-400" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Meta Mensal
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Progresso atual
-              </p>
-            </div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Meta Mensal
+          </h3>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-gray-600 dark:text-gray-400">Progresso atual:</span>
+            <span className="text-sm font-medium text-gray-900 dark:text-white">{stats.metaMensal.progresso}%</span>
           </div>
-          
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Receita:</span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                R$ {stats.totalRevenue.toLocaleString()} / R$ {stats.metaMensal.receita.toLocaleString()}
-              </span>
-            </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div 
-                className="bg-green-500 h-2 rounded-full" 
-                style={{ width: `${Math.min(stats.metaMensal.progresso, 100)}%` }}
-              ></div>
-            </div>
-            <p className="text-xs text-green-600 dark:text-green-400">
-              {stats.metaMensal.progresso}% da meta atingida
-            </p>
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2">
+            <div
+              className="bg-green-500 h-2 rounded-full"
+              style={{ width: `${stats.metaMensal.progresso}%` }}
+            ></div>
+          </div>
+          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+            <span>Receita: R$ {stats.metaMensal.receita.toLocaleString()}</span>
+            <span>Meta: R$ 20.000</span>
           </div>
         </div>
 
+        {/* Efficiency */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="h-10 w-10 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
-              <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Eficiência
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Tempo médio por serviço
-              </p>
-            </div>
-          </div>
-          
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Eficiência
+          </h3>
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-sm text-gray-600 dark:text-gray-400">Corte:</span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                {stats.eficiencia.tempoMedioCorte} min
-              </span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">{stats.eficiencia.tempoMedioCorte} min</span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-gray-600 dark:text-gray-400">Barba:</span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                {stats.eficiencia.tempoMedioBarba} min
-              </span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">{stats.eficiencia.tempoMedioBarba} min</span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-gray-600 dark:text-gray-400">Completo:</span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                {stats.eficiencia.tempoMedioCompleto} min
-              </span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">{stats.eficiencia.tempoMedioCompleto} min</span>
             </div>
           </div>
         </div>
 
+        {/* Satisfaction */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="h-10 w-10 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
-              <BarChart3 className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Satisfação
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Feedback dos clientes
-              </p>
-            </div>
-          </div>
-          
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Satisfação
+          </h3>
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-sm text-gray-600 dark:text-gray-400">Excelente:</span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                {stats.satisfacao.excelente}%
-              </span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">{stats.satisfacao.excelente}%</span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-gray-600 dark:text-gray-400">Bom:</span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                {stats.satisfacao.bom}%
-              </span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">{stats.satisfacao.bom}%</span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-gray-600 dark:text-gray-400">Regular:</span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                {stats.satisfacao.regular}%
-              </span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">{stats.satisfacao.regular}%</span>
             </div>
           </div>
         </div>
