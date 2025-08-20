@@ -1,41 +1,163 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BarChart3, TrendingUp, Users, DollarSign, Calendar, Star, Clock, Target } from 'lucide-react';
+import { apiService } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
+import toast from 'react-hot-toast';
+
+interface StatsData {
+  totalRevenue: number;
+  totalClients: number;
+  totalAppointments: number;
+  averageRating: number;
+  monthlyGrowth: number;
+  barbersCount: number;
+  activeBarbers: number;
+  topBarbers: Array<{
+    name: string;
+    revenue: number;
+    clients: number;
+    rating: number;
+  }>;
+  monthlyData: Array<{
+    month: string;
+    revenue: number;
+    appointments: number;
+  }>;
+  serviceStats: Array<{
+    service: string;
+    count: number;
+    revenue: number;
+    percentage: number;
+  }>;
+  metaMensal: {
+    receita: number;
+    progresso: number;
+  };
+  eficiencia: {
+    tempoMedioCorte: number;
+    tempoMedioBarba: number;
+    tempoMedioCompleto: number;
+  };
+  satisfacao: {
+    excelente: number;
+    bom: number;
+    regular: number;
+  };
+}
 
 export default function ManagerStats() {
   const [selectedPeriod, setSelectedPeriod] = useState('month');
+  const [statsData, setStatsData] = useState<StatsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
-  // Mock data - substituir por dados reais da API
-  const stats = {
-    totalRevenue: 16050.00,
-    totalClients: 575,
-    totalAppointments: 342,
-    averageRating: 4.7,
-    monthlyGrowth: 18.5,
-    barbersCount: 4,
-    activeBarbers: 3,
-    topBarbers: [
-      { name: 'Carlos Oliveira', revenue: 5100, clients: 189, rating: 4.9 },
-      { name: 'João Silva', revenue: 4250, clients: 156, rating: 4.8 },
-      { name: 'Pedro Santos', revenue: 3800, clients: 132, rating: 4.6 },
-      { name: 'Rafael Costa', revenue: 2900, clients: 98, rating: 4.7 }
-    ],
-    monthlyData: [
-      { month: 'Jan', revenue: 12500, appointments: 280 },
-      { month: 'Fev', revenue: 13200, appointments: 295 },
-      { month: 'Mar', revenue: 14100, appointments: 315 },
-      { month: 'Abr', revenue: 15300, appointments: 330 },
-      { month: 'Mai', revenue: 16050, appointments: 342 }
-    ],
-    serviceStats: [
-      { service: 'Corte + Barba', count: 145, revenue: 6525, percentage: 42 },
-      { service: 'Corte Simples', count: 98, revenue: 2450, percentage: 29 },
-      { service: 'Barba', count: 76, revenue: 1520, percentage: 22 },
-      { service: 'Sobrancelha', count: 23, revenue: 345, percentage: 7 }
-    ]
+  useEffect(() => {
+    loadStatsData();
+  }, [user]);
+
+  const loadStatsData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      if (user?.barbeariaId) {
+        const data = await apiService.getManagerStats(user.barbeariaId);
+        setStatsData({
+          totalRevenue: data.TotalRevenue,
+          totalClients: data.TotalClients,
+          totalAppointments: data.TotalAppointments,
+          averageRating: data.AverageRating,
+          monthlyGrowth: data.MonthlyGrowth,
+          barbersCount: data.BarbersCount,
+          activeBarbers: data.ActiveBarbers,
+          topBarbers: data.TopBarbers.map((b: any) => ({
+            name: b.Name,
+            revenue: b.Revenue,
+            clients: b.Clients,
+            rating: b.Rating
+          })),
+          monthlyData: data.MonthlyData.map((m: any) => ({
+            month: m.Month,
+            revenue: m.Revenue,
+            appointments: m.Appointments
+          })),
+          serviceStats: data.ServiceStats.map((s: any) => ({
+            service: s.Service,
+            count: s.Count,
+            revenue: s.Revenue,
+            percentage: s.Percentage
+          })),
+          metaMensal: {
+            receita: data.MetaMensal.Receita,
+            progresso: data.MetaMensal.Progresso
+          },
+          eficiencia: {
+            tempoMedioCorte: data.Eficiencia.TempoMedioCorte,
+            tempoMedioBarba: data.Eficiencia.TempoMedioBarba,
+            tempoMedioCompleto: data.Eficiencia.TempoMedioCompleto
+          },
+          satisfacao: {
+            excelente: data.Satisfacao.Excelente,
+            bom: data.Satisfacao.Bom,
+            regular: data.Satisfacao.Regular
+          }
+        });
+      } else {
+        setError("ID da barbearia não encontrado.");
+      }
+    } catch (err: any) {
+      console.error("Erro ao carregar estatísticas:", err);
+      setError("Erro ao carregar estatísticas");
+      toast.error("Erro ao carregar estatísticas");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const stats = statsData || {
+    totalRevenue: 0,
+    totalClients: 0,
+    totalAppointments: 0,
+    averageRating: 0,
+    monthlyGrowth: 0,
+    barbersCount: 0,
+    activeBarbers: 0,
+    topBarbers: [],
+    monthlyData: [],
+    serviceStats: [],
+    metaMensal: { receita: 20000, progresso: 0 },
+    eficiencia: { tempoMedioCorte: 25, tempoMedioBarba: 15, tempoMedioCompleto: 40 },
+    satisfacao: { excelente: 78, bom: 18, regular: 4 }
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Estatísticas Gerais
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Carregando dados...
+            </p>
+          </div>
+        </div>
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg mb-4">
+          {error}
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -136,7 +258,7 @@ export default function ManagerStats() {
                 Avaliação Média
               </p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {stats.averageRating}
+                {stats.averageRating.toFixed(1)}
               </p>
             </div>
             <div className="h-12 w-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
@@ -159,31 +281,37 @@ export default function ManagerStats() {
             Performance Mensal
           </h3>
           <div className="space-y-4">
-            {stats.monthlyData.map((month, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400 w-8">
-                    {month.month}
-                  </span>
-                  <div className="flex-1">
-                    <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                      <div
-                        className="bg-yellow-500 h-2 rounded-full"
-                        style={{ width: `${(month.revenue / 20000) * 100}%` }}
-                      ></div>
+            {stats.monthlyData.length === 0 ? (
+              <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+                Nenhum dado de performance disponível ainda.
+              </p>
+            ) : (
+              stats.monthlyData.map((month, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 w-8">
+                      {month.month}
+                    </span>
+                    <div className="flex-1">
+                      <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div
+                          className="bg-yellow-500 h-2 rounded-full"
+                          style={{ width: `${Math.min((month.revenue / 20000) * 100, 100)}%` }}
+                        ></div>
+                      </div>
                     </div>
                   </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      R$ {month.revenue.toLocaleString()}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {month.appointments} agendamentos
+                    </p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    R$ {month.revenue.toLocaleString()}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {month.appointments} agendamentos
-                  </p>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
@@ -193,36 +321,42 @@ export default function ManagerStats() {
             Serviços Mais Populares
           </h3>
           <div className="space-y-4">
-            {stats.serviceStats.map((service, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="h-8 w-8 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg flex items-center justify-center">
-                    <span className="text-sm font-bold text-yellow-600 dark:text-yellow-400">
-                      {index + 1}
-                    </span>
+            {stats.serviceStats.length === 0 ? (
+              <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+                Nenhum serviço registrado ainda.
+              </p>
+            ) : (
+              stats.serviceStats.map((service, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="h-8 w-8 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg flex items-center justify-center">
+                      <span className="text-sm font-bold text-yellow-600 dark:text-yellow-400">
+                        {index + 1}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {service.service}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {service.count} vezes - {service.percentage}%
+                      </p>
+                    </div>
                   </div>
-                  <div>
+                  <div className="text-right">
                     <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      {service.service}
+                      R$ {service.revenue.toLocaleString()}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {service.count} vezes - {service.percentage}%
-                    </p>
+                    <div className="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-1 mt-1">
+                      <div
+                        className="bg-yellow-500 h-1 rounded-full"
+                        style={{ width: `${service.percentage}%` }}
+                      ></div>
+                    </div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    R$ {service.revenue.toLocaleString()}
-                  </p>
-                  <div className="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-1 mt-1">
-                    <div
-                      className="bg-yellow-500 h-1 rounded-full"
-                      style={{ width: `${service.percentage}%` }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -233,43 +367,51 @@ export default function ManagerStats() {
           Ranking de Barbeiros
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {stats.topBarbers.map((barber, index) => (
-            <div key={index} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-              <div className="flex items-center space-x-3 mb-3">
-                <div className="h-10 w-10 bg-yellow-500 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-bold text-white">
-                    {barber.name.charAt(0)}
-                  </span>
+          {stats.topBarbers.length === 0 ? (
+            <div className="col-span-full text-center py-8">
+              <p className="text-gray-500 dark:text-gray-400">
+                Nenhum barbeiro cadastrado ainda.
+              </p>
+            </div>
+          ) : (
+            stats.topBarbers.map((barber, index) => (
+              <div key={index} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                <div className="flex items-center space-x-3 mb-3">
+                  <div className="h-10 w-10 bg-yellow-500 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-bold text-white">
+                      {barber.name.charAt(0)}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {barber.name}
+                    </p>
+                    <div className="flex items-center space-x-1">
+                      <Star className="h-3 w-3 text-yellow-500" />
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {barber.rating}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {barber.name}
-                  </p>
-                  <div className="flex items-center space-x-1">
-                    <Star className="h-3 w-3 text-yellow-500" />
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {barber.rating}
+                
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">Receita:</span>
+                    <span className="text-xs font-medium text-gray-900 dark:text-white">
+                      R$ {barber.revenue.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">Clientes:</span>
+                    <span className="text-xs font-medium text-gray-900 dark:text-white">
+                      {barber.clients}
                     </span>
                   </div>
                 </div>
               </div>
-              
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-xs text-gray-500 dark:text-gray-400">Receita:</span>
-                  <span className="text-xs font-medium text-gray-900 dark:text-white">
-                    R$ {barber.revenue.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-xs text-gray-500 dark:text-gray-400">Clientes:</span>
-                  <span className="text-xs font-medium text-gray-900 dark:text-white">
-                    {barber.clients}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 
@@ -294,14 +436,17 @@ export default function ManagerStats() {
             <div className="flex justify-between">
               <span className="text-sm text-gray-600 dark:text-gray-400">Receita:</span>
               <span className="text-sm font-medium text-gray-900 dark:text-white">
-                R$ 16.050 / R$ 20.000
+                R$ {stats.totalRevenue.toLocaleString()} / R$ {stats.metaMensal.receita.toLocaleString()}
               </span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div className="bg-green-500 h-2 rounded-full" style={{ width: '80%' }}></div>
+              <div 
+                className="bg-green-500 h-2 rounded-full" 
+                style={{ width: `${Math.min(stats.metaMensal.progresso, 100)}%` }}
+              ></div>
             </div>
             <p className="text-xs text-green-600 dark:text-green-400">
-              80% da meta atingida
+              {stats.metaMensal.progresso}% da meta atingida
             </p>
           </div>
         </div>
@@ -324,15 +469,21 @@ export default function ManagerStats() {
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-sm text-gray-600 dark:text-gray-400">Corte:</span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white">25 min</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">
+                {stats.eficiencia.tempoMedioCorte} min
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-gray-600 dark:text-gray-400">Barba:</span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white">15 min</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">
+                {stats.eficiencia.tempoMedioBarba} min
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-gray-600 dark:text-gray-400">Completo:</span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white">40 min</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">
+                {stats.eficiencia.tempoMedioCompleto} min
+              </span>
             </div>
           </div>
         </div>
@@ -355,15 +506,21 @@ export default function ManagerStats() {
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-sm text-gray-600 dark:text-gray-400">Excelente:</span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white">78%</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">
+                {stats.satisfacao.excelente}%
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-gray-600 dark:text-gray-400">Bom:</span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white">18%</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">
+                {stats.satisfacao.bom}%
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-gray-600 dark:text-gray-400">Regular:</span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white">4%</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">
+                {stats.satisfacao.regular}%
+              </span>
             </div>
           </div>
         </div>

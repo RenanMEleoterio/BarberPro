@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, Plus, Search, Star, Phone, Mail, Calendar, DollarSign } from 'lucide-react';
+import { apiService } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
+import toast from 'react-hot-toast';
 
 interface Barber {
   id: string;
@@ -15,61 +18,73 @@ interface Barber {
   avatar?: string;
 }
 
+interface BarbersData {
+  barbeiros: Barber[];
+  estatisticas: {
+    totalBarbeiros: number;
+    barbeirosAtivos: number;
+    receitaTotal: number;
+    avaliacaoMedia: number;
+  };
+}
+
 export default function ManagerBarbers() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [barbersData, setBarbersData] = useState<BarbersData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
-  // Mock data - substituir por dados reais da API
-  const barbers: Barber[] = [
-    {
-      id: '1',
-      name: 'João Silva',
-      email: 'joao@barbershop.com',
-      phone: '(11) 99999-9999',
-      specialties: ['Corte Masculino', 'Barba', 'Bigode'],
-      rating: 4.8,
-      totalClients: 156,
-      monthlyRevenue: 4250,
-      status: 'active',
-      joinDate: '2023-01-15'
-    },
-    {
-      id: '2',
-      name: 'Pedro Santos',
-      email: 'pedro@barbershop.com',
-      phone: '(11) 88888-8888',
-      specialties: ['Corte Moderno', 'Degradê', 'Sobrancelha'],
-      rating: 4.6,
-      totalClients: 132,
-      monthlyRevenue: 3800,
-      status: 'active',
-      joinDate: '2023-03-20'
-    },
-    {
-      id: '3',
-      name: 'Carlos Oliveira',
-      email: 'carlos@barbershop.com',
-      phone: '(11) 77777-7777',
-      specialties: ['Corte Clássico', 'Barba', 'Relaxamento'],
-      rating: 4.9,
-      totalClients: 189,
-      monthlyRevenue: 5100,
-      status: 'active',
-      joinDate: '2022-11-10'
-    },
-    {
-      id: '4',
-      name: 'Rafael Costa',
-      email: 'rafael@barbershop.com',
-      phone: '(11) 66666-6666',
-      specialties: ['Corte Infantil', 'Barba', 'Tratamentos'],
-      rating: 4.7,
-      totalClients: 98,
-      monthlyRevenue: 2900,
-      status: 'inactive',
-      joinDate: '2023-06-05'
+  useEffect(() => {
+    loadBarbersData();
+  }, [user]);
+
+  const loadBarbersData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      if (user?.barbeariaId) {
+        const data = await apiService.getManagerBarbers(user.barbeariaId);
+        setBarbersData({
+          barbeiros: data.Barbeiros.map((b: any) => ({
+            id: b.Id,
+            name: b.Name,
+            email: b.Email,
+            phone: b.Phone,
+            specialties: b.Specialties,
+            rating: b.Rating,
+            totalClients: b.TotalClients,
+            monthlyRevenue: b.MonthlyRevenue,
+            status: b.Status,
+            joinDate: b.JoinDate
+          })),
+          estatisticas: {
+            totalBarbeiros: data.Estatisticas.TotalBarbeiros,
+            barbeirosAtivos: data.Estatisticas.BarbeirosAtivos,
+            receitaTotal: data.Estatisticas.ReceitaTotal,
+            avaliacaoMedia: data.Estatisticas.AvaliacaoMedia
+          }
+        });
+      } else {
+        setError("ID da barbearia não encontrado.");
+      }
+    } catch (err: any) {
+      console.error("Erro ao carregar dados dos barbeiros:", err);
+      setError("Erro ao carregar dados dos barbeiros");
+      toast.error("Erro ao carregar dados dos barbeiros");
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const barbers = barbersData?.barbeiros || [];
+  const stats = barbersData?.estatisticas || {
+    totalBarbeiros: 0,
+    barbeirosAtivos: 0,
+    receitaTotal: 0,
+    avaliacaoMedia: 0
+  };
 
   const filteredBarbers = barbers.filter(barber =>
     barber.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -89,8 +104,34 @@ export default function ManagerBarbers() {
     return status === 'active' ? 'Ativo' : 'Inativo';
   };
 
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Gerenciar Barbeiros
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Carregando dados...
+            </p>
+          </div>
+        </div>
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg mb-4">
+          {error}
+        </div>
+      )}
+      
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -136,7 +177,7 @@ export default function ManagerBarbers() {
                 Total de Barbeiros
               </p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {barbers.length}
+                {stats.totalBarbeiros}
               </p>
             </div>
             <Users className="h-8 w-8 text-blue-600 dark:text-blue-400" />
@@ -150,7 +191,7 @@ export default function ManagerBarbers() {
                 Barbeiros Ativos
               </p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {barbers.filter(b => b.status === 'active').length}
+                {stats.barbeirosAtivos}
               </p>
             </div>
             <Users className="h-8 w-8 text-green-600 dark:text-green-400" />
@@ -164,7 +205,7 @@ export default function ManagerBarbers() {
                 Receita Total
               </p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                R$ {barbers.reduce((total, barber) => total + barber.monthlyRevenue, 0).toLocaleString()}
+                R$ {stats.receitaTotal.toLocaleString()}
               </p>
             </div>
             <DollarSign className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
@@ -178,7 +219,7 @@ export default function ManagerBarbers() {
                 Avaliação Média
               </p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {(barbers.reduce((total, barber) => total + barber.rating, 0) / barbers.length).toFixed(1)}
+                {stats.avaliacaoMedia.toFixed(1)}
               </p>
             </div>
             <Star className="h-8 w-8 text-purple-600 dark:text-purple-400" />
@@ -198,99 +239,111 @@ export default function ManagerBarbers() {
         </div>
 
         <div className="divide-y divide-gray-200 dark:divide-gray-700">
-          {filteredBarbers.map((barber) => (
-            <div key={barber.id} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="h-12 w-12 rounded-full bg-yellow-500 flex items-center justify-center">
-                    <span className="text-lg font-bold text-white">
-                      {barber.name.charAt(0)}
-                    </span>
+          {filteredBarbers.length === 0 ? (
+            <div className="p-12 text-center">
+              <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500 dark:text-gray-400">
+                {searchTerm ? 'Nenhum barbeiro encontrado com os critérios de busca.' : 'Nenhum barbeiro cadastrado na barbearia.'}
+              </p>
+              <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
+                {!searchTerm && 'Compartilhe o código da barbearia para que os barbeiros possam se cadastrar.'}
+              </p>
+            </div>
+          ) : (
+            filteredBarbers.map((barber) => (
+              <div key={barber.id} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="h-12 w-12 rounded-full bg-yellow-500 flex items-center justify-center">
+                      <span className="text-lg font-bold text-white">
+                        {barber.name.charAt(0)}
+                      </span>
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center space-x-2">
+                        <p className="text-lg font-medium text-gray-900 dark:text-white">
+                          {barber.name}
+                        </p>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(barber.status)}`}>
+                          {getStatusText(barber.status)}
+                        </span>
+                      </div>
+                      
+                      <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                        <div className="flex items-center space-x-1">
+                          <Mail className="h-4 w-4" />
+                          <span>{barber.email}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Phone className="h-4 w-4" />
+                          <span>{barber.phone}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Calendar className="h-4 w-4" />
+                          <span>Desde {new Date(barber.joinDate).toLocaleDateString('pt-BR')}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-2">
+                        <div className="flex flex-wrap gap-1">
+                          {barber.specialties.map((specialty, index) => (
+                            <span
+                              key={index}
+                              className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+                            >
+                              {specialty}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2">
-                      <p className="text-lg font-medium text-gray-900 dark:text-white">
-                        {barber.name}
+                  <div className="flex items-center space-x-6">
+                    <div className="text-center">
+                      <div className="flex items-center space-x-1">
+                        <Star className="h-4 w-4 text-yellow-500" />
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">
+                          {barber.rating}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Avaliação
                       </p>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(barber.status)}`}>
-                        {getStatusText(barber.status)}
-                      </span>
                     </div>
                     
-                    <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
-                      <div className="flex items-center space-x-1">
-                        <Mail className="h-4 w-4" />
-                        <span>{barber.email}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Phone className="h-4 w-4" />
-                        <span>{barber.phone}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Calendar className="h-4 w-4" />
-                        <span>Desde {new Date(barber.joinDate).toLocaleDateString('pt-BR')}</span>
-                      </div>
+                    <div className="text-center">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {barber.totalClients}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Clientes
+                      </p>
                     </div>
                     
-                    <div className="mt-2">
-                      <div className="flex flex-wrap gap-1">
-                        {barber.specialties.map((specialty, index) => (
-                          <span
-                            key={index}
-                            className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
-                          >
-                            {specialty}
-                          </span>
-                        ))}
-                      </div>
+                    <div className="text-center">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        R$ {barber.monthlyRevenue.toLocaleString()}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Receita/Mês
+                      </p>
                     </div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-6">
-                  <div className="text-center">
-                    <div className="flex items-center space-x-1">
-                      <Star className="h-4 w-4 text-yellow-500" />
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        {barber.rating}
-                      </span>
+                    
+                    <div className="flex space-x-2">
+                      <button className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                        Editar
+                      </button>
+                      <button className="px-3 py-1 text-sm bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors">
+                        Ver Detalhes
+                      </button>
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Avaliação
-                    </p>
-                  </div>
-                  
-                  <div className="text-center">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      {barber.totalClients}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Clientes
-                    </p>
-                  </div>
-                  
-                  <div className="text-center">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      R$ {barber.monthlyRevenue.toLocaleString()}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Receita/Mês
-                    </p>
-                  </div>
-                  
-                  <div className="flex space-x-2">
-                    <button className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-                      Editar
-                    </button>
-                    <button className="px-3 py-1 text-sm bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors">
-                      Ver Detalhes
-                    </button>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 
