@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Plus, Search, Star, Phone, Mail, Calendar, DollarSign } from 'lucide-react';
+import { Users, Plus, Search, Star, Phone, Mail, Calendar, DollarSign, UserCheck } from 'lucide-react';
 import { apiService } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
@@ -71,7 +71,6 @@ export default function ManagerBarbers() {
       }
     } catch (err: any) {
       console.error("Erro ao carregar barbeiros:", err);
-      // Não mostrar erro se for apenas ausência de dados
       if (err.response?.status !== 404) {
         setError("Erro ao carregar dados dos barbeiros");
         toast.error("Erro ao carregar dados dos barbeiros");
@@ -230,62 +229,6 @@ export default function ManagerBarbers() {
           </div>
         </div>
       </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Total de Barbeiros
-              </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {stats.totalBarbeiros}
-              </p>
-            </div>
-            <Users className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Barbeiros Ativos
-              </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {stats.barbeirosAtivos}
-              </p>
-            </div>
-            <Users className="h-8 w-8 text-green-600 dark:text-green-400" />
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Receita Total
-              </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                R$ {stats.receitaTotal.toLocaleString()}
-              </p>
-            </div>
-            <DollarSign className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Avaliação Média
-              </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {stats.avaliacaoMedia.toFixed(1)}
-              </p>
-            </div>
-            <Star className="h-8 w-8 text-purple-600 dark:text-purple-400" />
-          </div>
-        </div>
-      </div>
 
       {/* Barbers List */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
@@ -407,78 +350,9 @@ export default function ManagerBarbers() {
         </div>
       </div>
 
-      {/* Add Barber Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Adicionar Novo Barbeiro
-            </h3>
-            
-            <form className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Nome Completo
-                </label>
-                <input
-                  type="text"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                  placeholder="Digite o nome completo"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                  placeholder="Digite o email"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Telefone
-                </label>
-                <input
-                  type="tel"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                  placeholder="(11) 99999-9999"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Especialidades
-                </label>
-                <input
-                  type="text"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                  placeholder="Ex: Corte, Barba, Sobrancelha"
-                />
-              </div>
-            </form>
-            
-            <div className="flex space-x-3 mt-6">
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="flex-1 px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="flex-1 px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors"
-              >
-                Adicionar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }
+
 
