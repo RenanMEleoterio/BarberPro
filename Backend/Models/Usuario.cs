@@ -52,10 +52,14 @@ namespace BarbeariaSaaS.Models
 
         public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
 
+        [StringLength(20)]
+        public string? Telefone { get; set; } // Nova propriedade Telefone
+
         // Relacionamentos
         public virtual ICollection<HorarioDisponivel> HorariosDisponiveis { get; set; } = new List<HorarioDisponivel>();
         public virtual ICollection<Agendamento> AgendamentosComoBarbeiro { get; set; } = new List<Agendamento>();
         public virtual ICollection<Agendamento> AgendamentosComoCliente { get; set; } = new List<Agendamento>();
     }
 }
+
 
