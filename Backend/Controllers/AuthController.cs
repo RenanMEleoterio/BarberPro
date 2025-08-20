@@ -1,10 +1,10 @@
+using BarbeariaSaaS.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BarbeariaSaaS.Data;
-using BarbeariaSaaS.DTOs;
 using BarbeariaSaaS.Models;
 using BarbeariaSaaS.Services;
 
