@@ -20,6 +20,10 @@ namespace BarbeariaSaaS.DTOs
         // Para barbearias (quando tipo é Gerente)
         public string? Endereco { get; set; }
         public string? Telefone { get; set; }
+
+        // Adicionado para lidar com o erro de build
+        public string? CodigoBarbearia { get; set; }
+        public int? BarbeariaId { get; set; }
     }
 
     public class GoogleUserInfo
@@ -31,4 +35,5 @@ namespace BarbeariaSaaS.DTOs
         public bool EmailVerified { get; set; }
     }
 }
+
 
