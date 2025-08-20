@@ -70,9 +70,12 @@ export default function ManagerBarbers() {
         setError("ID da barbearia não encontrado.");
       }
     } catch (err: any) {
-      console.error("Erro ao carregar dados dos barbeiros:", err);
-      setError("Erro ao carregar dados dos barbeiros");
-      toast.error("Erro ao carregar dados dos barbeiros");
+      console.error("Erro ao carregar barbeiros:", err);
+      // Não mostrar erro se for apenas ausência de dados
+      if (err.response?.status !== 404) {
+        setError("Erro ao carregar dados dos barbeiros");
+        toast.error("Erro ao carregar dados dos barbeiros");
+      }
     } finally {
       setLoading(false);
     }
@@ -133,43 +136,100 @@ export default function ManagerBarbers() {
       )}
       
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
             Gerenciar Barbeiros
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
             Gerencie a equipe de barbeiros da sua barbearia
           </p>
         </div>
         
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center space-x-2 bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors"
+          className="flex items-center justify-center space-x-2 bg-yellow-600 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg hover:bg-yellow-700 transition-colors text-sm sm:text-base"
         >
-          <Plus className="h-5 w-5" />
-          <span>Adicionar Barbeiro</span>
+          <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
+          <span className="hidden sm:inline">Adicionar Barbeiro</span>
+          <span className="sm:hidden">Adicionar</span>
         </button>
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
         <div className="flex items-center space-x-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Buscar barbeiros por nome, email ou especialidade..."
+              placeholder="Buscar barbeiros..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+              className="w-full pl-8 sm:pl-10 pr-4 py-2 text-sm sm:text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
             />
           </div>
         </div>
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
+          <div className="flex items-center justify-between">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">
+                Total de Barbeiros
+              </p>
+              <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
+                {stats.totalBarbeiros}
+              </p>
+            </div>
+            <Users className="h-4 w-4 sm:h-8 sm:w-8 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
+          <div className="flex items-center justify-between">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">
+                Barbeiros Ativos
+              </p>
+              <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
+                {stats.barbeirosAtivos}
+              </p>
+            </div>
+            <UserCheck className="h-4 w-4 sm:h-8 sm:w-8 text-green-600 dark:text-green-400 flex-shrink-0" />
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
+          <div className="flex items-center justify-between">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">
+                Receita Total
+              </p>
+              <p className="text-sm sm:text-2xl font-bold text-gray-900 dark:text-white">
+                R$ {stats.receitaTotal.toLocaleString()}
+              </p>
+            </div>
+            <DollarSign className="h-4 w-4 sm:h-8 sm:w-8 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
+          <div className="flex items-center justify-between">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">
+                Avaliação Média
+              </p>
+              <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
+                {stats.avaliacaoMedia.toFixed(1)}
+              </p>
+            </div>
+            <Star className="h-4 w-4 sm:h-8 sm:w-8 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+          </div>
+        </div>
+      </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>

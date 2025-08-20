@@ -159,12 +159,12 @@ export default function ManagerStats() {
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
             Estatísticas Gerais
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
             Visão geral do desempenho da barbearia
           </p>
         </div>
@@ -173,7 +173,7 @@ export default function ManagerStats() {
           <select
             value={selectedPeriod}
             onChange={(e) => setSelectedPeriod(e.target.value)}
-            className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+            className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm sm:text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
           >
             <option value="week">Esta Semana</option>
             <option value="month">Este Mês</option>
@@ -184,10 +184,28 @@ export default function ManagerStats() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
           <div className="flex items-center justify-between">
-            <div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">
+                Receita Total
+              </p>
+              <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
+                R$ {stats.totalRevenue.toLocaleString()}
+              </p>
+            </div>
+            <div className="h-8 w-8 sm:h-12 sm:w-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+              <DollarSign className="h-4 w-4 sm:h-6 sm:w-6 text-green-600 dark:text-green-400" />
+            </div>
+          </div>
+          <div className="mt-2 sm:mt-4 flex items-center">
+            <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-green-500 mr-1" />
+            <span className="text-xs sm:text-sm text-green-600 dark:text-green-400">
+              +{stats.monthlyGrowth}% este mês
+            </span>
+          </div>
+        </div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Receita Total
               </p>

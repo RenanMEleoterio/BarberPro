@@ -95,23 +95,23 @@ export default function ManagerDashboard() {
         </div>
       )}
       {/* Header */}
-      <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-2xl p-8 text-white">
-        <h1 className="text-3xl font-bold mb-2">Dashboard da Barbearia</h1>
-        <p className="text-yellow-100">Gerencie sua barbearia e acompanhe o desempenho</p>
+      <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl sm:rounded-2xl p-4 sm:p-8 text-white">
+        <h1 className="text-xl sm:text-3xl font-bold mb-2">Dashboard da Barbearia</h1>
+        <p className="text-sm sm:text-base text-yellow-100">Gerencie sua barbearia e acompanhe o desempenho</p>
       </div>
 
       {/* Barbershop Code */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Código da Barbearia</h2>
-        <div className="flex items-center space-x-4">
-          <div className="flex-1 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-            <p className="text-2xl font-mono font-bold text-gray-900 dark:text-white">{barbershopCode || 'Carregando...'}</p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Compartilhe este código com os barbeiros para que possam se cadastrar</p>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+        <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">Código da Barbearia</h2>
+        <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+          <div className="flex-1 bg-gray-50 dark:bg-gray-700 p-3 sm:p-4 rounded-lg">
+            <p className="text-lg sm:text-2xl font-mono font-bold text-gray-900 dark:text-white break-all">{barbershopCode || 'Carregando...'}</p>
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">Compartilhe este código com os barbeiros para que possam se cadastrar</p>
           </div>
           <button
             onClick={copyBarbershopCode}
             disabled={!barbershopCode}
-            className="bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-400 text-white p-3 rounded-lg transition-colors"
+            className="bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-400 text-white p-3 rounded-lg transition-colors self-start sm:self-auto"
           >
             <Copy className="h-5 w-5" />
           </button>
@@ -119,15 +119,55 @@ export default function ManagerDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+        <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total de Barbeiros</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalBarbers}</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">Total de Barbeiros</p>
+              <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">{stats.totalBarbers}</p>
             </div>
-            <div className="bg-blue-100 dark:bg-blue-900/20 p-3 rounded-lg">
-              <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+            <div className="bg-blue-100 dark:bg-blue-900/20 p-2 sm:p-3 rounded-lg flex-shrink-0">
+              <Users className="h-4 w-4 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">Agendamentos</p>
+              <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">{stats.totalAppointments}</p>
+            </div>
+            <div className="bg-green-100 dark:bg-green-900/20 p-2 sm:p-3 rounded-lg flex-shrink-0">
+              <Calendar className="h-4 w-4 sm:h-6 sm:w-6 text-green-600 dark:text-green-400" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">Concluídos</p>
+              <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">{stats.completedAppointments}</p>
+            </div>
+            <div className="bg-purple-100 dark:bg-purple-900/20 p-2 sm:p-3 rounded-lg flex-shrink-0">
+              <TrendingUp className="h-4 w-4 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">Receita Total</p>
+              <p className="text-sm sm:text-2xl font-bold text-gray-900 dark:text-white">R$ {stats.totalRevenue.toLocaleString()}</p>
+            </div>
+            <div className="bg-yellow-100 dark:bg-yellow-900/20 p-2 sm:p-3 rounded-lg flex-shrink-0">
+              <DollarSign className="h-4 w-4 sm:h-6 sm:w-6 text-yellow-600 dark:text-yellow-400" />
+            </div>
+          </div>
+        </div>
+      </div>
             </div>
           </div>
         </div>
