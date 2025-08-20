@@ -94,6 +94,7 @@ export default function ManagerDashboard() {
           {error}
         </div>
       )}
+      
       {/* Header */}
       <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl sm:rounded-2xl p-4 sm:p-8 text-white">
         <h1 className="text-xl sm:text-3xl font-bold mb-2">Dashboard da Barbearia</h1>
@@ -164,46 +165,6 @@ export default function ManagerDashboard() {
             </div>
             <div className="bg-yellow-100 dark:bg-yellow-900/20 p-2 sm:p-3 rounded-lg flex-shrink-0">
               <DollarSign className="h-4 w-4 sm:h-6 sm:w-6 text-yellow-600 dark:text-yellow-400" />
-            </div>
-          </div>
-        </div>
-      </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Agendamentos</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalAppointments}</p>
-            </div>
-            <div className="bg-green-100 dark:bg-green-900/20 p-3 rounded-lg">
-              <Calendar className="h-6 w-6 text-green-600 dark:text-green-400" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Concluídos</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.completedAppointments}</p>
-            </div>
-            <div className="bg-yellow-100 dark:bg-yellow-900/20 p-3 rounded-lg">
-              <TrendingUp className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Receita Total</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">R$ {stats.totalRevenue}</p>
-            </div>
-            <div className="bg-purple-100 dark:bg-purple-900/20 p-3 rounded-lg">
-              <DollarSign className="h-6 w-6 text-purple-600 dark:text-purple-400" />
             </div>
           </div>
         </div>
@@ -335,3 +296,4 @@ export default function ManagerDashboard() {
     </div>
   );
 }
+
