@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using BarbeariaSaaS.Data;
 using BarbeariaSaaS.Models;
+using System.Security.Claims;
 
 namespace BarbeariaSaaS.Controllers
 {
@@ -101,7 +102,7 @@ namespace BarbeariaSaaS.Controllers
             if (barbeiro == null)
                 return NotFound();
 
-            var hoje = DateTime.Today;
+            var hoje = DateTime.UtcNow.Date;
             var inicioSemana = hoje.AddDays(-(int)hoje.DayOfWeek);
             var fimSemana = inicioSemana.AddDays(7);
 
@@ -130,17 +131,16 @@ namespace BarbeariaSaaS.Controllers
                     Hora = a.DataHora.ToString("HH:mm"),
                     Status = a.Status.ToString(),
                     Preco = a.PrecoServico,
-                    Telefone = "(11) 99999-9999" // Mock - adicionar campo no modelo se necessário
+                    Telefone = a.Cliente.Telefone
                 })
                 .ToListAsync();
 
-            // Dados para gráfico de performance semanal
             var performanceSemanal = new int[7];
             for (int i = 0; i < 7; i++)
             {
-                var dia = inicioSemana.AddDays(i);
+                var dia = inicioSemana.AddDays(i).ToUniversalTime();
                 performanceSemanal[i] = await _context.Agendamentos
-                    .Where(a => a.BarbeiroId == id && a.DataHora.Date == dia && a.Status == StatusAgendamento.Realizado)
+                    .Where(a => a.BarbeiroId == id && a.DataHora.Date == dia.Date && a.Status == StatusAgendamento.Realizado)
                     .CountAsync();
             }
 
@@ -199,8 +199,7 @@ namespace BarbeariaSaaS.Controllers
                            a.Status == StatusAgendamento.Realizado)
                 .SumAsync(a => a.PrecoServico ?? 0);
 
-            // Performance semanal para gráfico
-            var inicioSemana = hoje.AddDays(-(int)hoje.DayOfWeek);
+            var inicioSemana = DateTime.UtcNow.Date.AddDays(-(int)DateTime.UtcNow.Date.DayOfWeek);
             var performanceSemanal = new int[7];
             for (int i = 0; i < 7; i++)
             {
@@ -212,7 +211,6 @@ namespace BarbeariaSaaS.Controllers
                     .CountAsync();
             }
 
-            // Lista de barbeiros com cálculos reais
             var barbeiros = await _context.Usuarios
                 .Where(u => u.BarbeariaId == barbeariaId && u.TipoUsuario == TipoUsuario.Barbeiro)
                 .Select(u => new {
@@ -222,7 +220,6 @@ namespace BarbeariaSaaS.Controllers
                 })
                 .ToListAsync();
 
-            // Calcular estatísticas reais para cada barbeiro
             var barbeirosComEstatisticas = new List<object>();
             foreach (var barbeiro in barbeiros)
             {
@@ -256,7 +253,6 @@ namespace BarbeariaSaaS.Controllers
                 });
             }
 
-            // Calcular formas de pagamento reais
             var totalPagamentos = await _context.Agendamentos
                 .Where(a => a.BarbeariaId == barbeariaId && 
                            a.DataHora >= inicioMes && 
@@ -314,13 +310,22 @@ namespace BarbeariaSaaS.Controllers
             return Ok(response);
         }
 
+        private int? GetUserIdFromClaims()
+        {
+            // Tenta ClaimTypes.NameIdentifier (mapa padrão para "nameid")
+            var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst("nameid")?.Value
+                ?? User.FindFirst("NameId")?.Value
+                ?? User.FindFirst("UserId")?.Value;
+            if (int.TryParse(id, out var userId)) return userId;
+            return null;
+        }
+
         [HttpGet("manager/{barbeariaId}/barbers")]
         public async Task<ActionResult> GetManagerBarbers(int barbeariaId)
         {
-            // Verificar se o usuário logado é gerente desta barbearia
-            var userIdClaim = User.FindFirst("UserId")?.Value;
-            if (!int.TryParse(userIdClaim, out int userId))
-                return Unauthorized();
+            var userId = GetUserIdFromClaims();
+            if (userId == null) return Unauthorized();
 
             var gerente = await _context.Usuarios
                 .FirstOrDefaultAsync(u => u.Id == userId && 
@@ -336,7 +341,6 @@ namespace BarbeariaSaaS.Controllers
             if (barbearia == null)
                 return NotFound("Barbearia não encontrada.");
 
-            // Buscar barbeiros da barbearia
             var barbeiros = await _context.Usuarios
                 .Where(u => u.BarbeariaId == barbeariaId && u.TipoUsuario == TipoUsuario.Barbeiro)
                 .ToListAsync();
@@ -353,7 +357,6 @@ namespace BarbeariaSaaS.Controllers
 
             foreach (var barbeiro in barbeiros)
             {
-                // Calcular estatísticas do barbeiro no mês atual
                 var agendamentosMes = await _context.Agendamentos
                     .Where(a => a.BarbeiroId == barbeiro.Id && 
                                a.DataHora >= inicioMes && 
@@ -372,31 +375,30 @@ namespace BarbeariaSaaS.Controllers
                     .Distinct()
                     .Count();
 
-                // Para avaliação, usar um valor padrão por enquanto (será cadastrável no futuro)
-                var avaliacaoMedia = 4.5; // Valor padrão - será substituído por sistema de avaliações
+                // Avaliação média fica 0 por ora (sem mock)
+                var avaliacaoMedia = 0.0;
 
-                // Status baseado em atividade recente (últimos 30 dias)
                 var ultimaAtividade = await _context.Agendamentos
                     .Where(a => a.BarbeiroId == barbeiro.Id)
                     .OrderByDescending(a => a.DataHora)
+                    .Select(a => a.DataHora)
                     .FirstOrDefaultAsync();
 
-                var status = ultimaAtividade != null && 
-                           ultimaAtividade.DataHora >= DateTime.UtcNow.AddDays(-30) ? "active" : "inactive";
+                var status = (ultimaAtividade != default(DateTime) && (DateTime.UtcNow - ultimaAtividade).TotalDays <= 30)
+                    ? "active" : "inactive";
 
-                barbeirosDetalhados.Add(new {
-                    Id = barbeiro.Id.ToString(),
+                barbeirosDetalhados.Add(new
+                {
+                    Id = barbeiro.Id,
                     Name = barbeiro.Nome,
                     Email = barbeiro.Email,
-                    Phone = "(11) 99999-9999", // Campo a ser adicionado ao modelo no futuro
-                    Specialties = !string.IsNullOrEmpty(barbeiro.Especialidades) 
-                        ? barbeiro.Especialidades.Split(',').Select(s => s.Trim()).ToArray()
-                        : new string[] { "Corte", "Barba" }, // Padrão baseado no campo Especialidades
+                    Phone = string.Empty,
+                    Specialties = new List<string>(),
                     Rating = avaliacaoMedia,
                     TotalClients = clientesUnicos,
                     MonthlyRevenue = receitaMensal,
                     Status = status,
-                    JoinDate = barbeiro.DataCriacao.ToString("yyyy-MM-dd")
+                    JoinDate = barbeiro.DataCriacao.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
                 });
 
                 receitaTotalBarbearia += receitaMensal;
@@ -405,26 +407,22 @@ namespace BarbeariaSaaS.Controllers
                 totalAvaliacoes++;
             }
 
-            var response = new {
-                Barbeiros = barbeirosDetalhados,
-                Estatisticas = new {
-                    TotalBarbeiros = barbeiros.Count,
-                    BarbeirosAtivos = barbeirosDetalhados.Count(b => ((dynamic)b).Status == "active"),
-                    ReceitaTotal = receitaTotalBarbearia,
-                    AvaliacaoMedia = totalAvaliacoes > 0 ? Math.Round(somaAvaliacoes / totalAvaliacoes, 1) : 0
-                }
+            var estatisticas = new
+            {
+                TotalBarbeiros = barbeiros.Count,
+                BarbeirosAtivos = barbeirosDetalhados.Count(b => (string)b.GetType().GetProperty("Status").GetValue(b) == "active"),
+                ReceitaTotal = receitaTotalBarbearia,
+                AvaliacaoMedia = totalAvaliacoes > 0 ? somaAvaliacoes / totalAvaliacoes : 0
             };
 
-            return Ok(response);
+            return Ok(new { Barbeiros = barbeirosDetalhados, Estatisticas = estatisticas });
         }
 
         [HttpGet("manager/{barbeariaId}/stats")]
         public async Task<ActionResult> GetManagerStats(int barbeariaId)
         {
-            // Verificar se o usuário logado é gerente desta barbearia
-            var userIdClaim = User.FindFirst("UserId")?.Value;
-            if (!int.TryParse(userIdClaim, out int userId))
-                return Unauthorized();
+            var userId = GetUserIdFromClaims();
+            if (userId == null) return Unauthorized();
 
             var gerente = await _context.Usuarios
                 .FirstOrDefaultAsync(u => u.Id == userId && 
@@ -443,124 +441,80 @@ namespace BarbeariaSaaS.Controllers
             var hoje = DateTime.UtcNow.Date;
             var inicioMes = new DateTime(hoje.Year, hoje.Month, 1, 0, 0, 0, DateTimeKind.Utc);
             var fimMes = inicioMes.AddMonths(1);
-            var inicioMesAnterior = inicioMes.AddMonths(-1);
 
-            // Estatísticas do mês atual
             var agendamentosMes = await _context.Agendamentos
                 .Where(a => a.BarbeariaId == barbeariaId && 
                            a.DataHora >= inicioMes && 
                            a.DataHora < fimMes)
-                .ToListAsync();
+                .CountAsync();
 
-            var agendamentosRealizados = agendamentosMes
-                .Where(a => a.Status == StatusAgendamento.Realizado)
-                .ToList();
-
-            var receitaTotal = agendamentosRealizados.Sum(a => a.PrecoServico ?? 0);
-            var totalClientes = agendamentosMes.Select(a => a.ClienteId).Distinct().Count();
-            var totalAgendamentos = agendamentosMes.Count;
-
-            // Estatísticas do mês anterior para calcular crescimento
-            var agendamentosMesAnterior = await _context.Agendamentos
+            var agendamentosConcluidos = await _context.Agendamentos
                 .Where(a => a.BarbeariaId == barbeariaId && 
-                           a.DataHora >= inicioMesAnterior && 
-                           a.DataHora < inicioMes &&
+                           a.DataHora >= inicioMes && 
+                           a.DataHora < fimMes && 
                            a.Status == StatusAgendamento.Realizado)
-                .ToListAsync();
+                .CountAsync();
 
-            var receitaMesAnterior = agendamentosMesAnterior.Sum(a => a.PrecoServico ?? 0);
-            var crescimentoMensal = receitaMesAnterior > 0 
-                ? Math.Round(((double)(receitaTotal - receitaMesAnterior) / (double)receitaMesAnterior) * 100, 1)
-                : 0;
+            var receitaTotal = await _context.Agendamentos
+                .Where(a => a.BarbeariaId == barbeariaId && 
+                           a.DataHora >= inicioMes && 
+                           a.DataHora < fimMes && 
+                           a.Status == StatusAgendamento.Realizado)
+                .SumAsync(a => a.PrecoServico ?? 0);
 
-            // Performance mensal (últimos 5 meses)
-            var performanceMensal = new List<object>();
-            for (int i = 4; i >= 0; i--)
+            var inicioSemana = DateTime.UtcNow.Date.AddDays(-(int)DateTime.UtcNow.Date.DayOfWeek);
+            var performanceSemanal = new int[7];
+            for (int i = 0; i < 7; i++)
             {
-                var inicioMesCalc = inicioMes.AddMonths(-i);
-                var fimMesCalc = inicioMesCalc.AddMonths(1);
-
-                var agendamentosPeriodo = await _context.Agendamentos
+                var dia = inicioSemana.AddDays(i).ToUniversalTime();
+                performanceSemanal[i] = await _context.Agendamentos
                     .Where(a => a.BarbeariaId == barbeariaId && 
-                               a.DataHora >= inicioMesCalc && 
-                               a.DataHora < fimMesCalc &&
+                               a.DataHora.Date == dia.Date && 
                                a.Status == StatusAgendamento.Realizado)
-                    .ToListAsync();
-
-                performanceMensal.Add(new {
-                    Month = inicioMesCalc.ToString("MMM", new System.Globalization.CultureInfo("pt-BR")),
-                    Revenue = agendamentosPeriodo.Sum(a => a.PrecoServico ?? 0),
-                    Appointments = agendamentosPeriodo.Count
-                });
+                    .CountAsync();
             }
 
-            // Estatísticas de serviços
-            var servicosStats = agendamentosRealizados
-                .Where(a => !string.IsNullOrEmpty(a.TipoServico))
-                .GroupBy(a => a.TipoServico)
-                .Select(g => new {
-                    Service = g.Key,
-                    Count = g.Count(),
-                    Revenue = g.Sum(a => a.PrecoServico ?? 0),
-                    Percentage = Math.Round((double)g.Count() / agendamentosRealizados.Count * 100, 0)
-                })
-                .OrderByDescending(s => s.Count)
-                .Take(4)
-                .ToList();
+            var totalPagamentos = await _context.Agendamentos
+                .Where(a => a.BarbeariaId == barbeariaId && 
+                           a.DataHora >= inicioMes && 
+                           a.DataHora < fimMes && 
+                           a.Status == StatusAgendamento.Realizado)
+                .CountAsync();
 
-            // Top barbeiros
-            var topBarbeiros = await _context.Usuarios
-                .Where(u => u.BarbeariaId == barbeariaId && u.TipoUsuario == TipoUsuario.Barbeiro)
-                .Select(u => new {
-                    Name = u.Nome,
-                    Revenue = _context.Agendamentos
-                        .Where(a => a.BarbeiroId == u.Id && 
-                                   a.DataHora >= inicioMes && 
-                                   a.DataHora < fimMes &&
-                                   a.Status == StatusAgendamento.Realizado)
-                        .Sum(a => a.PrecoServico ?? 0),
-                    Clients = _context.Agendamentos
-                        .Where(a => a.BarbeiroId == u.Id && 
-                                   a.DataHora >= inicioMes && 
-                                   a.DataHora < fimMes)
-                        .Select(a => a.ClienteId)
-                        .Distinct()
-                        .Count(),
-                    Rating = 4.5 // Valor padrão - será substituído por sistema de avaliações
-                })
-                .OrderByDescending(b => b.Revenue)
-                .Take(4)
-                .ToListAsync();
+            var pagamentosPix = await _context.Agendamentos
+                .Where(a => a.BarbeariaId == barbeariaId && 
+                           a.DataHora >= inicioMes && 
+                           a.DataHora < fimMes && 
+                           a.Status == StatusAgendamento.Realizado &&
+                           a.MetodoPagamento == "Pix")
+                .CountAsync();
+
+            var pagamentosCartao = await _context.Agendamentos
+                .Where(a => a.BarbeariaId == barbeariaId && 
+                           a.DataHora >= inicioMes && 
+                           a.DataHora < fimMes && 
+                           a.Status == StatusAgendamento.Realizado &&
+                           a.MetodoPagamento == "Cartao")
+                .CountAsync();
+
+            var pagamentosDinheiro = await _context.Agendamentos
+                .Where(a => a.BarbeariaId == barbeariaId && 
+                           a.DataHora >= inicioMes && 
+                           a.DataHora < fimMes && 
+                           a.Status == StatusAgendamento.Realizado &&
+                           a.MetodoPagamento == "Dinheiro")
+                .CountAsync();
 
             var response = new {
-                TotalRevenue = receitaTotal,
-                TotalClients = totalClientes,
-                TotalAppointments = totalAgendamentos,
-                AverageRating = 4.7, // Valor padrão - será calculado com base em avaliações reais
-                MonthlyGrowth = crescimentoMensal,
-                BarbersCount = await _context.Usuarios
-                    .Where(u => u.BarbeariaId == barbeariaId && u.TipoUsuario == TipoUsuario.Barbeiro)
-                    .CountAsync(),
-                ActiveBarbers = await _context.Usuarios
-                    .Where(u => u.BarbeariaId == barbeariaId && u.TipoUsuario == TipoUsuario.Barbeiro)
-                    .CountAsync(), // Por enquanto, todos são considerados ativos
-                TopBarbers = topBarbeiros,
-                MonthlyData = performanceMensal,
-                ServiceStats = servicosStats,
-                // Campos que serão cadastráveis no futuro
-                MetaMensal = new {
-                    Receita = 20000, // Valor padrão - será cadastrável
-                    Progresso = receitaTotal > 0 ? Math.Min(Math.Round((double)receitaTotal / 20000 * 100, 0), 100) : 0
-                },
-                Eficiencia = new {
-                    TempoMedioCorte = 25, // Valores padrão - serão cadastráveis
-                    TempoMedioBarba = 15,
-                    TempoMedioCompleto = 40
-                },
-                Satisfacao = new {
-                    Excelente = 78, // Valores padrão - serão baseados em avaliações reais
-                    Bom = 18,
-                    Regular = 4
+                TotalBarbeiros = await _context.Usuarios.Where(u => u.BarbeariaId == barbeariaId && u.TipoUsuario == TipoUsuario.Barbeiro).CountAsync(),
+                AgendamentosMes = agendamentosMes,
+                ConcluidosMes = agendamentosConcluidos,
+                ReceitaTotal = receitaTotal,
+                PerformanceSemanal = performanceSemanal,
+                FormasPagamento = new {
+                    Pix = totalPagamentos > 0 ? (pagamentosPix * 100 / totalPagamentos) : 0,
+                    Cartao = totalPagamentos > 0 ? (pagamentosCartao * 100 / totalPagamentos) : 0,
+                    Dinheiro = totalPagamentos > 0 ? (pagamentosDinheiro * 100 / totalPagamentos) : 0
                 }
             };
 
@@ -568,4 +522,5 @@ namespace BarbeariaSaaS.Controllers
         }
     }
 }
+
 

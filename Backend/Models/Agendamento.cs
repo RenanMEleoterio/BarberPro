@@ -30,7 +30,7 @@ namespace BarbeariaSaaS.Models
         public virtual Usuario Barbeiro { get; set; }
 
         [Required]
-        public DateTime DataHora { get; set; }
+        public DateTime DataHora { get; set; } // Será tratada como UTC antes de salvar
 
         [StringLength(500)]
         public string Observacoes { get; set; }
@@ -39,7 +39,7 @@ namespace BarbeariaSaaS.Models
         public StatusAgendamento Status { get; set; } = StatusAgendamento.Confirmado;
 
         public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
-        public DateTime? DataAtualizacao { get; set; }
+        public DateTime? DataAtualizacao { get; set; } // Será tratada como UTC antes de salvar
 
         // FK para Barbearia (para facilitar consultas)
         [Required]
@@ -59,4 +59,5 @@ namespace BarbeariaSaaS.Models
         public string TipoServico { get; set; } // "Corte", "Barba", "Corte + Barba", etc.
     }
 }
+
 
