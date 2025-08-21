@@ -46,7 +46,7 @@ interface StatsData {
 }
 
 export default function ManagerStats() {
-  const [selectedPeriod, setSelectedPeriod] = useState('month');
+  const [selectedPeriod, setSelectedPeriod] = useState('mes');
   const [statsData, setStatsData] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +61,16 @@ export default function ManagerStats() {
       setLoading(true);
       setError(null);
       if (user?.barbeariaId) {
-        const data = await apiService.getManagerStats(user.barbeariaId, selectedPeriod);
+        // Mapear os períodos do frontend para o formato do backend
+        const periodoMap: { [key: string]: string } = {
+          'semana': 'semana',
+          'mes': 'mes',
+          'trimestre': 'trimestre',
+          'ano': 'ano'
+        };
+        
+        const periodoBackend = periodoMap[selectedPeriod] || 'mes';
+        const data = await apiService.getManagerStats(user.barbeariaId, periodoBackend);
         setStatsData({
           totalRevenue: data.ReceitaTotal || 0,
           totalClients: data.TotalClientes || 0,
