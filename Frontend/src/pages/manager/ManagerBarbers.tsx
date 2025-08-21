@@ -47,23 +47,23 @@ export default function ManagerBarbers() {
       if (user?.barbeariaId) {
         const data = await apiService.getManagerBarbers(user.barbeariaId);
         setBarbersData({
-          barbeiros: data.Barbeiros.map((b: any) => ({
-            id: b.Id,
-            name: b.Name,
-            email: b.Email,
-            phone: b.Phone,
-            specialties: b.Specialties,
-            rating: b.Rating,
-            totalClients: b.TotalClients,
-            monthlyRevenue: b.MonthlyRevenue,
-            status: b.Status,
-            joinDate: b.JoinDate
+          barbeiros: (data.Barbeiros || []).map((b: any) => ({
+            id: b.Id?.toString() || '',
+            name: b.Name || 'Barbeiro',
+            email: b.Email || '',
+            phone: b.Phone || '',
+            specialties: b.Specialties || [],
+            rating: b.Rating || 0,
+            totalClients: b.TotalClients || 0,
+            monthlyRevenue: b.MonthlyRevenue || 0,
+            status: b.Status || 'inactive',
+            joinDate: b.JoinDate || new Date().toISOString()
           })),
           estatisticas: {
-            totalBarbeiros: data.Estatisticas.TotalBarbeiros,
-            barbeirosAtivos: data.Estatisticas.BarbeirosAtivos,
-            receitaTotal: data.Estatisticas.ReceitaTotal,
-            avaliacaoMedia: data.Estatisticas.AvaliacaoMedia
+            totalBarbeiros: data.Estatisticas?.TotalBarbeiros || 0,
+            barbeirosAtivos: data.Estatisticas?.BarbeirosAtivos || 0,
+            receitaTotal: data.Estatisticas?.ReceitaTotal || 0,
+            avaliacaoMedia: data.Estatisticas?.AvaliacaoMedia || 0
           }
         });
       } else {
