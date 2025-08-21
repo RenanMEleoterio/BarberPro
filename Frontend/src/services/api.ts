@@ -189,10 +189,6 @@ class ApiService {
     return this.request(`/dashboard/manager/${barbeariaId}/barbers`);
   }
 
-  async getManagerStats(barbeariaId: number) {
-    return this.request(`/dashboard/manager/${barbeariaId}/stats`);
-  }
-
   // Stats endpoints
   async getBarberStats(id: number, periodo: string = 'semana') {
     return this.request(`/stats/barber/${id}?periodo=${periodo}`);
