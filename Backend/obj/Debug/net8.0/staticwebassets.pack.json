@@ -1,27 +1,27 @@
 {
   "Files": [
     {
-      "Id": "/home/ubuntu/BarbeariaSaaS/Backend/wwwroot/barbeiro-dashboard.html",
+      "Id": "/home/ubuntu/BarberPro/Backend/wwwroot/barbeiro-dashboard.html",
       "PackagePath": "staticwebassets/barbeiro-dashboard.html"
     },
     {
-      "Id": "/home/ubuntu/BarbeariaSaaS/Backend/wwwroot/cliente-dashboard.html",
+      "Id": "/home/ubuntu/BarberPro/Backend/wwwroot/cliente-dashboard.html",
       "PackagePath": "staticwebassets/cliente-dashboard.html"
     },
     {
-      "Id": "/home/ubuntu/BarbeariaSaaS/Backend/wwwroot/gerente-dashboard.html",
+      "Id": "/home/ubuntu/BarberPro/Backend/wwwroot/gerente-dashboard.html",
       "PackagePath": "staticwebassets/gerente-dashboard.html"
     },
     {
-      "Id": "/home/ubuntu/BarbeariaSaaS/Backend/wwwroot/index.html",
+      "Id": "/home/ubuntu/BarberPro/Backend/wwwroot/index.html",
       "PackagePath": "staticwebassets/index.html"
     },
     {
-      "Id": "/home/ubuntu/BarbeariaSaaS/Backend/wwwroot/script.js",
+      "Id": "/home/ubuntu/BarberPro/Backend/wwwroot/script.js",
       "PackagePath": "staticwebassets/script.js"
     },
     {
-      "Id": "/home/ubuntu/BarbeariaSaaS/Backend/wwwroot/styles.css",
+      "Id": "/home/ubuntu/BarberPro/Backend/wwwroot/styles.css",
       "PackagePath": "staticwebassets/styles.css"
     },
     {

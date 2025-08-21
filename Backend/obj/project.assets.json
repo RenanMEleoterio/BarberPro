@@ -3072,11 +3072,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj",
+      "projectUniqueName": "/home/ubuntu/BarberPro/Backend/BarbeariaSaaS.csproj",
       "projectName": "BarbeariaSaaS",
-      "projectPath": "/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj",
+      "projectPath": "/home/ubuntu/BarberPro/Backend/BarbeariaSaaS.csproj",
       "packagesPath": "/home/ubuntu/.nuget/packages/",
-      "outputPath": "/home/ubuntu/BarbeariaSaaS/Backend/obj/",
+      "outputPath": "/home/ubuntu/BarberPro/Backend/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/ubuntu/.nuget/NuGet/NuGet.Config"
@@ -3155,7 +3155,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.117/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.119/PortableRuntimeIdentifierGraph.json"
       }
     }
   },

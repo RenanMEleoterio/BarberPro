@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "C6vRyKf2se4iqUtFZ2qZhVI8OR5Xdu9HEt4Q6aqxsVcE1y+9hy6aY7SOgkIs2o2cyt0gTqoXxRMaICduMso1lQ==",
+  "dgSpecHash": "jtQ9YlioQPuci8O2zMIy7rrH/Po3h8ZR7CfjhZ4sGL26WghyciV5Pm/9myJk4q52p0+19JlX6lDn2Qc7X0Th9Q==",
   "success": true,
-  "projectFilePath": "/home/ubuntu/BarbeariaSaaS/Backend/BarbeariaSaaS.csproj",
+  "projectFilePath": "/home/ubuntu/BarberPro/Backend/BarbeariaSaaS.csproj",
   "expectedPackageFiles": [
     "/home/ubuntu/.nuget/packages/bcrypt.net-next/4.0.3/bcrypt.net-next.4.0.3.nupkg.sha512",
     "/home/ubuntu/.nuget/packages/humanizer.core/2.14.1/humanizer.core.2.14.1.nupkg.sha512",

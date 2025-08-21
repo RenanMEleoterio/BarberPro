@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "evZojwlZrE5CrzWczPzyDhBERaEGxpOsyYfIgc5gMCg=",
+  "Hash": "lDr8GujKznFiKkmmT9u83rD9Pn3bJXgBNn7fBiFp0yY=",
   "Source": "BarbeariaSaaS",
   "BasePath": "_content/BarbeariaSaaS",
   "Mode": "Default",
@@ -10,17 +10,17 @@
     {
       "Name": "BarbeariaSaaS/wwwroot",
       "Source": "BarbeariaSaaS",
-      "ContentRoot": "/home/ubuntu/BarbeariaSaaS/Backend/wwwroot/",
+      "ContentRoot": "/home/ubuntu/BarberPro/Backend/wwwroot/",
       "BasePath": "_content/BarbeariaSaaS",
       "Pattern": "**"
     }
   ],
   "Assets": [
     {
-      "Identity": "/home/ubuntu/BarbeariaSaaS/Backend/wwwroot/barbeiro-dashboard.html",
+      "Identity": "/home/ubuntu/BarberPro/Backend/wwwroot/barbeiro-dashboard.html",
       "SourceId": "BarbeariaSaaS",
       "SourceType": "Discovered",
-      "ContentRoot": "/home/ubuntu/BarbeariaSaaS/Backend/wwwroot/",
+      "ContentRoot": "/home/ubuntu/BarberPro/Backend/wwwroot/",
       "BasePath": "_content/BarbeariaSaaS",
       "RelativePath": "barbeiro-dashboard.html",
       "AssetKind": "All",
@@ -36,10 +36,10 @@
       "OriginalItemSpec": "wwwroot/barbeiro-dashboard.html"
     },
     {
-      "Identity": "/home/ubuntu/BarbeariaSaaS/Backend/wwwroot/cliente-dashboard.html",
+      "Identity": "/home/ubuntu/BarberPro/Backend/wwwroot/cliente-dashboard.html",
       "SourceId": "BarbeariaSaaS",
       "SourceType": "Discovered",
-      "ContentRoot": "/home/ubuntu/BarbeariaSaaS/Backend/wwwroot/",
+      "ContentRoot": "/home/ubuntu/BarberPro/Backend/wwwroot/",
       "BasePath": "_content/BarbeariaSaaS",
       "RelativePath": "cliente-dashboard.html",
       "AssetKind": "All",
@@ -55,10 +55,10 @@
       "OriginalItemSpec": "wwwroot/cliente-dashboard.html"
     },
     {
-      "Identity": "/home/ubuntu/BarbeariaSaaS/Backend/wwwroot/gerente-dashboard.html",
+      "Identity": "/home/ubuntu/BarberPro/Backend/wwwroot/gerente-dashboard.html",
       "SourceId": "BarbeariaSaaS",
       "SourceType": "Discovered",
-      "ContentRoot": "/home/ubuntu/BarbeariaSaaS/Backend/wwwroot/",
+      "ContentRoot": "/home/ubuntu/BarberPro/Backend/wwwroot/",
       "BasePath": "_content/BarbeariaSaaS",
       "RelativePath": "gerente-dashboard.html",
       "AssetKind": "All",
@@ -74,10 +74,10 @@
       "OriginalItemSpec": "wwwroot/gerente-dashboard.html"
     },
     {
-      "Identity": "/home/ubuntu/BarbeariaSaaS/Backend/wwwroot/index.html",
+      "Identity": "/home/ubuntu/BarberPro/Backend/wwwroot/index.html",
       "SourceId": "BarbeariaSaaS",
       "SourceType": "Discovered",
-      "ContentRoot": "/home/ubuntu/BarbeariaSaaS/Backend/wwwroot/",
+      "ContentRoot": "/home/ubuntu/BarberPro/Backend/wwwroot/",
       "BasePath": "_content/BarbeariaSaaS",
       "RelativePath": "index.html",
       "AssetKind": "All",
@@ -93,10 +93,10 @@
       "OriginalItemSpec": "wwwroot/index.html"
     },
     {
-      "Identity": "/home/ubuntu/BarbeariaSaaS/Backend/wwwroot/script.js",
+      "Identity": "/home/ubuntu/BarberPro/Backend/wwwroot/script.js",
       "SourceId": "BarbeariaSaaS",
       "SourceType": "Discovered",
-      "ContentRoot": "/home/ubuntu/BarbeariaSaaS/Backend/wwwroot/",
+      "ContentRoot": "/home/ubuntu/BarberPro/Backend/wwwroot/",
       "BasePath": "_content/BarbeariaSaaS",
       "RelativePath": "script.js",
       "AssetKind": "All",
@@ -112,10 +112,10 @@
       "OriginalItemSpec": "wwwroot/script.js"
     },
     {
-      "Identity": "/home/ubuntu/BarbeariaSaaS/Backend/wwwroot/styles.css",
+      "Identity": "/home/ubuntu/BarberPro/Backend/wwwroot/styles.css",
       "SourceId": "BarbeariaSaaS",
       "SourceType": "Discovered",
-      "ContentRoot": "/home/ubuntu/BarbeariaSaaS/Backend/wwwroot/",
+      "ContentRoot": "/home/ubuntu/BarberPro/Backend/wwwroot/",
       "BasePath": "_content/BarbeariaSaaS",
       "RelativePath": "styles.css",
       "AssetKind": "All",
