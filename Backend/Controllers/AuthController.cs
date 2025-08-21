@@ -123,9 +123,8 @@ namespace BarbeariaSaaS.Controllers
             }
             catch (Exception ex)
             {
-                // Log apenas informações não sensíveis para debugging
-                // Não incluir dados do usuário ou senhas nos logs
-                return StatusCode(500, new { message = "Erro interno do servidor ao cadastrar cliente" });
+                Console.WriteLine($"Erro ao cadastrar cliente: {ex.Message}\n{ex.StackTrace}");
+                return StatusCode(500, new { message = "Erro interno do servidor ao cadastrar cliente", details = ex.Message });
             }
         }
 
