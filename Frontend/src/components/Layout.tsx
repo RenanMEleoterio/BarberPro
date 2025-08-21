@@ -72,18 +72,20 @@ export default function Layout() {
       {/* Mobile Header */}
       <div className="lg:hidden bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center space-x-2">
-            <Scissors className="h-6 w-6 text-yellow-500" />
-            <span className="text-lg font-bold text-gray-900 dark:text-white">
-              BarberPro
-            </span>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={toggleMobileMenu}
+              className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+            <div className="flex items-center space-x-2">
+              <Scissors className="h-6 w-6 text-yellow-500" />
+              <span className="text-lg font-bold text-gray-900 dark:text-white">
+                BarberPro
+              </span>
+            </div>
           </div>
-          <button
-            onClick={toggleMobileMenu}
-            className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          >
-            {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
         </div>
       </div>
 
