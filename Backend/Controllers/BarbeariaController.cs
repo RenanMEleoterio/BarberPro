@@ -51,10 +51,6 @@ namespace BarbeariaSaaS.Controllers
 
             return Ok(barbeiros);
         }
-    }
-}
-
-
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateBarbearia(int id, [FromBody] UpdateBarbeariaDto updateDto)
@@ -89,5 +85,5 @@ namespace BarbeariaSaaS.Controllers
 
             return NoContent();
         }
-
-
+    }
+}
