@@ -1,4 +1,3 @@
-# Use a imagem oficial do .NET SDK para construir a aplicação
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
@@ -17,8 +16,14 @@ WORKDIR /app
 COPY --from=build /app/out .
 COPY --from=build /app/start.sh .
 
+# Instalar dotnet-ef na imagem de runtime
+RUN dotnet tool install --global dotnet-ef --version 8.0.0
+ENV PATH="$PATH:/root/.dotnet/tools"
+
 # Exponha a porta que a aplicação ASP.NET Core irá escutar
 EXPOSE 5000
 
 # Defina o ponto de entrada da aplicação
 ENTRYPOINT ["bash", "start.sh"]
+
+
