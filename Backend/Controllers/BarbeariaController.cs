@@ -54,3 +54,40 @@ namespace BarbeariaSaaS.Controllers
     }
 }
 
+
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateBarbearia(int id, [FromBody] UpdateBarbeariaDto updateDto)
+        {
+            var barbearia = await _context.Barbearias.FindAsync(id);
+
+            if (barbearia == null)
+            {
+                return NotFound();
+            }
+
+            barbearia.Nome = updateDto.Nome;
+            barbearia.Endereco = updateDto.Endereco;
+            barbearia.Telefone = updateDto.Telefone;
+            barbearia.Email = updateDto.Email;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.Barbearias.Any(e => e.Id == id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+
