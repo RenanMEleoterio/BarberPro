@@ -1,37 +1,141 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Settings, Save, Clock, DollarSign, Users, Bell, Shield, MapPin } from 'lucide-react';
+import { apiService, LoginResponse } from '../../services/api';
 
 export default function ManagerSettings() {
   const [activeTab, setActiveTab] = useState('general');
-  const [settings, setSettings] = useState({
-    barbershopName: 'BarberPro',
-    address: 'Rua das Flores, 123 - Centro',
-    phone: '(11) 99999-9999',
-    email: 'contato@barberpro.com',
-    openTime: '08:00',
-    closeTime: '18:00',
-    workDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
-    appointmentDuration: 30,
-    services: [
-      { id: 1, name: 'Corte Simples', price: 25, duration: 30 },
-      { id: 2, name: 'Corte + Barba', price: 45, duration: 45 },
-      { id: 3, name: 'Barba', price: 20, duration: 20 },
-      { id: 4, name: 'Sobrancelha', price: 15, duration: 15 }
-    ],
+  const [barbershopData, setBarbershopData] = useState({
+    id: 0,
+    nome: "",
+    endereco: "",
+    telefone: "",
+    email: "",
+    openTime: "08:00",
+    closeTime: "18:00",
+    workDays: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"],
+    services: [], // Inicializa como array vazio
     notifications: {
       newAppointments: true,
       cancellations: true,
       reviews: true,
-      dailyReport: false
-    }
+      dailyReport: false,
+    },
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState(false);
+  const [newService, setNewService] = useState({
+    nome: '',
+    preco: 0,
+    duracaoMinutos: 0,
+  });
+
+  useEffect(() => {
+    const fetchBarbershopData = async () => {
+      try {
+        setLoading(true);
+        const userDataString = localStorage.getItem('user');
+        if (!userDataString) {
+          throw new Error('Dados do usuário não encontrados no localStorage.');
+        }
+        const userData: LoginResponse = JSON.parse(userDataString);
+        const barbeariaId = userData.barbeariaId;
+
+        if (!barbeariaId) {
+          throw new Error('ID da barbearia não encontrado nos dados do usuário.');
+        }
+
+        const [barbershopResponse, servicesResponse] = await Promise.all([
+          apiService.getBarbeariaById(barbeariaId),
+          apiService.getServicosByBarbeariaId(barbeariaId)
+        ]);
+
+        setBarbershopData({
+          id: barbershopResponse.id,
+          nome: barbershopResponse.nome,
+          endereco: barbershopResponse.endereco,
+          telefone: barbershopResponse.telefone,
+          email: barbershopResponse.email,
+          openTime: '08:00', // Dados mockados, ajustar com dados reais do backend
+          closeTime: '18:00', // Dados mockados, ajustar com dados reais do backend
+          workDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'], // Dados mockados, ajustar com dados reais do backend
+          services: servicesResponse, // Dados reais do backend
+          notifications: {
+            newAppointments: true,
+            cancellations: true,
+            reviews: true,
+            dailyReport: false,
+          },
+        });
+      } catch (err: any) {
+        setError(err.message || 'Erro ao carregar dados da barbearia.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBarbershopData();
+  }, []);
+
+  const handleSave = async () => {
+    try {
+      const userDataString = localStorage.getItem("user");
+      if (!userDataString) {
+        throw new Error("Dados do usuário não encontrados no localStorage.");
+      }
+      const userData: LoginResponse = JSON.parse(userDataString);
+      const barbeariaId = userData.barbeariaId;
+
+      if (!barbeariaId) {
+        throw new Error("ID da barbearia não encontrado nos dados do usuário.");
+      }
+
+      await apiService.updateBarbearia(barbeariaId, {
+        nome: barbershopData.nome,
+        endereco: barbershopData.endereco,
+        telefone: barbershopData.telefone,
+        email: barbershopData.email,
+      });
+      setSuccessMessage("Configurações salvas com sucesso!");
+      setError(null);
+    } catch (err: any) {
+      setError(err.message || "Erro ao salvar configurações.");
+      setSuccessMessage(null);
+    }
+  };
+
+  const handleAddService = async () => {
+    try {
+      const nome = window.prompt('Nome do serviço:') || '';
+      if (!nome.trim()) return;
+      const precoStr = window.prompt('Preço (R$):') || '0';
+      const preco = parseFloat(precoStr);
+      const durStr = window.prompt('Duração (min):') || '0';
+      const duracaoMinutos = parseInt(durStr);
+
+      const userDataString = localStorage.getItem('user');
+      if (!userDataString) throw new Error('Dados do usuário não encontrados no localStorage.');
+      const userData: LoginResponse = JSON.parse(userDataString);
+      const barbeariaId = userData.barbeariaId;
+      if (!barbeariaId) throw new Error('ID da barbearia não encontrado nos dados do usuário.');
+
+      await apiService.addServico({ nome, preco, duracaoMinutos, barbeariaId });
+      const updatedServices = await apiService.getServicosByBarbeariaId(barbeariaId);
+      setBarbershopData({ ...barbershopData, services: updatedServices });
+      setSuccessMessage('Serviço adicionado com sucesso!');
+      setError(null);
+    } catch (err: any) {
+      setError(err.message || 'Erro ao adicionar serviço.');
+      setSuccessMessage(null);
+    }
+  };
 
   const tabs = [
     { id: 'general', name: 'Geral', icon: Settings },
     { id: 'schedule', name: 'Horários', icon: Clock },
     { id: 'services', name: 'Serviços', icon: DollarSign },
-    { id: 'team', name: 'Equipe', icon: Users },
-    { id: 'notifications', name: 'Notificações', icon: Bell }
+    { id: 'team', name: 'Equipe', icon: Users }
   ];
 
   const weekDays = [
@@ -43,11 +147,6 @@ export default function ManagerSettings() {
     { id: 'saturday', name: 'Sábado' },
     { id: 'sunday', name: 'Domingo' }
   ];
-
-  const handleSave = () => {
-    // Implementar salvamento das configurações
-    alert('Configurações salvas com sucesso!');
-  };
 
   const renderGeneralSettings = () => (
     <div className="space-y-6">
@@ -62,8 +161,8 @@ export default function ManagerSettings() {
             </label>
             <input
               type="text"
-              value={settings.barbershopName}
-              onChange={(e) => setSettings({...settings, barbershopName: e.target.value})}
+              value={barbershopData.nome}
+              onChange={(e) => setBarbershopData({...barbershopData, nome: e.target.value})}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
             />
           </div>
@@ -74,8 +173,8 @@ export default function ManagerSettings() {
             </label>
             <input
               type="tel"
-              value={settings.phone}
-              onChange={(e) => setSettings({...settings, phone: e.target.value})}
+              value={barbershopData.telefone}
+              onChange={(e) => setBarbershopData({...barbershopData, telefone: e.target.value})}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
             />
           </div>
@@ -86,8 +185,8 @@ export default function ManagerSettings() {
             </label>
             <input
               type="text"
-              value={settings.address}
-              onChange={(e) => setSettings({...settings, address: e.target.value})}
+              value={barbershopData.endereco}
+              onChange={(e) => setBarbershopData({...barbershopData, endereco: e.target.value})}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
             />
           </div>
@@ -98,8 +197,8 @@ export default function ManagerSettings() {
             </label>
             <input
               type="email"
-              value={settings.email}
-              onChange={(e) => setSettings({...settings, email: e.target.value})}
+              value={barbershopData.email}
+              onChange={(e) => setBarbershopData({...barbershopData, email: e.target.value})}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
             />
           </div>
@@ -121,8 +220,8 @@ export default function ManagerSettings() {
             </label>
             <input
               type="time"
-              value={settings.openTime}
-              onChange={(e) => setSettings({...settings, openTime: e.target.value})}
+              value={barbershopData.openTime}
+              onChange={(e) => setBarbershopData({...barbershopData, openTime: e.target.value})}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
             />
           </div>
@@ -133,8 +232,8 @@ export default function ManagerSettings() {
             </label>
             <input
               type="time"
-              value={settings.closeTime}
-              onChange={(e) => setSettings({...settings, closeTime: e.target.value})}
+              value={barbershopData.closeTime}
+              onChange={(e) => setBarbershopData({...barbershopData, closeTime: e.target.value})}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
             />
           </div>
@@ -149,17 +248,17 @@ export default function ManagerSettings() {
               <label key={day.id} className="flex items-center space-x-2">
                 <input
                   type="checkbox"
-                  checked={settings.workDays.includes(day.id)}
+                  checked={barbershopData.workDays.includes(day.id)}
                   onChange={(e) => {
                     if (e.target.checked) {
-                      setSettings({
-                        ...settings,
-                        workDays: [...settings.workDays, day.id]
+                      setBarbershopData({
+                        ...barbershopData,
+                        workDays: [...barbershopData.workDays, day.id]
                       });
                     } else {
-                      setSettings({
-                        ...settings,
-                        workDays: settings.workDays.filter(d => d !== day.id)
+                      setBarbershopData({
+                        ...barbershopData,
+                        workDays: barbershopData.workDays.filter(d => d !== day.id)
                       });
                     }
                   }}
@@ -182,13 +281,17 @@ export default function ManagerSettings() {
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
           Serviços e Preços
         </h3>
-        <button className="flex items-center space-x-2 bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors">
+        <button
+          onClick={() => setIsAddServiceModalOpen(true)}
+          className="flex items-center space-x-2 bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors"
+        >
           <span>Adicionar Serviço</span>
         </button>
       </div>
       
       <div className="space-y-4">
-        {settings.services.map((service) => (
+        {/* Renderiza os serviços existentes */}
+        {barbershopData.services && barbershopData.services.map((service: any) => (
           <div key={service.id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
@@ -197,8 +300,9 @@ export default function ManagerSettings() {
                 </label>
                 <input
                   type="text"
-                  value={service.name}
+                  value={service.nome}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  readOnly
                 />
               </div>
               
@@ -208,8 +312,9 @@ export default function ManagerSettings() {
                 </label>
                 <input
                   type="number"
-                  value={service.price}
+                  value={service.preco}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  readOnly
                 />
               </div>
               
@@ -219,14 +324,67 @@ export default function ManagerSettings() {
                 </label>
                 <input
                   type="number"
-                  value={service.duration}
+                  value={service.duracaoMinutos}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  readOnly
                 />
               </div>
             </div>
           </div>
         ))}
       </div>
+
+      {/* Modal de Adicionar Serviço */}
+      {isAddServiceModalOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-md">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Adicionar Novo Serviço</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nome do Serviço</label>
+                <input
+                  type="text"
+                  value={newService.nome}
+                  onChange={(e) => setNewService({ ...newService, nome: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Preço (R$)</label>
+                <input
+                  type="number"
+                  value={newService.preco}
+                  onChange={(e) => setNewService({ ...newService, preco: parseFloat(e.target.value) })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duração (min)</label>
+                <input
+                  type="number"
+                  value={newService.duracaoMinutos}
+                  onChange={(e) => setNewService({ ...newService, duracaoMinutos: parseInt(e.target.value) })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end space-x-4">
+              <button
+                onClick={() => setIsAddServiceModalOpen(false)}
+                className="px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleAddService}
+                className="px-4 py-2 rounded-lg bg-yellow-600 text-white hover:bg-yellow-700 transition-colors"
+              >
+                Adicionar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -248,11 +406,11 @@ export default function ManagerSettings() {
             </div>
             <input
               type="checkbox"
-              checked={settings.notifications.newAppointments}
-              onChange={(e) => setSettings({
-                ...settings,
+              checked={barbershopData.notifications.newAppointments}
+              onChange={(e) => setBarbershopData({
+                ...barbershopData,
                 notifications: {
-                  ...settings.notifications,
+                  ...barbershopData.notifications,
                   newAppointments: e.target.checked
                 }
               })}
@@ -271,11 +429,11 @@ export default function ManagerSettings() {
             </div>
             <input
               type="checkbox"
-              checked={settings.notifications.cancellations}
-              onChange={(e) => setSettings({
-                ...settings,
+              checked={barbershopData.notifications.cancellations}
+              onChange={(e) => setBarbershopData({
+                ...barbershopData,
                 notifications: {
-                  ...settings.notifications,
+                  ...barbershopData.notifications,
                   cancellations: e.target.checked
                 }
               })}
@@ -294,11 +452,11 @@ export default function ManagerSettings() {
             </div>
             <input
               type="checkbox"
-              checked={settings.notifications.reviews}
-              onChange={(e) => setSettings({
-                ...settings,
+              checked={barbershopData.notifications.reviews}
+              onChange={(e) => setBarbershopData({
+                ...barbershopData,
                 notifications: {
-                  ...settings.notifications,
+                  ...barbershopData.notifications,
                   reviews: e.target.checked
                 }
               })}
@@ -317,11 +475,11 @@ export default function ManagerSettings() {
             </div>
             <input
               type="checkbox"
-              checked={settings.notifications.dailyReport}
-              onChange={(e) => setSettings({
-                ...settings,
+              checked={barbershopData.notifications.dailyReport}
+              onChange={(e) => setBarbershopData({
+                ...barbershopData,
                 notifications: {
-                  ...settings.notifications,
+                  ...barbershopData.notifications,
                   dailyReport: e.target.checked
                 }
               })}
@@ -334,6 +492,16 @@ export default function ManagerSettings() {
   );
 
   const renderContent = () => {
+    if (loading) {
+      return <div className="text-center text-gray-500 dark:text-gray-400">Carregando...</div>;
+    }
+    if (error) {
+      return <div className="text-center text-red-500 dark:text-red-400">Erro: {error}</div>;
+    }
+    if (successMessage) {
+      return <div className="text-center text-green-500 dark:text-green-400">{successMessage}</div>;
+    }
+
     switch (activeTab) {
       case 'general':
         return renderGeneralSettings();

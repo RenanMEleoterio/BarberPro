@@ -231,6 +231,28 @@ class ApiService {
     return this.request(`/barbearia/${barbeariaId}/barbeiros`);
   }
 
+    async getBarbeariaById(id: number) {
+    return this.request(`/barbearia/${id}`);
+  }
+
+  async updateBarbearia(id: number, data: any) {
+    return this.request(`/barbearia/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
+
+    async getServicosByBarbeariaId(barbeariaId: number) {
+    return this.request(`/servico?barbeariaId=${barbeariaId}`);
+  }
+
+  async addServico(data: { nome: string; preco: number; duracaoMinutos: number; barbeariaId: number }) {
+    return this.request(`/servico`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
   // Endpoints para buscar dados reais do banco
   async getBarbershopsWithDetails() {
     const barbearias = await this.request('/barbearia');
