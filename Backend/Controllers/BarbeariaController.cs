@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BarbeariaSaaS.Data;
 using BarbeariaSaaS.Models;
+using BarbeariaSaaS.DTOs;
 
 namespace BarbeariaSaaS.Controllers
 {
