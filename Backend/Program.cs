@@ -58,21 +58,10 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOrigin",
         policy =>
         {
-            policy.WithOrigins(
-                "https://barberproapp.netlify.app",
-                "http://localhost:3000", 
-                "http://localhost:5173",
-                "http://localhost:5000"
-            )
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials()
-            .SetIsOriginAllowed(origin => 
-            {
-                Console.WriteLine($"CORS: Checking origin: {origin}");
-                return origin == "https://barberproapp.netlify.app" || 
-                       origin?.StartsWith("http://localhost") == true;
-            });
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .AllowCredentials();
         });
 });
 
