@@ -107,26 +107,21 @@ export default function ManagerSettings() {
 
   const handleAddService = async () => {
     try {
-      const nome = window.prompt('Nome do serviço:') || '';
-      if (!nome.trim()) return;
-      const precoStr = window.prompt('Preço (R$):') || '0';
-      const preco = parseFloat(precoStr);
-      const durStr = window.prompt('Duração (min):') || '0';
-      const duracaoMinutos = parseInt(durStr);
-
-      const userDataString = localStorage.getItem('user');
-      if (!userDataString) throw new Error('Dados do usuário não encontrados no localStorage.');
+      const userDataString = localStorage.getItem("user");
+      if (!userDataString) throw new Error("Dados do usuário não encontrados no localStorage.");
       const userData: LoginResponse = JSON.parse(userDataString);
       const barbeariaId = userData.barbeariaId;
-      if (!barbeariaId) throw new Error('ID da barbearia não encontrado nos dados do usuário.');
+      if (!barbeariaId) throw new Error("ID da barbearia não encontrado nos dados do usuário.");
 
-      await apiService.addServico({ nome, preco, duracaoMinutos, barbeariaId });
+      await apiService.addServico({ nome: newService.nome, preco: newService.preco, duracaoMinutos: newService.duracaoMinutos, barbeariaId });
       const updatedServices = await apiService.getServicosByBarbeariaId(barbeariaId);
       setBarbershopData({ ...barbershopData, services: updatedServices });
-      setSuccessMessage('Serviço adicionado com sucesso!');
+      setSuccessMessage("Serviço adicionado com sucesso!");
       setError(null);
+      setIsAddServiceModalOpen(false); // Fecha o modal após adicionar
+      setNewService({ nome: '', preco: 0, duracaoMinutos: 0 }); // Limpa o formulário
     } catch (err: any) {
-      setError(err.message || 'Erro ao adicionar serviço.');
+      setError(err.message || "Erro ao adicionar serviço.");
       setSuccessMessage(null);
     }
   };

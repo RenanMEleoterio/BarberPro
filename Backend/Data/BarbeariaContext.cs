@@ -13,6 +13,7 @@ namespace BarbeariaSaaS.Data
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<HorarioDisponivel> HorariosDisponiveis { get; set; }
         public DbSet<Agendamento> Agendamentos { get; set; }
+        public DbSet<Servico> Servicos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

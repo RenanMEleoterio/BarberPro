@@ -43,6 +43,7 @@ namespace BarbeariaSaaS.Models
         // Relacionamentos
         public virtual ICollection<Usuario> Usuarios { get; set; } = new List<Usuario>();
         public virtual ICollection<Agendamento> Agendamentos { get; set; } = new List<Agendamento>();
+        public virtual ICollection<Servico> Servicos { get; set; } = new List<Servico>();
     }
 }
 
