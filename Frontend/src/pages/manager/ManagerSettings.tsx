@@ -393,7 +393,7 @@ export default function ManagerSettings() {
 
   return (
     <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Configurações da Barbearia</h1>        <div className="flex flex-wrap gap-4 mb-6 p-2">p-2">
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Configurações da Barbearia</h1>        <div className="flex flex-wrap gap-4 mb-6 p-2">
         {tabs.map((tab) => (
           <button
             key={tab.id}
