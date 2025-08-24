@@ -52,6 +52,7 @@ export default function Layout() {
           { path: '/barber', icon: Home, label: 'Dashboard' },
           { path: '/barber/schedule', icon: Calendar, label: 'Agenda' },
           { path: '/barber/stats', icon: BarChart3, label: 'Estatísticas' },
+          { path: '/barber/settings', icon: Settings, label: 'Configurações' },
         ];
       case 'manager':
         return [

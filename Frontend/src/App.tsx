@@ -12,6 +12,7 @@ import BookAppointment from './pages/client/BookAppointment';
 import BarberDashboard from './pages/barber/BarberDashboard';
 import BarberSchedule from './pages/barber/BarberSchedule';
 import BarberStats from './pages/barber/BarberStats';
+import BarberSettings from './pages/barber/BarberSettings';
 import ManagerDashboard from './pages/manager/ManagerDashboard';
 import ManagerBarbers from './pages/manager/ManagerBarbers';
 import ManagerStats from './pages/manager/ManagerStats';
@@ -82,6 +83,11 @@ function App() {
                 <Route path="barber/stats" element={
                   <ProtectedRoute allowedRoles={['barber']}>
                     <BarberStats />
+                  </ProtectedRoute>
+                } />
+                <Route path="barber/settings" element={
+                  <ProtectedRoute allowedRoles={['barber']}>
+                    <BarberSettings />
                   </ProtectedRoute>
                 } />
                 

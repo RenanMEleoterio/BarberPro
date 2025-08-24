@@ -313,6 +313,18 @@ class ApiService {
     }));
   }
 
+  // Barber profile endpoints
+  async getBarberProfile(id: number) {
+    return this.request(`/barbeiro/perfil/${id}`);
+  }
+
+  async updateBarberProfile(id: number, data: any) {
+    return this.request(`/barbeiro/perfil/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
+
   private mapStatusToFrontend(status: string): string {
     switch (status.toLowerCase()) {
       case 'confirmado':
