@@ -55,7 +55,7 @@ export default function ManagerSettings() {
           id: barbershopResponse.id,
           nome: barbershopResponse.nome,
           endereco: barbershopResponse.endereco,
-          telefone: barbershopResponse.telefone,
+          telefone: barbershop:response.telefone,
           email: barbershopResponse.email,
           openTime: '08:00', // Dados mockados, ajustar com dados reais do backend
           closeTime: '18:00', // Dados mockados, ajustar com dados reais do backend
@@ -229,7 +229,7 @@ export default function ManagerSettings() {
               type="time"
               value={barbershopData.closeTime}
               onChange={(e) => setBarbershopData({...barbershopData, closeTime: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+              className="w-full px-3 py-2 border black-border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
             />
           </div>
         </div>
@@ -257,7 +257,7 @@ export default function ManagerSettings() {
                       });
                     }
                   }}
-                  className="rounded border-gray-300 text-yellow-600 focus:ring-yellow-500"
+                  className="rounded border-gray-300 text-yellow-600 focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                 />
                 <span className="text-sm text-gray-700 dark:text-gray-300">
                   {day.name}
@@ -312,7 +312,6 @@ export default function ManagerSettings() {
                   readOnly
                 />
               </div>
-              
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Duração (min)
@@ -359,7 +358,7 @@ export default function ManagerSettings() {
                   type="number"
                   value={newService.duracaoMinutos}
                   onChange={(e) => setNewService({ ...newService, duracaoMinutos: parseInt(e.target.value) })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 dark:bg-gray-700 border-gray-600 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                 />
               </div>
             </div>
@@ -374,7 +373,7 @@ export default function ManagerSettings() {
                 onClick={handleAddService}
                 className="px-4 py-2 rounded-lg bg-yellow-600 text-white hover:bg-yellow-700 transition-colors"
               >
-                Adicionar
+                Adicionar Serviço
               </button>
             </div>
           </div>
@@ -383,190 +382,49 @@ export default function ManagerSettings() {
     </div>
   );
 
-  const renderNotificationSettings = () => (
+  const renderTeamSettings = () => (
     <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Preferências de Notificação
-        </h3>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
-                Novos Agendamentos
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Receber notificação quando um novo agendamento for feito
-              </p>
-            </div>
-            <input
-              type="checkbox"
-              checked={barbershopData.notifications.newAppointments}
-              onChange={(e) => setBarbershopData({
-                ...barbershopData,
-                notifications: {
-                  ...barbershopData.notifications,
-                  newAppointments: e.target.checked
-                }
-              })}
-              className="rounded border-gray-300 text-yellow-600 focus:ring-yellow-500"
-            />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
-                Cancelamentos
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Receber notificação quando um agendamento for cancelado
-              </p>
-            </div>
-            <input
-              type="checkbox"
-              checked={barbershopData.notifications.cancellations}
-              onChange={(e) => setBarbershopData({
-                ...barbershopData,
-                notifications: {
-                  ...barbershopData.notifications,
-                  cancellations: e.target.checked
-                }
-              })}
-              className="rounded border-gray-300 text-yellow-600 focus:ring-yellow-500"
-            />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
-                Avaliações
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Receber notificação quando uma nova avaliação for feita
-              </p>
-            </div>
-            <input
-              type="checkbox"
-              checked={barbershopData.notifications.reviews}
-              onChange={(e) => setBarbershopData({
-                ...barbershopData,
-                notifications: {
-                  ...barbershopData.notifications,
-                  reviews: e.target.checked
-                }
-              })}
-              className="rounded border-gray-300 text-yellow-600 focus:ring-yellow-500"
-            />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
-                Relatório Diário
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Receber um resumo diário das atividades
-              </p>
-            </div>
-            <input
-              type="checkbox"
-              checked={barbershopData.notifications.dailyReport}
-              onChange={(e) => setBarbershopData({
-                ...barbershopData,
-                notifications: {
-                  ...barbershopData.notifications,
-                  dailyReport: e.target.checked
-                }
-              })}
-              className="rounded border-gray-300 text-yellow-600 focus:ring-yellow-500"
-            />
-          </div>
-        </div>
-      </div>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        Gerenciar Equipe
+      </h3>
+      <p className="text-gray-700 dark:text-gray-300">
+        Gerencie os barbeiros e outros membros da equipe aqui.
+      </p>
     </div>
   );
 
-  const renderContent = () => {
-    if (loading) {
-      return <div className="text-center text-gray-500 dark:text-gray-400">Carregando...</div>;
-    }
-    if (error) {
-      return <div className="text-center text-red-500 dark:text-red-400">Erro: {error}</div>;
-    }
-    if (successMessage) {
-      return <div className="text-center text-green-500 dark:text-green-400">{successMessage}</div>;
-    }
-
-    switch (activeTab) {
-      case 'general':
-        return renderGeneralSettings();
-      case 'schedule':
-        return renderScheduleSettings();
-      case 'services':
-        return renderServicesSettings();
-      case 'notifications':
-        return renderNotificationSettings();
-      default:
-        return renderGeneralSettings();
-    }
-  };
-
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Configurações
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Gerencie as configurações da sua barbearia
-          </p>
-        </div>
-        
-        <button
-          onClick={handleSave}
-          className="flex items-center space-x-2 bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors"
-        >
-          <Save className="h-5 w-5" />
-          <span>Salvar Alterações</span>
-        </button>
+    <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Configurações da Barbearia</h1>
+      <div className="flex space-x-4 mb-6">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-4 py-2 rounded-lg ${activeTab === tab.id ? 'bg-yellow-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}`}
+          >
+            {tab.name}
+          </button>
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Sidebar */}
-        <div className="lg:col-span-1">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-            <nav className="space-y-1 p-4">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center space-x-3 px-3 py-2 text-left rounded-lg transition-colors ${
-                      activeTab === tab.id
-                        ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400'
-                        : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span className="text-sm font-medium">{tab.name}</span>
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-        </div>
+      {activeTab === 'general' && renderGeneralSettings()}
+      {activeTab === 'schedule' && renderScheduleSettings()}
+      {activeTab === 'services' && renderServicesSettings()}
+      {activeTab === 'team' && renderTeamSettings()}
 
-        {/* Content */}
-        <div className="lg:col-span-3">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            {renderContent()}
-          </div>
+      {successMessage && (
+        <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg">
+          {successMessage}
         </div>
-      </div>
+      )}
+      {error && (
+        <div className="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg">
+          {error}
+        </div>
+      )}
     </div>
   );
 }
+
 
