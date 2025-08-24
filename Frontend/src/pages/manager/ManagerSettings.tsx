@@ -55,7 +55,7 @@ export default function ManagerSettings() {
           id: barbershopResponse.id,
           nome: barbershopResponse.nome,
           endereco: barbershopResponse.endereco,
-          telefone: barbershop:response.telefone,
+          telefone: barbershopResponse.telefone,
           email: barbershopResponse.email,
           openTime: '08:00', // Dados mockados, ajustar com dados reais do backend
           closeTime: '18:00', // Dados mockados, ajustar com dados reais do backend
@@ -229,13 +229,13 @@ export default function ManagerSettings() {
               type="time"
               value={barbershopData.closeTime}
               onChange={(e) => setBarbershopData({...barbershopData, closeTime: e.target.value})}
-              className="w-full px-3 py-2 border black-border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
             />
           </div>
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Dias de Funcionamento
           </label>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -273,7 +273,7 @@ export default function ManagerSettings() {
   const renderServicesSettings = () => (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
           Serviços e Preços
         </h3>
         <button
@@ -309,7 +309,6 @@ export default function ManagerSettings() {
                   type="number"
                   value={service.preco}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                  readOnly
                 />
               </div>
               <div>
@@ -320,7 +319,6 @@ export default function ManagerSettings() {
                   type="number"
                   value={service.duracaoMinutos}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                  readOnly
                 />
               </div>
             </div>
@@ -349,16 +347,18 @@ export default function ManagerSettings() {
                   type="number"
                   value={newService.preco}
                   onChange={(e) => setNewService({ ...newService, preco: parseFloat(e.target.value) })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg--gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duração (min)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Duração (min)
+                </label>
                 <input
                   type="number"
                   value={newService.duracaoMinutos}
                   onChange={(e) => setNewService({ ...newService, duracaoMinutos: parseInt(e.target.value) })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:bg-gray-700 border-gray-600 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                 />
               </div>
             </div>
