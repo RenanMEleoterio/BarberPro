@@ -128,7 +128,7 @@ export default function BarberStats() {
                 Receita Total
               </p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {stats.totalRevenue === 0 ? "N/A" : `R$ ${stats.totalRevenue.toFixed(2)}`}
+                {stats.totalRevenue === 0 ? "N/A" : `R$ ${(stats.totalRevenue || 0).toFixed(2)}`}
               </p>
             </div>
             <div className="h-12 w-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
@@ -331,7 +331,7 @@ export default function BarberStats() {
                   Ticket Médio
                 </p>
                 <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                  {stats.ticketMedio === 0 ? "N/A" : `R$ ${stats.ticketMedio.toFixed(2)}`}
+                  {stats.ticketMedio === 0 ? "N/A" : `R$ ${(stats.ticketMedio || 0).toFixed(2)}`}
                 </p>
                 <p className="text-xs text-yellow-600 dark:text-yellow-400">
                   {stats.ticketMedio === 0 ? "" : "+5% este mês"}
