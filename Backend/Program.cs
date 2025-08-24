@@ -15,8 +15,9 @@ using System.Collections.Generic;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure URLs to listen on HTTP only
-builder.WebHost.UseUrls("http://0.0.0.0:5000");
+// Configure URLs to listen on HTTP only and use the PORT environment variable
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -25,6 +26,7 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<BarbeariaContext>(options =>
 {
     var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL") ?? builder.Configuration.GetConnectionString("DefaultConnection");
+    Console.WriteLine($"DEBUG: Connection String: {connectionString}"); // Debug log
     options.UseNpgsql(connectionString);
 });
 
@@ -66,7 +68,7 @@ builder.Services.AddCors(options =>
             )
             .AllowAnyMethod()
             .AllowAnyHeader()
-            .AllowCredentials();
+            .AllowAnyOrigin(); // AllowAnyOrigin for now to debug CORS issues
         });
 });
 
@@ -82,6 +84,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// app.UseHttpsRedirection(); // Removed HTTPS redirection for Render
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -106,4 +110,6 @@ if (args.Length > 0 && args[0] == "check-barbearias")
 }
 
 app.Run();
+
+
 
