@@ -88,10 +88,10 @@ export default function AuthForm() {
       } else {
         if (formData.role === 'barber') {
           user = await signUpBarber(formData.email, formData.password, formData.name, formData.barbershopCode);
-        } else if (formData.role === 'client') {
-          user = await signUp(formData.email, formData.password, formData.name, 'client');
         } else if (formData.role === 'manager') {
           user = await signUpBarbershop(formData.name, formData.address, formData.phone, formData.email, formData.password);
+        } else {
+          user = await signUp(formData.email, formData.password, formData.name, 'client');
         }
         toast.success('Conta criada com sucesso!');
       }
