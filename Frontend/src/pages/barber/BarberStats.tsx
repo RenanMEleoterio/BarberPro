@@ -38,14 +38,28 @@ export default function BarberStats() {
     }
   };
 
-  const stats = statsData || {
+  const stats = statsData ? {
+    totalClients: statsData.totalClientes || 0,
+    totalRevenue: statsData.receitaTotal || 0,
+    totalAppointments: statsData.totalAgendamentos || 0,
+    averageRating: statsData.avaliacaoMedia || 0,
+    monthlyGrowth: 0,
+    popularServices: statsData.servicosPopulares || [],
+    weeklyData: statsData.performanceSemanal || [],
+    pontualidade: statsData.insights?.pontualidade || 0,
+    taxaRetorno: statsData.insights?.taxaRetorno || 0,
+    ticketMedio: statsData.insights?.ticketMedio || 0
+  } : {
     totalClients: 0,
     totalRevenue: 0,
     totalAppointments: 0,
     averageRating: 0,
     monthlyGrowth: 0,
     popularServices: [],
-    weeklyData: []
+    weeklyData: [],
+    pontualidade: 0,
+    taxaRetorno: 0,
+    ticketMedio: 0
   };
 
   if (loading) {
@@ -228,7 +242,7 @@ export default function BarberStats() {
                       {day.agendamentos} agendamentos
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      R$ {day.receita}
+                      R$ {day.receita || 0}
                     </p>
                   </div>
                 </div>
@@ -260,21 +274,21 @@ export default function BarberStats() {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {service.nome}
+                        {service.servico}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {service.contagem} vezes
+                        {service.quantidade} vezes
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      R$ {service.receita}
+                      R$ {service.receita || 0}
                     </p>
                     <div className="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-1 mt-1">
                       <div
                         className="bg-yellow-500 h-1 rounded-full"
-                        style={{ width: `${(service.contagem / 45) * 100}%` }}
+                        style={{ width: `${(service.quantidade / 45) * 100}%` }}
                       ></div>
                     </div>
                   </div>
