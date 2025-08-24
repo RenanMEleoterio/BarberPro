@@ -107,7 +107,7 @@ class ApiService {
       if (!barbershopCode) {
         throw new Error('Código da barbearia é obrigatório para barbeiros');
       }
-      body.codigoConvite = barbershopCode;
+      body.codigoBarbearia = barbershopCode;
       body.especialidades = '';
       body.descricao = '';
     }
