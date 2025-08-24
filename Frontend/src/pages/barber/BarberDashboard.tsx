@@ -98,18 +98,7 @@ export default function BarberDashboard() {
     );
   }
 
-  // Adiciona uma mensagem flutuante se não houver dados
-  useEffect(() => {
-    if (!loading && dashboardData && dashboardData.totalAgendamentosHoje === 0 && dashboardData.ganhosSemana === 0) {
-      setToastMessage("Não há dados cadastrados para este barbeiro. Comece a agendar para ver suas estatísticas!");
-      setShowToast(true);
-      const timer = setTimeout(() => {
-        setShowToast(false);
-        setToastMessage("");
-      }, 5000); // Esconde o toast após 5 segundos
-      return () => clearTimeout(timer);
-    }
-  }, [loading, dashboardData]);
+
 
   return (
     <div className="space-y-6">
