@@ -36,6 +36,19 @@ namespace BarbeariaSaaS.Controllers
             return Ok(barbearias);
         }
 
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Barbearia>> GetBarbearia(int id)
+        {
+            var barbearia = await _context.Barbearias.FindAsync(id);
+
+            if (barbearia == null)
+            {
+                return NotFound();
+            }
+
+            return barbearia;
+        }
+
         [HttpGet("{id}/barbeiros")]
         public async Task<ActionResult<IEnumerable<Usuario>>> GetBarbeirosPorBarbearia(int id)
         {
@@ -88,3 +101,5 @@ namespace BarbeariaSaaS.Controllers
         }
     }
 }
+
+
