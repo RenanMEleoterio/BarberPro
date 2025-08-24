@@ -123,7 +123,7 @@ class ApiService {
       nome: name,
       email,
       senha: password,
-      codigoConvite: barbershopCode,
+      codigoBarbearia: barbershopCode,
       especialidades: specialties || '',
       descricao: description || ''
     };
