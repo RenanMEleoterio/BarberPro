@@ -204,7 +204,7 @@ export default function BookAppointment() {
           
           <div className="grid grid-cols-2 gap-2 max-h-80 overflow-y-auto">
             {timeSlots.map((time) => {
-              const isAvailable = Math.random() > 0.3; // Simulate availability
+              const isAvailable = true; // Temporariamente definido como true para remover a simulação
               
               return (
                 <button
