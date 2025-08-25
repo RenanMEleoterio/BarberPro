@@ -40,6 +40,25 @@ export default function BookAppointment() {
     }
   };
 
+  const isTimeSlotAvailable = (time: string) => {
+    if (!selectedBarber || !selectedDate) {
+      return true; // Se não há barbeiro ou data selecionados, mostrar todos como disponíveis
+    }
+
+    const selectedBarbeiro = barbershop.barbers?.find((b: any) => b.id === selectedBarber);
+    if (!selectedBarbeiro || !selectedBarbeiro.agendamentos) {
+      return true; // Se não há agendamentos, horário está disponível
+    }
+
+    // Verificar se existe agendamento para a data e horário selecionados
+    const dateTimeToCheck = `${selectedDate}T${time}:00`;
+    
+    return !selectedBarbeiro.agendamentos.some((agendamento: any) => {
+      const agendamentoDateTime = new Date(agendamento.dataHora).toISOString().substring(0, 16);
+      return agendamentoDateTime === dateTimeToCheck;
+    });
+  };
+
   const timeSlots = [
     '08:00', '08:30', '09:00', '09:30', '10:00', '10:30',
     '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
@@ -204,7 +223,7 @@ export default function BookAppointment() {
           
           <div className="grid grid-cols-2 gap-2 max-h-80 overflow-y-auto">
             {timeSlots.map((time) => {
-              const isAvailable = true; // Temporariamente definido como true para remover a simulação
+              const isAvailable = isTimeSlotAvailable(time);
               
               return (
                 <button

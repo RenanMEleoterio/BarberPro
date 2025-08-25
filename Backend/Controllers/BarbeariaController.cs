@@ -81,7 +81,11 @@ namespace BarbeariaSaaS.Controllers
                 .Select(u => new {
                     id = u.Id,
                     name = u.Nome,
-                    rating = 4.8 // Valor padrão por enquanto, pode ser calculado posteriormente
+                    rating = 4.8, // Valor padrão por enquanto, pode ser calculado posteriormente
+                    agendamentos = _context.Agendamentos
+                                    .Where(a => a.BarbeiroId == u.Id && a.Status == StatusAgendamento.Confirmado)
+                                    .Select(a => new { a.DataHora })
+                                    .ToList()
                 })
                 .ToListAsync();
 
