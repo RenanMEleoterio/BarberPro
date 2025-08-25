@@ -36,7 +36,6 @@ namespace BarbeariaSaaS.Controllers
                 Nome = barbeiro.Nome,
                 Email = barbeiro.Email,
                 Telefone = barbeiro.Telefone ?? "",
-                Endereco = barbeiro.Endereco ?? "",
                 Especialidades = barbeiro.Especialidades ?? "",
                 Descricao = barbeiro.Descricao ?? "",
                 BarbeariaId = barbeiro.BarbeariaId,
@@ -73,7 +72,6 @@ namespace BarbeariaSaaS.Controllers
                 barbeiro.Email = dto.Email;
             
             barbeiro.Telefone = dto.Telefone ?? barbeiro.Telefone;
-            barbeiro.Endereco = dto.Endereco ?? barbeiro.Endereco;
             barbeiro.Especialidades = dto.Especialidades ?? barbeiro.Especialidades;
             barbeiro.Descricao = dto.Descricao ?? barbeiro.Descricao;
 
@@ -87,7 +85,6 @@ namespace BarbeariaSaaS.Controllers
                     Nome = barbeiro.Nome,
                     Email = barbeiro.Email,
                     Telefone = barbeiro.Telefone ?? "",
-                    Endereco = barbeiro.Endereco ?? "",
                     Especialidades = barbeiro.Especialidades ?? "",
                     Descricao = barbeiro.Descricao ?? "",
                     BarbeariaId = barbeiro.BarbeariaId,
@@ -108,7 +105,6 @@ namespace BarbeariaSaaS.Controllers
         public string? Nome { get; set; }
         public string? Email { get; set; }
         public string? Telefone { get; set; }
-        public string? Endereco { get; set; }
         public string? Especialidades { get; set; }
         public string? Descricao { get; set; }
     }

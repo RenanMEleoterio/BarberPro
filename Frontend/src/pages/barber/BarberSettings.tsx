@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Phone, MapPin, Scissors, FileText, Save, AlertCircle } from 'lucide-react';
+import { User, Mail, Phone, Scissors, FileText, Save, AlertCircle } from 'lucide-react';
 import { apiService } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -8,7 +8,6 @@ export default function BarberSettings() {
     nome: '',
     email: '',
     telefone: '',
-    endereco: '',
     especialidades: '',
     descricao: ''
   });
@@ -32,7 +31,6 @@ export default function BarberSettings() {
           nome: data.nome || '',
           email: data.email || '',
           telefone: data.telefone || '',
-          endereco: data.endereco || '',
           especialidades: data.especialidades || '',
           descricao: data.descricao || ''
         });
@@ -173,23 +171,6 @@ export default function BarberSettings() {
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 placeholder="(11) 99999-9999"
-              />
-            </div>
-
-            {/* Endereço */}
-            <div>
-              <label htmlFor="endereco" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                <MapPin className="h-4 w-4 inline mr-2" />
-                Endereço
-              </label>
-              <input
-                type="text"
-                id="endereco"
-                name="endereco"
-                value={formData.endereco}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                placeholder="Seu endereço"
               />
             </div>
           </div>
