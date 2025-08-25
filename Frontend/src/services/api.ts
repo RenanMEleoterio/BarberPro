@@ -235,6 +235,10 @@ class ApiService {
     return this.request(`/barbearia/${id}`);
   }
 
+  async getBarbeariaDetalhes(id: number) {
+    return this.request(`/barbearia/${id}/detalhes`);
+  }
+
   async updateBarbearia(id: number, data: any) {
     return this.request(`/barbearia/${id}`, {
       method: 'PUT',

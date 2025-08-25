@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Calendar, Clock, User, ArrowLeft } from 'lucide-react';
 import { format, addDays, startOfWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import toast from 'react-hot-toast';
+import { apiService } from '../../services/api';
 
 export default function BookAppointment() {
   const { barbershopId } = useParams();
@@ -12,14 +13,31 @@ export default function BookAppointment() {
   const [selectedBarber, setSelectedBarber] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
+  const [barbershop, setBarbershop] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const barbershop = {
-    id: '1',
-    name: 'Barbearia Central',
-    barbers: [
-      { id: '1', name: 'João Silva', rating: 4.9 },
-      { id: '2', name: 'Carlos Santos', rating: 4.7 }
-    ]
+  useEffect(() => {
+    loadBarbershopDetails();
+  }, [barbershopId]);
+
+  const loadBarbershopDetails = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      if (!barbershopId) {
+        throw new Error('ID da barbearia não encontrado');
+      }
+
+      const data = await apiService.getBarbeariaDetalhes(parseInt(barbershopId));
+      setBarbershop(data);
+    } catch (error) {
+      console.error('Erro ao carregar detalhes da barbearia:', error);
+      setError('Erro ao carregar dados da barbearia. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const timeSlots = [
@@ -47,6 +65,53 @@ export default function BookAppointment() {
     navigate('/client/appointments');
   };
 
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={() => navigate('/client/barbershops')}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Agendar Horário</h1>
+            <p className="text-gray-600 dark:text-gray-400">Carregando dados da barbearia...</p>
+          </div>
+        </div>
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !barbershop) {
+    return (
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={() => navigate('/client/barbershops')}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Agendar Horário</h1>
+            <p className="text-red-600 dark:text-red-400">{error || 'Barbearia não encontrada'}</p>
+          </div>
+        </div>
+        <button 
+          onClick={loadBarbershopDetails}
+          className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+        >
+          Tentar Novamente
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
@@ -72,20 +137,26 @@ export default function BookAppointment() {
           </div>
           
           <div className="space-y-3">
-            {barbershop.barbers.map((barber) => (
-              <button
-                key={barber.id}
-                onClick={() => setSelectedBarber(barber.id)}
-                className={`w-full p-4 rounded-lg border-2 transition-colors text-left ${
-                  selectedBarber === barber.id
-                    ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20'
-                    : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
-                }`}
-              >
-                <div className="font-medium text-gray-900 dark:text-white">{barber.name}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">⭐ {barber.rating}</div>
-              </button>
-            ))}
+            {barbershop.barbers && barbershop.barbers.length > 0 ? (
+              barbershop.barbers.map((barber: any) => (
+                <button
+                  key={barber.id}
+                  onClick={() => setSelectedBarber(barber.id)}
+                  className={`w-full p-4 rounded-lg border-2 transition-colors text-left ${
+                    selectedBarber === barber.id
+                      ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20'
+                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                  }`}
+                >
+                  <div className="font-medium text-gray-900 dark:text-white">{barber.name}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">⭐ {barber.rating}</div>
+                </button>
+              ))
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-gray-500 dark:text-gray-400">Nenhum barbeiro disponível</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -164,7 +235,7 @@ export default function BookAppointment() {
           <div className="space-y-2 mb-6">
             {selectedBarber && (
               <p className="text-gray-600 dark:text-gray-400">
-                <span className="font-medium">Barbeiro:</span> {barbershop.barbers.find(b => b.id === selectedBarber)?.name}
+                <span className="font-medium">Barbeiro:</span> {barbershop.barbers?.find((b: any) => b.id === selectedBarber)?.name}
               </p>
             )}
             {selectedDate && (

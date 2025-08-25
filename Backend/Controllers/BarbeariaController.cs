@@ -66,6 +66,34 @@ namespace BarbeariaSaaS.Controllers
             return Ok(barbeiros);
         }
 
+        [HttpGet("{id}/detalhes")]
+        public async Task<ActionResult> GetBarbeariaDetalhes(int id)
+        {
+            var barbearia = await _context.Barbearias.FindAsync(id);
+
+            if (barbearia == null)
+            {
+                return NotFound();
+            }
+
+            var barbeiros = await _context.Usuarios
+                .Where(u => u.BarbeariaId == id && u.TipoUsuario == TipoUsuario.Barbeiro)
+                .Select(u => new {
+                    id = u.Id,
+                    name = u.Nome,
+                    rating = 4.8 // Valor padrão por enquanto, pode ser calculado posteriormente
+                })
+                .ToListAsync();
+
+            var resultado = new {
+                id = barbearia.Id,
+                name = barbearia.Nome,
+                barbers = barbeiros
+            };
+
+            return Ok(resultado);
+        }
+
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateBarbearia(int id, [FromBody] UpdateBarbeariaDto updateDto)
         {
