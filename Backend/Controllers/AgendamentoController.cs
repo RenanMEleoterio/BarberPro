@@ -93,17 +93,6 @@ namespace BarbeariaSaaS.Controllers
                 return BadRequest(new { message = "Barbeiro não encontrado" });
             }
 
-            // Verificar se o horário está disponível
-            var horarioDisponivel = await _context.HorariosDisponiveis
-                .FirstOrDefaultAsync(h => h.BarbeiroId == criarDto.BarbeiroId && 
-                                         h.DataHora == criarDto.DataHora && 
-                                         h.EstaDisponivel);
-
-            if (horarioDisponivel == null)
-            {
-                return BadRequest(new { message = "Horário não disponível" });
-            }
-
             // Verificar se já existe agendamento para este horário
             var agendamentoExistente = await _context.Agendamentos
                 .AnyAsync(a => a.BarbeiroId == criarDto.BarbeiroId && 
@@ -126,10 +115,6 @@ namespace BarbeariaSaaS.Controllers
             };
 
             _context.Agendamentos.Add(agendamento);
-
-            // Marcar horário como indisponível
-            horarioDisponivel.EstaDisponivel = false;
-
             await _context.SaveChangesAsync();
 
             var agendamentoDto = await _context.Agendamentos

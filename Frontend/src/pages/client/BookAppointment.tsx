@@ -74,14 +74,26 @@ export default function BookAppointment() {
 
   const weekDays = getWeekDays();
 
-  const handleBooking = () => {
+  const handleBooking = async () => {
     if (!selectedBarber || !selectedDate || !selectedTime) {
-      toast.error('Por favor, selecione todas as opções');
+      toast.error("Por favor, selecione todas as opções");
       return;
     }
 
-    toast.success('Agendamento realizado com sucesso!');
-    navigate('/client/appointments');
+    try {
+      const agendamentoData = {
+        barbeiroId: parseInt(selectedBarber),
+        dataHora: `${selectedDate}T${selectedTime}:00`,
+        observacoes: ""
+      };
+
+      await apiService.createAgendamento(agendamentoData);
+      toast.success("Agendamento realizado com sucesso!");
+      navigate("/client/appointments");
+    } catch (error: any) {
+      console.error("Erro ao agendar:", error);
+      toast.error(error.response?.data?.message || "Erro ao agendar. Tente novamente.");
+    }
   };
 
   if (loading) {

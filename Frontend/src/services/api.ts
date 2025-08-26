@@ -203,7 +203,7 @@ class ApiService {
     return this.request('/agendamento/meus-agendamentos');
   }
 
-  async createAppointment(data: any) {
+  async createAgendamento(data: any) {
     return this.request('/agendamento', {
       method: 'POST',
       body: JSON.stringify(data)
