@@ -75,7 +75,14 @@ export default function BookAppointment() {
   const weekDays = getWeekDays();
 
   const handleBooking = async () => {
+    console.log("=== INICIANDO AGENDAMENTO ===");
+    console.log("Estado atual:");
+    console.log("selectedBarber:", selectedBarber);
+    console.log("selectedDate:", selectedDate);
+    console.log("selectedTime:", selectedTime);
+    
     if (!selectedBarber || !selectedDate || !selectedTime) {
+      console.log("Validação falhou - campos obrigatórios não preenchidos");
       toast.error("Por favor, selecione todas as opções");
       return;
     }
@@ -179,7 +186,10 @@ export default function BookAppointment() {
               barbershop.barbers.map((barber: any) => (
                 <button
                   key={barber.id}
-                  onClick={() => setSelectedBarber(barber.id)}
+                  onClick={() => {
+                    console.log("Selecionando barbeiro:", barber.id, barber.name);
+                    setSelectedBarber(barber.id);
+                  }}
                   className={`w-full p-4 rounded-lg border-2 transition-colors text-left ${
                     selectedBarber === barber.id
                       ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20'
@@ -213,7 +223,10 @@ export default function BookAppointment() {
               return (
                 <button
                   key={dateStr}
-                  onClick={() => setSelectedDate(dateStr)}
+                  onClick={() => {
+                    console.log("Selecionando data:", dateStr);
+                    setSelectedDate(dateStr);
+                  }}
                   className={`w-full p-3 rounded-lg border-2 transition-colors text-left ${
                     selectedDate === dateStr
                       ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20'
@@ -247,7 +260,12 @@ export default function BookAppointment() {
               return (
                 <button
                   key={time}
-                  onClick={() => isAvailable && setSelectedTime(time)}
+                  onClick={() => {
+                    if (isAvailable) {
+                      console.log("Selecionando horário:", time);
+                      setSelectedTime(time);
+                    }
+                  }}
                   disabled={!isAvailable}
                   className={`p-2 rounded-lg text-sm font-medium transition-colors ${
                     selectedTime === time
