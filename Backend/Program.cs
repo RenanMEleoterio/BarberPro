@@ -60,15 +60,9 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOrigin",
         policy =>
         {
-            policy.WithOrigins(
-                "https://barberproapp.netlify.app",
-                "http://localhost:3000", 
-                "http://localhost:5173",
-                "http://localhost:5000"
-            )
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowAnyOrigin(); // AllowAnyOrigin for now to debug CORS issues
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
         });
 });
 
