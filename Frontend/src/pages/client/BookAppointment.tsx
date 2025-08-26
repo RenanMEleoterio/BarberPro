@@ -87,11 +87,18 @@ export default function BookAppointment() {
         observacoes: ""
       };
 
+      console.log("Dados do agendamento sendo enviados:", agendamentoData);
+      console.log("selectedBarber:", selectedBarber);
+      console.log("selectedDate:", selectedDate);
+      console.log("selectedTime:", selectedTime);
+
       await apiService.createAgendamento(agendamentoData);
       toast.success("Agendamento realizado com sucesso!");
       navigate("/client/appointments");
     } catch (error: any) {
-      console.error("Erro ao agendar:", error);
+      console.error("Erro completo ao agendar:", error);
+      console.error("Response data:", error.response?.data);
+      console.error("Status:", error.response?.status);
       toast.error(error.response?.data?.message || "Erro ao agendar. Tente novamente.");
     }
   };
