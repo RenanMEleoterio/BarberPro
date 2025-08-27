@@ -94,9 +94,10 @@ namespace BarbeariaSaaS.Controllers
             }
 
             // Verificar se já existe agendamento para este horário
+            var dataHoraUtc = DateTime.SpecifyKind(criarDto.DataHora, DateTimeKind.Utc);
             var agendamentoExistente = await _context.Agendamentos
                 .AnyAsync(a => a.BarbeiroId == criarDto.BarbeiroId && 
-                              a.DataHora == criarDto.DataHora && 
+                              a.DataHora == dataHoraUtc && 
                               a.Status == StatusAgendamento.Confirmado);
 
             if (agendamentoExistente)
@@ -108,7 +109,7 @@ namespace BarbeariaSaaS.Controllers
             {
                 ClienteId = clienteId,
                 BarbeiroId = criarDto.BarbeiroId,
-                DataHora = criarDto.DataHora,
+                DataHora = dataHoraUtc,
                 Observacoes = criarDto.Observacoes,
                 BarbeariaId = barbeiro.BarbeariaId.Value,
                 Status = StatusAgendamento.Confirmado
