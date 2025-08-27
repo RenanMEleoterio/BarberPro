@@ -14,6 +14,9 @@ namespace BarbeariaSaaS.DTOs
         public DateTime DataHora { get; set; }
 
         public string Observacoes { get; set; }
+
+        [Required]
+        public string TipoServico { get; set; }
     }
 
     public class AgendamentoDto

@@ -112,7 +112,8 @@ namespace BarbeariaSaaS.Controllers
                 DataHora = dataHoraUtc,
                 Observacoes = criarDto.Observacoes,
                 BarbeariaId = barbeiro.BarbeariaId.Value,
-                Status = StatusAgendamento.Confirmado
+                Status = StatusAgendamento.Confirmado,
+                TipoServico = criarDto.TipoServico
             };
 
             _context.Agendamentos.Add(agendamento);

@@ -91,7 +91,8 @@ export default function BookAppointment() {
       const agendamentoData = {
         barbeiroId: parseInt(selectedBarber),
         dataHora: `${selectedDate}T${selectedTime}:00`,
-        observacoes: ""
+        observacoes: "",
+        tipoServico: "Corte de Cabelo" // Adicionando um valor padrão para TipoServico
       };
 
       console.log("Dados do agendamento sendo enviados:", agendamentoData);
