@@ -52,25 +52,44 @@ namespace BarbeariaSaaS.Controllers
             var barbeiros = await _context.Usuarios
                 .Where(u => u.TipoUsuario == TipoUsuario.Barbeiro && u.BarbeariaId == barbeariaId)
                 .Include(u => u.HorariosDisponiveis.Where(h => h.EstaDisponivel && h.DataHora > DateTime.Now))
-                .Select(u => new BarbeiroDto
-                {
-                    Id = u.Id,
-                    Nome = u.Nome,
-                    Foto = u.Foto,
-                    Especialidades = u.Especialidades,
-                    Descricao = u.Descricao,
-                    HorariosDisponiveis = u.HorariosDisponiveis.Select(h => new HorarioDisponivelDto
+                .ToListAsync();
+
+            var result = new List<BarbeiroDto>();
+
+            foreach (var barbeiro in barbeiros)
+            {
+                // Buscar agendamentos confirmados para este barbeiro
+                var agendamentosConfirmados = await _context.Agendamentos
+                    .Where(a => a.BarbeiroId == barbeiro.Id && 
+                               a.Status == StatusAgendamento.Confirmado &&
+                               a.DataHora > DateTime.Now)
+                    .Select(a => a.DataHora)
+                    .ToListAsync();
+
+                // Filtrar horários que não têm agendamentos confirmados
+                var horariosDisponiveis = barbeiro.HorariosDisponiveis
+                    .Where(h => !agendamentosConfirmados.Contains(h.DataHora))
+                    .Select(h => new HorarioDisponivelDto
                     {
                         Id = h.Id,
                         DataHora = h.DataHora,
                         BarbeiroId = h.BarbeiroId,
-                        NomeBarbeiro = u.Nome,
-                        EstaDisponivel = h.EstaDisponivel
-                    }).ToList()
-                })
-                .ToListAsync();
+                        NomeBarbeiro = barbeiro.Nome,
+                        EstaDisponivel = true
+                    }).ToList();
 
-            return Ok(barbeiros);
+                result.Add(new BarbeiroDto
+                {
+                    Id = barbeiro.Id,
+                    Nome = barbeiro.Nome,
+                    Foto = barbeiro.Foto,
+                    Especialidades = barbeiro.Especialidades,
+                    Descricao = barbeiro.Descricao,
+                    HorariosDisponiveis = horariosDisponiveis
+                });
+            }
+
+            return Ok(result);
         }
 
         [HttpPost]
@@ -84,6 +103,13 @@ namespace BarbeariaSaaS.Controllers
                 return Forbid("Apenas clientes podem criar agendamentos");
             }
 
+            // Validar se a data/hora não é no passado
+            var dataHoraUtc = DateTime.SpecifyKind(criarDto.DataHora, DateTimeKind.Utc);
+            if (dataHoraUtc <= DateTime.UtcNow)
+            {
+                return BadRequest(new { message = "Não é possível agendar para uma data/hora no passado" });
+            }
+
             var barbeiro = await _context.Usuarios
                 .Include(u => u.Barbearia)
                 .FirstOrDefaultAsync(u => u.Id == criarDto.BarbeiroId && u.TipoUsuario == TipoUsuario.Barbeiro);
@@ -93,16 +119,37 @@ namespace BarbeariaSaaS.Controllers
                 return BadRequest(new { message = "Barbeiro não encontrado" });
             }
 
-            // Verificar se já existe agendamento para este horário
-            var dataHoraUtc = DateTime.SpecifyKind(criarDto.DataHora, DateTimeKind.Utc);
-            var agendamentoExistente = await _context.Agendamentos
+            // Verificar se o cliente já tem um agendamento confirmado para o mesmo horário (com qualquer barbeiro)
+            var clienteTemAgendamento = await _context.Agendamentos
+                .AnyAsync(a => a.ClienteId == clienteId && 
+                              a.DataHora == dataHoraUtc && 
+                              a.Status == StatusAgendamento.Confirmado);
+
+            if (clienteTemAgendamento)
+            {
+                return BadRequest(new { message = "Você já possui um agendamento confirmado para este horário" });
+            }
+
+            // Verificar se já existe agendamento confirmado para este barbeiro neste horário
+            var barbeiroTemAgendamento = await _context.Agendamentos
                 .AnyAsync(a => a.BarbeiroId == criarDto.BarbeiroId && 
                               a.DataHora == dataHoraUtc && 
                               a.Status == StatusAgendamento.Confirmado);
 
-            if (agendamentoExistente)
+            if (barbeiroTemAgendamento)
             {
-                return BadRequest(new { message = "Horário já está agendado" });
+                return BadRequest(new { message = "Este horário já está ocupado. Por favor, escolha outro horário disponível" });
+            }
+
+            // Verificar se existe um horário disponível para este barbeiro nesta data/hora
+            var horarioDisponivel = await _context.HorariosDisponiveis
+                .FirstOrDefaultAsync(h => h.BarbeiroId == criarDto.BarbeiroId && 
+                                         h.DataHora == dataHoraUtc && 
+                                         h.EstaDisponivel);
+
+            if (horarioDisponivel == null)
+            {
+                return BadRequest(new { message = "Horário não disponível para este barbeiro" });
             }
 
             var agendamento = new Agendamento
@@ -113,10 +160,15 @@ namespace BarbeariaSaaS.Controllers
                 Observacoes = criarDto.Observacoes,
                 BarbeariaId = barbeiro.BarbeariaId.Value,
                 Status = StatusAgendamento.Confirmado,
-                TipoServico = criarDto.TipoServico
+                TipoServico = criarDto.TipoServico,
+                HorarioDisponivelId = horarioDisponivel.Id
             };
 
             _context.Agendamentos.Add(agendamento);
+
+            // Marcar o horário como indisponível
+            horarioDisponivel.EstaDisponivel = false;
+
             await _context.SaveChangesAsync();
 
             var agendamentoDto = await _context.Agendamentos
@@ -271,33 +323,55 @@ namespace BarbeariaSaaS.Controllers
 
             if (agendamento == null)
             {
-                return NotFound();
+                return NotFound(new { message = "Agendamento não encontrado" });
             }
 
             // Verificar permissões
             if (tipoUsuario == "Cliente" && agendamento.ClienteId != usuarioId)
             {
-                return Forbid();
+                return Forbid("Você não tem permissão para cancelar este agendamento");
             }
             else if (tipoUsuario == "Barbeiro" && agendamento.BarbeiroId != usuarioId)
             {
-                return Forbid();
+                return Forbid("Você não tem permissão para cancelar este agendamento");
             }
             else if (tipoUsuario == "Gerente")
             {
                 var barbeariaId = GetBarbeariaId();
                 if (agendamento.BarbeariaId != barbeariaId)
                 {
-                    return Forbid();
+                    return Forbid("Você não tem permissão para cancelar este agendamento");
                 }
+            }
+
+            // Verificar se o agendamento pode ser cancelado (não está no passado)
+            if (agendamento.DataHora <= DateTime.UtcNow)
+            {
+                return BadRequest(new { message = "Não é possível cancelar agendamentos que já passaram" });
+            }
+
+            // Verificar se o agendamento já foi cancelado
+            if (agendamento.Status == StatusAgendamento.Cancelado)
+            {
+                return BadRequest(new { message = "Este agendamento já foi cancelado" });
             }
 
             agendamento.Status = StatusAgendamento.Cancelado;
             agendamento.DataAtualizacao = DateTime.UtcNow;
 
-            // Liberar horário
-            var horario = await _context.HorariosDisponiveis
-                .FirstOrDefaultAsync(h => h.BarbeiroId == agendamento.BarbeiroId && h.DataHora == agendamento.DataHora);
+            // Liberar horário - buscar pelo HorarioDisponivelId se existir, senão buscar por data/hora
+            HorarioDisponivel horario = null;
+            
+            if (agendamento.HorarioDisponivelId.HasValue)
+            {
+                horario = await _context.HorariosDisponiveis
+                    .FirstOrDefaultAsync(h => h.Id == agendamento.HorarioDisponivelId.Value);
+            }
+            else
+            {
+                horario = await _context.HorariosDisponiveis
+                    .FirstOrDefaultAsync(h => h.BarbeiroId == agendamento.BarbeiroId && h.DataHora == agendamento.DataHora);
+            }
 
             if (horario != null)
             {
@@ -306,7 +380,7 @@ namespace BarbeariaSaaS.Controllers
 
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(new { message = "Agendamento cancelado com sucesso" });
         }
     }
 }
