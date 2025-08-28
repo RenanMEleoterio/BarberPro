@@ -43,14 +43,26 @@ namespace BarbeariaSaaS.Controllers
         [HttpGet("barbeiros")]
         public async Task<ActionResult<List<BarbeiroDto>>> GetBarbeiros()
         {
-            var barbeariaId = GetBarbeariaId();
-            if (!barbeariaId.HasValue)
+            var tipoUsuario = GetTipoUsuario();
+            IQueryable<Usuario> query = _context.Usuarios.Where(u => u.TipoUsuario == TipoUsuario.Barbeiro);
+
+            if (tipoUsuario == "Cliente")
             {
-                return BadRequest(new { message = "Usuário não está vinculado a uma barbearia" });
+                // Clientes podem ver todos os barbeiros de todas as barbearias
+                // ou podemos adicionar um filtro por barbeariaId se for passado na query string
+                // Por enquanto, retorna todos os barbeiros.
+            }
+            else
+            {
+                var barbeariaId = GetBarbeariaId();
+                if (!barbeariaId.HasValue)
+                {
+                    return BadRequest(new { message = "Usuário não está vinculado a uma barbearia" });
+                }
+                query = query.Where(u => u.BarbeariaId == barbeariaId);
             }
 
-            var barbeiros = await _context.Usuarios
-                .Where(u => u.TipoUsuario == TipoUsuario.Barbeiro && u.BarbeariaId == barbeariaId)
+            var barbeiros = await query
                 .Include(u => u.HorariosDisponiveis.Where(h => h.EstaDisponivel && h.DataHora > DateTime.Now))
                 .ToListAsync();
 
