@@ -6,22 +6,40 @@ import { ptBR } from 'date-fns/locale';
 import toast from 'react-hot-toast';
 import { apiService } from '../../services/api';
 
+interface HorarioDisponivel {
+  id: number;
+  dataHora: string;
+  barbeiroId: number;
+  nomeBarbeiro: string;
+  estaDisponivel: boolean;
+}
+
+interface Barbeiro {
+  id: number;
+  nome: string;
+  foto?: string;
+  especialidades?: string;
+  descricao?: string;
+  horariosDisponiveis: HorarioDisponivel[];
+}
+
 export default function BookAppointment() {
   const { barbershopId } = useParams();
   const navigate = useNavigate();
   
-  const [selectedBarber, setSelectedBarber] = useState('');
+  const [selectedBarber, setSelectedBarber] = useState<number | null>(null);
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
+  const [barbeiros, setBarbeiros] = useState<Barbeiro[]>([]);
   const [barbershop, setBarbershop] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadBarbershopDetails();
+    loadData();
   }, [barbershopId]);
 
-  const loadBarbershopDetails = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -30,41 +48,36 @@ export default function BookAppointment() {
         throw new Error('ID da barbearia não encontrado');
       }
 
-      const data = await apiService.getBarbeariaDetalhes(parseInt(barbershopId));
-      setBarbershop(data);
+      // Carregar dados da barbearia
+      const barbeariaData = await apiService.getBarbeariaById(parseInt(barbershopId));
+      setBarbershop(barbeariaData);
+
+      // Carregar barbeiros com horários disponíveis
+      const barbeirosData = await apiService.getBarbeirosComHorarios();
+      setBarbeiros(barbeirosData);
+      
     } catch (error) {
-      console.error('Erro ao carregar detalhes da barbearia:', error);
-      setError('Erro ao carregar dados da barbearia. Tente novamente.');
+      console.error('Erro ao carregar dados:', error);
+      setError('Erro ao carregar dados. Tente novamente.');
     } finally {
       setLoading(false);
     }
   };
 
-  const isTimeSlotAvailable = (time: string) => {
-    if (!selectedBarber || !selectedDate) {
-      return true; // Se não há barbeiro ou data selecionados, mostrar todos como disponíveis
-    }
+  const getAvailableTimesForDate = (barbeiroId: number, date: string) => {
+    const barbeiro = barbeiros.find(b => b.id === barbeiroId);
+    if (!barbeiro) return [];
 
-    const selectedBarbeiro = barbershop.barbers?.find((b: any) => b.id === selectedBarber);
-    if (!selectedBarbeiro || !selectedBarbeiro.agendamentos) {
-      return true; // Se não há agendamentos, horário está disponível
-    }
-
-    // Verificar se existe agendamento para a data e horário selecionados
-    const dateTimeToCheck = `${selectedDate}T${time}:00`;
-    
-    return !selectedBarbeiro.agendamentos.some((agendamento: any) => {
-      const agendamentoDateTime = new Date(agendamento.dataHora).toISOString().substring(0, 16);
-      return agendamentoDateTime === dateTimeToCheck;
-    });
+    return barbeiro.horariosDisponiveis
+      .filter(h => {
+        const horarioDate = new Date(h.dataHora).toISOString().split('T')[0];
+        return horarioDate === date && h.estaDisponivel;
+      })
+      .map(h => {
+        const time = new Date(h.dataHora).toTimeString().substring(0, 5);
+        return { time, horarioId: h.id };
+      });
   };
-
-  const timeSlots = [
-    '08:00', '08:30', '09:00', '09:30', '10:00', '10:30',
-    '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
-    '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
-    '17:00', '17:30', '18:00', '18:30', '19:00'
-  ];
 
   const getWeekDays = () => {
     const today = new Date();
@@ -89,16 +102,13 @@ export default function BookAppointment() {
 
     try {
       const agendamentoData = {
-        barbeiroId: parseInt(selectedBarber),
+        barbeiroId: selectedBarber,
         dataHora: `${selectedDate}T${selectedTime}:00`,
         observacoes: "",
-        tipoServico: "Corte de Cabelo" // Adicionando um valor padrão para TipoServico
+        tipoServico: "Corte de Cabelo" // Valor padrão por enquanto
       };
 
       console.log("Dados do agendamento sendo enviados:", agendamentoData);
-      console.log("selectedBarber:", selectedBarber);
-      console.log("selectedDate:", selectedDate);
-      console.log("selectedTime:", selectedTime);
 
       await apiService.createAgendamento(agendamentoData);
       toast.success("Agendamento realizado com sucesso!");
@@ -107,7 +117,20 @@ export default function BookAppointment() {
       console.error("Erro completo ao agendar:", error);
       console.error("Response data:", error.response?.data);
       console.error("Status:", error.response?.status);
-      toast.error(error.response?.data?.message || "Erro ao agendar. Tente novamente.");
+      
+      // Tentar extrair mensagem de erro mais específica
+      let errorMessage = "Erro ao agendar. Tente novamente.";
+      
+      if (error.message) {
+        try {
+          const parsedError = JSON.parse(error.message);
+          errorMessage = parsedError.message || errorMessage;
+        } catch {
+          errorMessage = error.message;
+        }
+      }
+      
+      toast.error(errorMessage);
     }
   };
 
@@ -123,7 +146,7 @@ export default function BookAppointment() {
           </button>
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Agendar Horário</h1>
-            <p className="text-gray-600 dark:text-gray-400">Carregando dados da barbearia...</p>
+            <p className="text-gray-600 dark:text-gray-400">Carregando dados...</p>
           </div>
         </div>
         <div className="flex justify-center py-12">
@@ -149,7 +172,7 @@ export default function BookAppointment() {
           </div>
         </div>
         <button 
-          onClick={loadBarbershopDetails}
+          onClick={loadData}
           className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
         >
           Tentar Novamente
@@ -183,22 +206,28 @@ export default function BookAppointment() {
           </div>
           
           <div className="space-y-3">
-            {barbershop.barbers && barbershop.barbers.length > 0 ? (
-              barbershop.barbers.map((barber: any) => (
+            {barbeiros && barbeiros.length > 0 ? (
+              barbeiros.map((barbeiro) => (
                 <button
-                  key={barber.id}
+                  key={barbeiro.id}
                   onClick={() => {
-                    console.log("Selecionando barbeiro:", barber.id, barber.name);
-                    setSelectedBarber(barber.id);
+                    console.log("Selecionando barbeiro:", barbeiro.id, barbeiro.nome);
+                    setSelectedBarber(barbeiro.id);
+                    setSelectedTime(''); // Limpar horário selecionado ao trocar barbeiro
                   }}
                   className={`w-full p-4 rounded-lg border-2 transition-colors text-left ${
-                    selectedBarber === barber.id
+                    selectedBarber === barbeiro.id
                       ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20'
                       : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
                   }`}
                 >
-                  <div className="font-medium text-gray-900 dark:text-white">{barber.name}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">⭐ {barber.rating}</div>
+                  <div className="font-medium text-gray-900 dark:text-white">{barbeiro.nome}</div>
+                  {barbeiro.especialidades && (
+                    <div className="text-sm text-gray-600 dark:text-gray-400">{barbeiro.especialidades}</div>
+                  )}
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    {barbeiro.horariosDisponiveis.length} horários disponíveis
+                  </div>
                 </button>
               ))
             ) : (
@@ -254,33 +283,39 @@ export default function BookAppointment() {
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Escolha o Horário</h2>
           </div>
           
-          <div className="grid grid-cols-2 gap-2 max-h-80 overflow-y-auto">
-            {timeSlots.map((time) => {
-              const isAvailable = isTimeSlotAvailable(time);
-              
-              return (
+          {!selectedBarber || !selectedDate ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500 dark:text-gray-400">
+                Selecione um barbeiro e uma data primeiro
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-2 max-h-80 overflow-y-auto">
+              {getAvailableTimesForDate(selectedBarber, selectedDate).map(({ time, horarioId }) => (
                 <button
-                  key={time}
+                  key={horarioId}
                   onClick={() => {
-                    if (isAvailable) {
-                      console.log("Selecionando horário:", time);
-                      setSelectedTime(time);
-                    }
+                    console.log("Selecionando horário:", time);
+                    setSelectedTime(time);
                   }}
-                  disabled={!isAvailable}
                   className={`p-2 rounded-lg text-sm font-medium transition-colors ${
                     selectedTime === time
                       ? 'bg-yellow-500 text-white'
-                      : isAvailable
-                      ? 'border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white hover:border-yellow-500'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
+                      : 'border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white hover:border-yellow-500'
                   }`}
                 >
                   {time}
                 </button>
-              );
-            })}
-          </div>
+              ))}
+              {getAvailableTimesForDate(selectedBarber, selectedDate).length === 0 && (
+                <div className="col-span-2 text-center py-4">
+                  <p className="text-gray-500 dark:text-gray-400">
+                    Nenhum horário disponível para esta data
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -292,7 +327,7 @@ export default function BookAppointment() {
           <div className="space-y-2 mb-6">
             {selectedBarber && (
               <p className="text-gray-600 dark:text-gray-400">
-                <span className="font-medium">Barbeiro:</span> {barbershop.barbers?.find((b: any) => b.id === selectedBarber)?.name}
+                <span className="font-medium">Barbeiro:</span> {barbeiros.find(b => b.id === selectedBarber)?.nome}
               </p>
             )}
             {selectedDate && (

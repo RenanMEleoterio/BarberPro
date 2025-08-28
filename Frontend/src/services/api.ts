@@ -231,6 +231,11 @@ class ApiService {
     return this.request(`/barbearia/${barbeariaId}/barbeiros`);
   }
 
+  // Novo método para buscar barbeiros com horários disponíveis
+  async getBarbeirosComHorarios() {
+    return this.request('/agendamento/barbeiros');
+  }
+
     async getBarbeariaById(id: number) {
     return this.request(`/barbearia/${id}`);
   }
