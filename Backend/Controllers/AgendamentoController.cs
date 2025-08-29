@@ -63,7 +63,7 @@ namespace BarbeariaSaaS.Controllers
             }
 
             var barbeiros = await query
-                .Include(u => u.HorariosDisponiveis.Where(h => h.EstaDisponivel && h.DataHora > DateTime.Now))
+                .Include(u => u.HorariosDisponiveis.Where(h => h.EstaDisponivel && h.DataHora > DateTime.UtcNow))
                 .ToListAsync();
 
             var result = new List<BarbeiroDto>();
@@ -74,7 +74,7 @@ namespace BarbeariaSaaS.Controllers
                 var agendamentosConfirmados = await _context.Agendamentos
                     .Where(a => a.BarbeiroId == barbeiro.Id && 
                                a.Status == StatusAgendamento.Confirmado &&
-                               a.DataHora > DateTime.Now)
+                               a.DataHora > DateTime.UtcNow)
                     .Select(a => a.DataHora)
                     .ToListAsync();
 
