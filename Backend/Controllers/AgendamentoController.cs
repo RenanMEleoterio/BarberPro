@@ -64,44 +64,25 @@ namespace BarbeariaSaaS.Controllers
 
             var barbeiros = await query
                 .Include(u => u.HorariosDisponiveis.Where(h => h.EstaDisponivel && h.DataHora > DateTime.UtcNow))
-                .ToListAsync();
-
-            var result = new List<BarbeiroDto>();
-
-            foreach (var barbeiro in barbeiros)
-            {
-                // Buscar agendamentos confirmados para este barbeiro
-                var agendamentosConfirmados = await _context.Agendamentos
-                    .Where(a => a.BarbeiroId == barbeiro.Id && 
-                               a.Status == StatusAgendamento.Confirmado &&
-                               a.DataHora > DateTime.UtcNow)
-                    .Select(a => a.DataHora)
-                    .ToListAsync();
-
-                // Filtrar horários que não têm agendamentos confirmados
-                var horariosDisponiveis = barbeiro.HorariosDisponiveis
-                    .Where(h => !agendamentosConfirmados.Contains(h.DataHora))
-                    .Select(h => new HorarioDisponivelDto
+                .Select(u => new BarbeiroDto
+                {
+                    Id = u.Id,
+                    Nome = u.Nome,
+                    Foto = u.Foto,
+                    Especialidades = u.Especialidades,
+                    Descricao = u.Descricao,
+                    HorariosDisponiveis = u.HorariosDisponiveis.Select(h => new HorarioDisponivelDto
                     {
                         Id = h.Id,
                         DataHora = h.DataHora,
                         BarbeiroId = h.BarbeiroId,
-                        NomeBarbeiro = barbeiro.Nome,
-                        EstaDisponivel = true
-                    }).ToList();
+                        NomeBarbeiro = u.Nome,
+                        EstaDisponivel = h.EstaDisponivel
+                    }).ToList()
+                })
+                .ToListAsync();
 
-                result.Add(new BarbeiroDto
-                {
-                    Id = barbeiro.Id,
-                    Nome = barbeiro.Nome,
-                    Foto = barbeiro.Foto,
-                    Especialidades = barbeiro.Especialidades,
-                    Descricao = barbeiro.Descricao,
-                    HorariosDisponiveis = horariosDisponiveis
-                });
-            }
-
-            return Ok(result);
+            return Ok(barbeiros);
         }
 
         [HttpPost]
