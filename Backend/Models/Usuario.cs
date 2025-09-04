@@ -68,3 +68,10 @@ namespace BarbeariaSaaS.Models
 }
 
 
+
+
+        [StringLength(255)]
+        public string? PasswordResetToken { get; set; }
+        public DateTime? PasswordResetTokenExpires { get; set; }
+
+
