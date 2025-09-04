@@ -19,6 +19,8 @@ namespace BarbeariaSaaS.Services
         string GenerateCodigoConvite();
         string GenerateCodigoBarbearia();
         string GeneratePasswordResetToken();
+
+
     }
 
     public class AuthService : IAuthService
@@ -112,10 +114,6 @@ namespace BarbeariaSaaS.Services
                 return new string(result);
             }
         }
-    }
-}
-
-
 
         public string GeneratePasswordResetToken()
         {
@@ -126,5 +124,5 @@ namespace BarbeariaSaaS.Services
                 return Convert.ToBase64String(bytes); // Converte para string Base64
             }
         }
-
-
+    }
+}
