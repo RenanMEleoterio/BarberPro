@@ -5,45 +5,50 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BarbeariaSaaS.Models
 {
+    // Classe que representa o modelo de dados para uma Barbearia no sistema.
     public class Barbearia
     {
-        [Key]
+        [Key] // Define 'Id' como a chave primária da tabela.
         public int Id { get; set; }
 
-        [Required]
-        [StringLength(100)]
-        public string Nome { get; set; }
+        [Required] // Campo obrigatório.
+        [StringLength(100)] // Define o tamanho máximo da string.
+        public string Nome { get; set; } // Nome da barbearia.
 
-        [Required]
-        [StringLength(200)]
-        public string Endereco { get; set; }
+        [Required] // Campo obrigatório.
+        [StringLength(200)] // Define o tamanho máximo da string.
+        public string Endereco { get; set; } // Endereço da barbearia.
 
-        [Required]
-        [StringLength(20)]
-        public string Telefone { get; set; }
+        [Required] // Campo obrigatório.
+        [StringLength(20)] // Define o tamanho máximo da string.
+        public string Telefone { get; set; } // Telefone de contato da barbearia.
 
-        [Required]
-        [EmailAddress]
-        [StringLength(100)]
-        public string Email { get; set; }
+        [Required] // Campo obrigatório.
+        [EmailAddress] // Valida o formato do email.
+        [StringLength(100)] // Define o tamanho máximo da string.
+        public string Email { get; set; } // Email da barbearia.
 
-        [StringLength(500)]
-        public string Logo { get; set; }
+        [StringLength(500)] // Define o tamanho máximo da string.
+        public string Logo { get; set; } // URL ou caminho para o logo da barbearia (opcional).
 
-        [Required]
-        [StringLength(10)]
-        public string CodigoConvite { get; set; }
+        [Required] // Campo obrigatório.
+        [StringLength(10)] // Define o tamanho máximo da string.
+        public string CodigoConvite { get; set; } // Código único para convite de novos usuários para esta barbearia.
 
-        [Required]
-        [StringLength(8)]
-        public string CodigoBarbearia { get; set; }
+        [Required] // Campo obrigatório.
+        [StringLength(8)] // Define o tamanho máximo da string.
+        public string CodigoBarbearia { get; set; } // Código único de identificação da barbearia.
 
-        public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
+        public DateTime DataCriacao { get; set; } = DateTime.UtcNow; // Data de criação da barbearia, definida como UTC.
 
-        // Relacionamentos
+        // Relacionamentos:
+        // Uma barbearia pode ter múltiplos usuários (clientes, barbeiros, gerentes).
         public virtual ICollection<Usuario> Usuarios { get; set; } = new List<Usuario>();
+        // Uma barbearia pode ter múltiplos agendamentos.
         public virtual ICollection<Agendamento> Agendamentos { get; set; } = new List<Agendamento>();
+        // Uma barbearia pode oferecer múltiplos serviços.
         public virtual ICollection<Servico> Servicos { get; set; } = new List<Servico>();
     }
 }
+
 

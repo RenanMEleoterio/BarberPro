@@ -13,24 +13,32 @@ using Microsoft.Extensions.Configuration;
 using System.Linq;
 using System.Collections.Generic;
 
+// Cria uma instância do WebApplicationBuilder, que é o ponto de entrada para configurar e construir a aplicação web.
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure URLs to listen on HTTP only and use the PORT environment variable
+// Configura as URLs nas quais a aplicação irá escutar. 
+// Prioriza a variável de ambiente 'PORT' para ambientes de produção (como Render.com) ou usa a porta 5000 como padrão.
+// A aplicação escutará em todas as interfaces de rede (0.0.0.0).
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
-// Add services to the container.
+// Adiciona serviços ao contêiner de injeção de dependência.
+// Adiciona suporte para controladores MVC/API, permitindo que a aplicação responda a requisições HTTP.
 builder.Services.AddControllers();
 
-// Entity Framework
+// Configura o DbContext (BarbeariaContext) para o Entity Framework Core.
+// A string de conexão é obtida da variável de ambiente 'DATABASE_URL' (para produção) ou do 'DefaultConnection' no appsettings.json (para desenvolvimento).
+// Usa Npgsql para conectar ao PostgreSQL.
 builder.Services.AddDbContext<BarbeariaContext>(options =>
 {
     var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL") ?? builder.Configuration.GetConnectionString("DefaultConnection");
-    Console.WriteLine($"DEBUG: Connection String: {connectionString}"); // Debug log
+    Console.WriteLine($"DEBUG: Connection String: {connectionString}"); // Log de depuração para a string de conexão.
     options.UseNpgsql(connectionString);
 });
 
-// Authentication
+// Configura a autenticação JWT (JSON Web Token).
+// Define os parâmetros de validação do token, incluindo emissor, audiência e chave de assinatura.
+// A chave é obtida da configuração 'Jwt:Key' e codificada em UTF8.
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -46,15 +54,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// Services
+// Registra os serviços personalizados da aplicação no contêiner de injeção de dependência.
+// IAuthService é registrado como um serviço com escopo (scoped), o que significa que uma nova instância é criada por requisição.
+// IGoogleAuthService é registrado com um HttpClient, útil para fazer requisições HTTP externas (e.g., para a API do Google).
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
 
-
-
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-
-
+// Configura as políticas de CORS (Cross-Origin Resource Sharing).
+// Permite requisições de origens específicas (netlify.app, localhost:3000, localhost:5173).
+// Permite qualquer método HTTP, qualquer cabeçalho e o envio de credenciais (cookies, cabeçalhos de autorização).
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
@@ -71,43 +79,54 @@ builder.Services.AddCors(options =>
         });
 });
 
+// Constrói a aplicação web a partir das configurações e serviços definidos no builder.
 var app = builder.Build();
 
-// Use CORS policy before UseRouting
+// Middleware de CORS: deve ser usado antes de UseRouting para garantir que as políticas de CORS sejam aplicadas corretamente.
 app.UseCors("AllowSpecificOrigin");
 
+// Middleware de roteamento: responsável por rotear as requisições HTTP para os endpoints corretos (controladores).
 app.UseRouting();
 
+// Configurações específicas para o ambiente de desenvolvimento.
+// Habilita Swagger/OpenAPI para documentação e teste de APIs, se a aplicação estiver em modo de desenvolvimento.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// app.UseHttpsRedirection(); // Removed HTTPS redirection for Render
+// app.UseHttpsRedirection(); // Comentado para ambientes como Render, que podem lidar com HTTPS externamente.
 
+// Middleware de autenticação: verifica as credenciais do usuário e anexa o objeto de usuário autenticado ao contexto da requisição.
 app.UseAuthentication();
+// Middleware de autorização: verifica se o usuário autenticado tem permissão para acessar o recurso solicitado.
 app.UseAuthorization();
 
+// Mapeia os controladores para as rotas da aplicação.
 app.MapControllers();
 
-// Serve static files
+// Serve arquivos estáticos (HTML, CSS, JavaScript, imagens) da pasta wwwroot.
 app.UseStaticFiles();
 
-// Apply migrations on startup
+// Aplica migrações do banco de dados na inicialização da aplicação.
+// Garante que o esquema do banco de dados esteja atualizado com o modelo da aplicação.
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<BarbeariaContext>();
     dbContext.Database.Migrate();
 }
 
-// Verificar barbearias se o argumento for passado
+// Lógica condicional para executar a verificação de barbearias.
+// Se o argumento "check-barbearias" for passado na linha de comando, executa a função CheckBarbearias.Run.
+// Isso é útil para tarefas de manutenção ou inicialização específicas.
 if (args.Length > 0 && args[0] == "check-barbearias")
 {
     await CheckBarbearias.Run(app.Services);
     return;
 }
 
+// Inicia a aplicação web, que começa a escutar as requisições HTTP.
 app.Run();
 
 

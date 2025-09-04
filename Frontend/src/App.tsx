@@ -18,106 +18,117 @@ import ManagerBarbers from './pages/manager/ManagerBarbers';
 import ManagerStats from './pages/manager/ManagerStats';
 import ManagerSettings from './pages/manager/ManagerSettings';
 
+// Componente ProtectedRoute: Garante que apenas usuários autenticados com as roles permitidas possam acessar as rotas.
+// Se o usuário não estiver autenticado, redireciona para a página de autenticação.
+// Se o usuário estiver autenticado, mas não tiver a role permitida, redireciona para a dashboard da sua role.
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) {
-  const { user } = useAuth();
+  const { user } = useAuth(); // Hook para acessar o contexto de autenticação e obter os dados do usuário.
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/auth" replace />; // Redireciona para /auth se não houver usuário logado.
   }
 
   if (!allowedRoles.includes(user.role)) {
-    return <Navigate to={`/${user.role}`} replace />;
+    return <Navigate to={`/${user.role}`} replace />; // Redireciona para a dashboard da role do usuário se a role não for permitida.
   }
 
-  return <>{children}</>;
+  return <>{children}</>; // Renderiza os componentes filhos se o usuário tiver a role permitida.
 }
 
+// Componente principal da aplicação.
 function App() {
   return (
+    // ThemeProvider: Fornece o contexto de tema para toda a aplicação.
     <ThemeProvider>
+      {/* AuthProvider: Fornece o contexto de autenticação para toda a aplicação. */}
       <AuthProvider>
+        {/* Router: Gerencia o roteamento da aplicação. HashRouter é usado para compatibilidade com hospedagem estática. */}
         <Router>
-          <div className="App">
+          <div className="App"> {/* Container principal da aplicação. */}
+            {/* Toaster: Componente para exibir notificações (toasts) na tela. */}
             <Toaster position="top-right" />
+            {/* Routes: Define as rotas da aplicação. */}
             <Routes>
+              {/* Rota de autenticação: acessível por qualquer usuário. */}
               <Route path="/auth" element={<AuthForm />} />
               
+              {/* Rota protegida principal: todas as rotas aninhadas dentro dela exigem autenticação. */}
               <Route path="/" element={
-                <ProtectedRoute allowedRoles={['client', 'barber', 'manager']}>
-                  <Layout />
+                <ProtectedRoute allowedRoles={['client', 'barber', 'manager']}> {/* Permite acesso a clientes, barbeiros e gerentes. */}
+                  <Layout /> {/* Componente de layout que contém a navegação e o conteúdo principal. */}
                 </ProtectedRoute>
               }>
-                {/* Client Routes */}
+                {/* Rotas do Cliente */}
                 <Route path="client" element={
-                  <ProtectedRoute allowedRoles={['client']}>
+                  <ProtectedRoute allowedRoles={['client']}> {/* Apenas clientes podem acessar. */}
                     <ClientDashboard />
                   </ProtectedRoute>
                 } />
                 <Route path="client/barbershops" element={
-                  <ProtectedRoute allowedRoles={['client']}>
+                  <ProtectedRoute allowedRoles={['client']}> {/* Apenas clientes podem acessar. */}
                     <Barbershops />
                   </ProtectedRoute>
                 } />
                 <Route path="client/appointments" element={
-                  <ProtectedRoute allowedRoles={['client']}>
+                  <ProtectedRoute allowedRoles={['client']}> {/* Apenas clientes podem acessar. */}
                     <Appointments />
                   </ProtectedRoute>
                 } />
                 <Route path="client/barbershops/:barbershopId/book" element={
-                  <ProtectedRoute allowedRoles={['client']}>
+                  <ProtectedRoute allowedRoles={['client']}> {/* Apenas clientes podem acessar. */}
                     <BookAppointment />
                   </ProtectedRoute>
                 } />
                 
-                {/* Barber Routes */}
+                {/* Rotas do Barbeiro */}
                 <Route path="barber" element={
-                  <ProtectedRoute allowedRoles={['barber']}>
+                  <ProtectedRoute allowedRoles={['barber']}> {/* Apenas barbeiros podem acessar. */}
                     <BarberDashboard />
                   </ProtectedRoute>
                 } />
                 <Route path="barber/schedule" element={
-                  <ProtectedRoute allowedRoles={['barber']}>
+                  <ProtectedRoute allowedRoles={['barber']}> {/* Apenas barbeiros podem acessar. */}
                     <BarberSchedule />
                   </ProtectedRoute>
                 } />
                 <Route path="barber/stats" element={
-                  <ProtectedRoute allowedRoles={['barber']}>
+                  <ProtectedRoute allowedRoles={['barber']}> {/* Apenas barbeiros podem acessar. */}
                     <BarberStats />
                   </ProtectedRoute>
                 } />
                 <Route path="barber/settings" element={
-                  <ProtectedRoute allowedRoles={['barber']}>
+                  <ProtectedRoute allowedRoles={['barber']}> {/* Apenas barbeiros podem acessar. */}
                     <BarberSettings />
                   </ProtectedRoute>
                 } />
                 
-                {/* Manager Routes */}
+                {/* Rotas do Gerente */}
                 <Route path="manager" element={
-                  <ProtectedRoute allowedRoles={['manager']}>
+                  <ProtectedRoute allowedRoles={['manager']}> {/* Apenas gerentes podem acessar. */}
                     <ManagerDashboard />
                   </ProtectedRoute>
                 } />
                 <Route path="manager/barbers" element={
-                  <ProtectedRoute allowedRoles={['manager']}>
+                  <ProtectedRoute allowedRoles={['manager']}> {/* Apenas gerentes podem acessar. */}
                     <ManagerBarbers />
                   </ProtectedRoute>
                 } />
                 <Route path="manager/stats" element={
-                  <ProtectedRoute allowedRoles={['manager']}>
+                  <ProtectedRoute allowedRoles={['manager']}> {/* Apenas gerentes podem acessar. */}
                     <ManagerStats />
                   </ProtectedRoute>
                 } />
                 <Route path="manager/settings" element={
-                  <ProtectedRoute allowedRoles={['manager']}>
+                  <ProtectedRoute allowedRoles={['manager']}> {/* Apenas gerentes podem acessar. */}
                     <ManagerSettings />
                   </ProtectedRoute>
                 } />
                 
-                {/* Default redirect */}
+                {/* Redirecionamento padrão: se nenhuma rota corresponder, redireciona para /client. */}
                 <Route index element={<Navigate to="/client" replace />} />
               </Route>
               
-              {/* Fallback redirect */}
+              {/* Redirecionamento de fallback: se nenhuma rota corresponder (fora do layout protegido), redireciona para /auth. */}
               <Route path="*" element={<Navigate to="/auth" replace />} />
             </Routes>
           </div>
@@ -128,4 +139,5 @@ function App() {
 }
 
 export default App;
+
 
