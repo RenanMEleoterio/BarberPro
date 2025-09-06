@@ -64,14 +64,8 @@ namespace BarbeariaSaaS.Models
         public virtual ICollection<Agendamento> AgendamentosComoBarbeiro { get; set; } = new List<Agendamento>();
         // Um cliente pode ter múltiplos agendamentos como solicitante de serviço.
         public virtual ICollection<Agendamento> AgendamentosComoCliente { get; set; } = new List<Agendamento>();
-    }
-}
-
-
-
-
         [StringLength(255)]
         public string? PasswordResetToken { get; set; }
         public DateTime? PasswordResetTokenExpires { get; set; }
-
-
+    }
+}

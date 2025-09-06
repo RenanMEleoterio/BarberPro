@@ -113,5 +113,14 @@ namespace BarbeariaSaaS.Services
             }
         }
 
+        public string GeneratePasswordResetToken()
+        {
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                var bytes = new byte[32]; // 32 bytes para um token de 256 bits
+                rng.GetBytes(bytes);
+                return Convert.ToBase64String(bytes); // Converte para string Base64
+            }
+        }
     }
 }
