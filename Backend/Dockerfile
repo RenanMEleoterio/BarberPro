@@ -8,6 +8,7 @@ RUN dotnet restore
 
 # Copie o restante do código fonte e construa a aplicação
 COPY . .
+
 RUN dotnet publish -c Release -o out
 
 # Use a imagem oficial do .NET SDK para executar a aplicação, pois o dotnet ef precisa do SDK

@@ -114,7 +114,34 @@ app.UseStaticFiles();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<BarbeariaContext>();
-    dbContext.Database.Migrate();
+    try
+    {
+        // Verifica se o banco de dados pode ser conectado
+        if (dbContext.Database.CanConnect())
+        {
+            // Aplica as migrações pendentes
+            dbContext.Database.Migrate();
+            Console.WriteLine("Migrações aplicadas com sucesso.");
+        }
+        else
+        {
+            Console.WriteLine("Não foi possível conectar ao banco de dados.");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Erro ao aplicar migrações: {ex.Message}");
+        // Em caso de erro, tenta criar o banco de dados do zero
+        try
+        {
+            dbContext.Database.EnsureCreated();
+            Console.WriteLine("Banco de dados criado com EnsureCreated.");
+        }
+        catch (Exception createEx)
+        {
+            Console.WriteLine($"Erro ao criar banco de dados: {createEx.Message}");
+        }
+    }
 }
 
 // Lógica condicional para executar a verificação de barbearias.
@@ -128,6 +155,5 @@ if (args.Length > 0 && args[0] == "check-barbearias")
 
 // Inicia a aplicação web, que começa a escutar as requisições HTTP.
 app.Run();
-
 
 
