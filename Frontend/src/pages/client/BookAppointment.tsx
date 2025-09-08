@@ -50,7 +50,16 @@ export default function BookAppointment() {
 
       // Carregar dados da barbearia
       const barbeariaData = await apiService.getBarbeariaById(parseInt(barbershopId));
-      setBarbershop(barbeariaData);
+      
+      // Adicionar configurações padrão se não existirem
+      const barbershopWithConfig = {
+        ...barbeariaData,
+        workDays: barbeariaData.workDays || ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
+        openTime: barbeariaData.openTime || '08:00',
+        closeTime: barbeariaData.closeTime || '18:00'
+      };
+      
+      setBarbershop(barbershopWithConfig);
 
       // Carregar barbeiros com horários disponíveis
       const barbeirosData = await apiService.getBarbeirosComHorarios();
@@ -82,7 +91,30 @@ export default function BookAppointment() {
   const getWeekDays = () => {
     const today = new Date();
     const startWeek = startOfWeek(today, { weekStartsOn: 1 });
-    return Array.from({ length: 7 }, (_, i) => addDays(startWeek, i));
+    const allDays = Array.from({ length: 7 }, (_, i) => addDays(startWeek, i));
+    
+    // Se não temos dados da barbearia ainda, retorna todos os dias
+    if (!barbershop || !barbershop.workDays) {
+      return allDays;
+    }
+    
+    // Mapear os dias da semana para os IDs usados no frontend
+    const dayMapping = {
+      0: 'sunday',    // Domingo
+      1: 'monday',    // Segunda
+      2: 'tuesday',   // Terça
+      3: 'wednesday', // Quarta
+      4: 'thursday',  // Quinta
+      5: 'friday',    // Sexta
+      6: 'saturday'   // Sábado
+    };
+    
+    // Filtrar apenas os dias que a barbearia funciona
+    return allDays.filter(day => {
+      const dayOfWeek = day.getDay();
+      const dayId = dayMapping[dayOfWeek as keyof typeof dayMapping];
+      return barbershop.workDays.includes(dayId);
+    });
   };
 
   const weekDays = getWeekDays();
