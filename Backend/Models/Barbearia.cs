@@ -47,6 +47,10 @@ namespace BarbeariaSaaS.Models
         // Uma barbearia pode ter múltiplos agendamentos.
         public virtual ICollection<Agendamento> Agendamentos { get; set; } = new List<Agendamento>();
         // Uma barbearia pode oferecer múltiplos serviços.
+        public string WorkDays { get; set; } = "monday,tuesday,wednesday,thursday,friday,saturday"; // Dias de funcionamento separados por vírgula
+        public string OpenTime { get; set; } = "08:00"; // Horário de abertura
+        public string CloseTime { get; set; } = "18:00"; // Horário de fechamento
+
         public virtual ICollection<Servico> Servicos { get; set; } = new List<Servico>();
     }
 }

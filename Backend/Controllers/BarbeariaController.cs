@@ -46,7 +46,20 @@ namespace BarbeariaSaaS.Controllers
                 return NotFound();
             }
 
-            return barbearia;
+            return Ok(new {
+                barbearia.Id,
+                barbearia.Nome,
+                barbearia.Endereco,
+                barbearia.Telefone,
+                barbearia.Email,
+                barbearia.Logo,
+                barbearia.CodigoConvite,
+                barbearia.CodigoBarbearia,
+                barbearia.DataCriacao,
+                barbearia.WorkDays,
+                barbearia.OpenTime,
+                barbearia.CloseTime
+            });
         }
 
         [HttpGet("{id}/barbeiros")]
@@ -112,6 +125,9 @@ namespace BarbeariaSaaS.Controllers
             barbearia.Endereco = updateDto.Endereco;
             barbearia.Telefone = updateDto.Telefone;
             barbearia.Email = updateDto.Email;
+            barbearia.WorkDays = updateDto.WorkDays;
+            barbearia.OpenTime = updateDto.OpenTime;
+            barbearia.CloseTime = updateDto.CloseTime;
 
             try
             {

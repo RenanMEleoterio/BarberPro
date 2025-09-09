@@ -6,6 +6,9 @@ namespace BarbeariaSaaS.DTOs
         public string Endereco { get; set; }
         public string Telefone { get; set; }
         public string Email { get; set; }
+        public string WorkDays { get; set; }
+        public string OpenTime { get; set; }
+        public string CloseTime { get; set; }
     }
 }
 
