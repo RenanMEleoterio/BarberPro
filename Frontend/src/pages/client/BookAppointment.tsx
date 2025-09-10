@@ -79,13 +79,17 @@ export default function BookAppointment() {
 
     return barbeiro.horariosDisponiveis
       .filter(h => {
-        const horarioDate = new Date(h.dataHora).toISOString().split('T')[0];
+        // Garante que a data do horário disponível corresponde à data selecionada
+        const horarioDate = format(new Date(h.dataHora), 'yyyy-MM-dd');
         return horarioDate === date && h.estaDisponivel;
       })
       .map(h => {
-        const time = new Date(h.dataHora).toTimeString().substring(0, 5);
+        // Extrai a hora e minuto diretamente da string ISO para evitar problemas de fuso horário
+        const time = format(new Date(h.dataHora), 'HH:mm');
         return { time, horarioId: h.id };
-      });
+      })
+      .sort((a, b) => a.time.localeCompare(b.time)); // Ordena os horários cronologicamente
+  };
   };
 
   const getWeekDays = () => {
@@ -99,21 +103,23 @@ export default function BookAppointment() {
     }
     
     // Mapear os dias da semana para os IDs usados no frontend
-    const dayMapping = {
-      0: 'sunday',    // Domingo
-      1: 'monday',    // Segunda
-      2: 'tuesday',   // Terça
-      3: 'wednesday', // Quarta
-      4: 'thursday',  // Quinta
-      5: 'friday',    // Sexta
-      6: 'saturday'   // Sábado
-    };
+    const dayMapping = [
+      'sunday',    // 0
+      'monday',    // 1
+      'tuesday',   // 2
+      'wednesday', // 3
+      'thursday',  // 4
+      'friday',    // 5
+      'saturday'   // 6
+    ];
     
+    const enabledWorkDays = barbershop.workDays.split(',').map((day: string) => day.trim());
+
     // Filtrar apenas os dias que a barbearia funciona
     return allDays.filter(day => {
-      const dayOfWeek = day.getDay();
-      const dayId = dayMapping[dayOfWeek as keyof typeof dayMapping];
-      return barbershop.workDays.includes(dayId);
+      const dayOfWeek = day.getDay(); // 0 for Sunday, 1 for Monday, etc.
+      const dayName = dayMapping[dayOfWeek];
+      return enabledWorkDays.includes(dayName);
     });
   };
 
