@@ -90,7 +90,6 @@ export default function BookAppointment() {
       })
       .sort((a, b) => a.time.localeCompare(b.time)); // Ordena os horários cronologicamente
   };
-  };
 
   const getWeekDays = () => {
     const today = new Date();
