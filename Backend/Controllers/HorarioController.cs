@@ -9,6 +9,7 @@ using System.Security.Claims;
 using BarbeariaSaaS.Data;
 using BarbeariaSaaS.DTOs;
 using BarbeariaSaaS.Models;
+using BarbeariaSaaS.Services;
 
 namespace BarbeariaSaaS.Controllers
 {
@@ -18,10 +19,12 @@ namespace BarbeariaSaaS.Controllers
     public class HorarioController : ControllerBase
     {
         private readonly BarbeariaContext _context;
+        private readonly HorarioService _horarioService;
 
-        public HorarioController(BarbeariaContext context)
+        public HorarioController(BarbeariaContext context, HorarioService horarioService)
         {
             _context = context;
+            _horarioService = horarioService;
         }
 
         private int GetUsuarioId()
@@ -240,6 +243,103 @@ namespace BarbeariaSaaS.Controllers
             }).ToList();
 
             return Ok(horariosResponse);
+        }
+
+        /// <summary>
+        /// Gera horários disponíveis para um barbeiro específico
+        /// </summary>
+        [HttpPost("gerar-barbeiro/{barbeiroId}")]
+        public async Task<IActionResult> GerarHorariosParaBarbeiro(
+            int barbeiroId,
+            [FromQuery] DateTime? dataInicio = null,
+            [FromQuery] DateTime? dataFim = null,
+            [FromQuery] int intervaloMinutos = 30)
+        {
+            try
+            {
+                var tipoUsuario = GetTipoUsuario();
+                
+                // Apenas gerentes e barbeiros podem gerar horários
+                if (tipoUsuario != "Gerente" && tipoUsuario != "Barbeiro")
+                {
+                    return Forbid("Apenas gerentes e barbeiros podem gerar horários");
+                }
+
+                // Se for barbeiro, só pode gerar para si mesmo
+                if (tipoUsuario == "Barbeiro" && GetUsuarioId() != barbeiroId)
+                {
+                    return Forbid("Barbeiros só podem gerar horários para si mesmos");
+                }
+
+                // Definir período padrão se não fornecido (próximos 30 dias)
+                var inicio = dataInicio ?? DateTime.Today;
+                var fim = dataFim ?? DateTime.Today.AddDays(30);
+
+                var horariosGerados = await _horarioService.GerarHorariosParaBarbeiro(
+                    barbeiroId, inicio, fim, intervaloMinutos);
+
+                return Ok(new 
+                { 
+                    message = $"{horariosGerados.Count} horários gerados com sucesso",
+                    horariosGerados = horariosGerados.Count,
+                    periodo = new { inicio, fim },
+                    intervaloMinutos
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Erro interno do servidor", details = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Gera horários para todos os barbeiros de uma barbearia
+        /// </summary>
+        [HttpPost("gerar-barbearia")]
+        public async Task<IActionResult> GerarHorariosParaBarbearia(
+            [FromQuery] DateTime? dataInicio = null,
+            [FromQuery] DateTime? dataFim = null,
+            [FromQuery] int intervaloMinutos = 30)
+        {
+            try
+            {
+                var tipoUsuario = GetTipoUsuario();
+                
+                // Apenas gerentes podem gerar horários para toda a barbearia
+                if (tipoUsuario != "Gerente")
+                {
+                    return Forbid("Apenas gerentes podem gerar horários para toda a barbearia");
+                }
+
+                var barbeariaId = int.Parse(User.FindFirst("BarbeariaId")?.Value ?? "0");
+                if (barbeariaId == 0)
+                {
+                    return BadRequest(new { message = "Usuário não está vinculado a uma barbearia" });
+                }
+
+                // Definir período padrão se não fornecido (próximos 30 dias)
+                var inicio = dataInicio ?? DateTime.Today;
+                var fim = dataFim ?? DateTime.Today.AddDays(30);
+
+                var totalHorarios = await _horarioService.GerarHorariosParaBarbearia(
+                    barbeariaId, inicio, fim, intervaloMinutos);
+
+                return Ok(new 
+                { 
+                    message = $"{totalHorarios} horários gerados com sucesso para toda a barbearia",
+                    horariosGerados = totalHorarios,
+                    periodo = new { inicio, fim },
+                    intervaloMinutos
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Erro interno do servidor", details = ex.Message });
+            }
         }
     }
 }
