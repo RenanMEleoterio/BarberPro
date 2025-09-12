@@ -48,8 +48,12 @@ export default function BookAppointment() {
         throw new Error('ID da barbearia não encontrado');
       }
 
+      console.log('=== DEBUG: Carregando dados ===');
+      console.log('Barbershop ID:', barbershopId);
+
       // Carregar dados da barbearia
       const barbeariaData = await apiService.getBarbeariaById(parseInt(barbershopId));
+      console.log('Dados da barbearia recebidos:', barbeariaData);
       
       // Adicionar configurações padrão se não existirem
       const barbershopWithConfig = {
@@ -59,10 +63,13 @@ export default function BookAppointment() {
         closeTime: barbeariaData.closeTime || '18:00'
       };
       
+      console.log('Dados da barbearia com configurações padrão:', barbershopWithConfig);
       setBarbershop(barbershopWithConfig);
 
       // Carregar barbeiros com horários disponíveis
+      console.log('Carregando barbeiros com horários...');
       const barbeirosData = await apiService.getBarbeirosComHorarios();
+      console.log('Barbeiros recebidos:', barbeirosData);
       setBarbeiros(barbeirosData);
       
     } catch (error) {
@@ -77,15 +84,31 @@ export default function BookAppointment() {
     const barbeiro = barbeiros.find(b => b.id === barbeiroId);
     if (!barbeiro) return [];
 
+    console.log(`=== DEBUG: getAvailableTimesForDate ===`);
+    console.log(`Barbeiro ID: ${barbeiroId}, Data selecionada: ${date}`);
+    console.log(`Horários disponíveis do barbeiro:`, barbeiro.horariosDisponiveis);
+
     return barbeiro.horariosDisponiveis
       .filter(h => {
-        // Garante que a data do horário disponível corresponde à data selecionada
-        const horarioDate = format(new Date(h.dataHora), 'yyyy-MM-dd');
+        // Criar objeto Date a partir da string ISO e extrair apenas a data
+        const horarioDateTime = new Date(h.dataHora);
+        const horarioDate = horarioDateTime.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+        
+        console.log(`Comparando: horário ${h.dataHora} -> data ${horarioDate} com data selecionada ${date}, disponível: ${h.estaDisponivel}`);
+        
         return horarioDate === date && h.estaDisponivel;
       })
       .map(h => {
-        // Extrai a hora e minuto diretamente da string ISO para evitar problemas de fuso horário
-        const time = format(new Date(h.dataHora), 'HH:mm');
+        // Extrair hora local sem conversão de timezone
+        const horarioDateTime = new Date(h.dataHora);
+        const time = horarioDateTime.toLocaleTimeString('pt-BR', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: false 
+        });
+        
+        console.log(`Horário mapeado: ${h.dataHora} -> ${time}`);
+        
         return { time, horarioId: h.id };
       })
       .sort((a, b) => a.time.localeCompare(b.time)); // Ordena os horários cronologicamente
@@ -98,6 +121,7 @@ export default function BookAppointment() {
     
     // Se não temos dados da barbearia ainda, retorna todos os dias
     if (!barbershop || !barbershop.workDays) {
+      console.log('DEBUG: Sem dados da barbearia ou workDays, retornando todos os dias');
       return allDays;
     }
     
@@ -112,14 +136,34 @@ export default function BookAppointment() {
       'saturday'   // 6
     ];
     
-    const enabledWorkDays = barbershop.workDays.split(',').map((day: string) => day.trim());
+    // Suportar tanto array quanto string separada por vírgulas
+    let enabledWorkDays: string[] = [];
+    
+    if (Array.isArray(barbershop.workDays)) {
+      enabledWorkDays = barbershop.workDays;
+    } else if (typeof barbershop.workDays === 'string') {
+      enabledWorkDays = barbershop.workDays.split(',').map((day: string) => day.trim());
+    } else {
+      console.log('DEBUG: workDays em formato não reconhecido:', barbershop.workDays);
+      return allDays; // Fallback para todos os dias
+    }
+    
+    console.log('DEBUG: workDays processados:', enabledWorkDays);
 
     // Filtrar apenas os dias que a barbearia funciona
-    return allDays.filter(day => {
+    const filteredDays = allDays.filter(day => {
       const dayOfWeek = day.getDay(); // 0 for Sunday, 1 for Monday, etc.
       const dayName = dayMapping[dayOfWeek];
-      return enabledWorkDays.includes(dayName);
+      const isEnabled = enabledWorkDays.includes(dayName);
+      
+      console.log(`DEBUG: Dia ${dayName} (${dayOfWeek}) - Habilitado: ${isEnabled}`);
+      
+      return isEnabled;
     });
+    
+    console.log('DEBUG: Dias filtrados:', filteredDays.map(d => dayMapping[d.getDay()]));
+    
+    return filteredDays;
   };
 
   const weekDays = getWeekDays();

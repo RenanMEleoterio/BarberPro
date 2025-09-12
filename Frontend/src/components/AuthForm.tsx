@@ -216,7 +216,7 @@ export default function AuthForm() {
                       Código da Barbearia
                     </label>
                     <input
-                      type="text                      type="text                      type="text"                      type="text"
+                      type="text"
                       required
                       value={formData.barbershopCode}                   onChange={(e) => setFormData({ ...formData, barbershopCode: e.target.value })}
                       className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
