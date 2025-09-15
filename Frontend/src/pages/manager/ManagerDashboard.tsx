@@ -5,23 +5,38 @@ import toast from 'react-hot-toast';
 import { apiService } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 
+/**
+ * Componente do Dashboard do Gerente.
+ * Exibe um panorama geral da barbearia, incluindo estatísticas, formas de pagamento,
+ * performance semanal e uma lista de barbeiros cadastrados.
+ */
 export default function ManagerDashboard() {
+  // Estado para armazenar os dados do dashboard.
   const [dashboardData, setDashboardData] = useState<any>(null);
+  // Estado para controlar o status de carregamento dos dados.
   const [loading, setLoading] = useState(true);
+  // Estado para armazenar mensagens de erro.
   const [error, setError] = useState<string | null>(null);
+  // Hook para acessar as informações do usuário logado (gerente).
   const { user } = useAuth();
 
+  // Efeito que carrega os dados do dashboard quando o componente é montado ou o usuário muda.
   useEffect(() => {
     console.log("User no ManagerDashboard:", user);
     loadDashboardData();
   }, [user]);
 
+  /**
+   * Carrega os dados do dashboard do gerente a partir da API.
+   * Lida com estados de carregamento e erro, e verifica se o ID da barbearia está disponível.
+   */
   const loadDashboardData = async () => {
     try {
       setLoading(true);
       setError(null);
       if (user?.barbeariaId) {
         console.log("Carregando dashboard para barbeariaId:", user.barbeariaId);
+        // Chama o serviço de API para obter os dados do dashboard do gerente.
         const data = await apiService.getManagerDashboard(user.barbeariaId);
         console.log("Dados do dashboard recebidos:", data);
         setDashboardData(data);
@@ -37,23 +52,28 @@ export default function ManagerDashboard() {
     }
   };
 
+  // Extrai o código da barbearia do dashboardData ou define como vazio.
   const barbershopCode = dashboardData?.barbearia?.codigoBarbearia || '';
+  // Mapeia os dados de estatísticas para um formato mais fácil de usar.
   const stats = {
     totalBarbers: dashboardData?.totalBarbeiros || 0,
     totalAppointments: dashboardData?.agendamentosMes || 0,
     completedAppointments: dashboardData?.concluidosMes || 0,
     totalRevenue: dashboardData?.receitaTotal || 0
   };
+  // Prepara os dados das formas de pagamento para o gráfico de pizza, filtrando valores zero.
   const paymentData = dashboardData?.formasPagamento ? [
     { name: 'PIX', value: dashboardData.formasPagamento.pix, color: '#8b5cf6' },
     { name: 'Cartão', value: dashboardData.formasPagamento.cartao, color: '#06b6d4' },
     { name: 'Dinheiro', value: dashboardData.formasPagamento.dinheiro, color: '#eab308' }
   ].filter(item => item.value > 0) : [];
+  // Prepara os dados de performance semanal para o gráfico de barras.
   const weeklyData = dashboardData?.performanceSemanal ? 
     ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day, index) => ({
       day,
       appointments: dashboardData.performanceSemanal[index] || 0
     })) : [];
+  // Prepara os dados dos barbeiros para a tabela.
   const barbers = dashboardData?.barbeiros ? dashboardData.barbeiros.map((barbeiro: any) => ({
     id: barbeiro.id,
     name: barbeiro.nome,
@@ -62,17 +82,27 @@ export default function ManagerDashboard() {
     appointments: barbeiro.agendamentos
   })) : [];
 
+  /**
+   * Copia o código da barbearia para a área de transferência.
+   * Exibe uma notificação de sucesso.
+   */
   const copyBarbershopCode = () => {
     navigator.clipboard.writeText(barbershopCode);
     toast.success('Código copiado para a área de transferência!');
   };
 
+  /**
+   * Gera um link de registro para um barbeiro específico, incluindo o código da barbearia.
+   * Copia o link para a área de transferência e exibe uma notificação de sucesso.
+   * @param {any} barber - O objeto barbeiro para o qual o link será gerado.
+   */
   const generateBarberLink = (barber: any) => {
     const link = `${window.location.origin}/barber/register?code=${barbershopCode}&barber=${barber.id}`;
     navigator.clipboard.writeText(link);
     toast.success(`Link gerado para ${barber.name}!`);
   };
 
+  // Exibe um spinner de carregamento enquanto os dados estão sendo buscados.
   if (loading) {
     return (
       <div className="space-y-6">
@@ -89,19 +119,20 @@ export default function ManagerDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Exibe mensagem de erro, se houver */}
       {error && (
         <div className="bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg mb-4">
           {error}
         </div>
       )}
       
-      {/* Header */}
+      {/* Cabeçalho do Dashboard */}
       <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl sm:rounded-2xl p-4 sm:p-8 text-white">
         <h1 className="text-xl sm:text-3xl font-bold mb-2">Dashboard da Barbearia</h1>
         <p className="text-sm sm:text-base text-yellow-100">Gerencie sua barbearia e acompanhe o desempenho</p>
       </div>
 
-      {/* Barbershop Code */}
+      {/* Seção do Código da Barbearia */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
         <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">Código da Barbearia</h2>
         <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
@@ -119,8 +150,9 @@ export default function ManagerDashboard() {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Cards de Estatísticas Chave */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+        {/* Card: Total de Barbeiros */}
         <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1">
@@ -133,6 +165,7 @@ export default function ManagerDashboard() {
           </div>
         </div>
 
+        {/* Card: Agendamentos */}
         <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1">
@@ -145,6 +178,7 @@ export default function ManagerDashboard() {
           </div>
         </div>
 
+        {/* Card: Concluídos */}
         <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1">
@@ -157,6 +191,7 @@ export default function ManagerDashboard() {
           </div>
         </div>
 
+        {/* Card: Receita Total */}
         <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1">
@@ -171,7 +206,7 @@ export default function ManagerDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Payment Methods Chart */}
+        {/* Gráfico de Formas de Pagamento */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Formas de Pagamento</h2>
@@ -192,7 +227,7 @@ export default function ManagerDashboard() {
                     cy="50%"
                     outerRadius={100}
                     dataKey="value"
-                    label={({ name, value }) => `${name}: ${value}%`}
+                    label={({ name, value }) => `${name}: ${value}%`} // Exibe o nome e o valor percentual no gráfico.
                   >
                     {paymentData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
@@ -205,7 +240,7 @@ export default function ManagerDashboard() {
           </div>
         </div>
 
-        {/* Weekly Performance */}
+        {/* Gráfico de Performance Semanal */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Performance Semanal</h2>
@@ -227,7 +262,7 @@ export default function ManagerDashboard() {
                     formatter={(value, name) => [
                       name === 'appointments' ? `${value} agendamentos` : `R$ ${value}`,
                       name === 'appointments' ? 'Agendamentos' : 'Receita'
-                    ]}
+                    ]} // Formata o tooltip para exibir informações relevantes.
                   />
                   <Bar dataKey="appointments" fill="#eab308" />
                 </BarChart>
@@ -237,7 +272,7 @@ export default function ManagerDashboard() {
         </div>
       </div>
 
-      {/* Barbers Management */}
+      {/* Seção de Gerenciamento de Barbeiros */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Barbeiros Cadastrados</h2>
@@ -296,4 +331,5 @@ export default function ManagerDashboard() {
     </div>
   );
 }
+
 

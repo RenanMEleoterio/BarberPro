@@ -3,6 +3,9 @@ import { Calendar, Clock, User, Phone, MapPin } from 'lucide-react';
 import { apiService } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 
+/**
+ * Interface que define a estrutura de um objeto de agendamento.
+ */
 interface Appointment {
   id: string;
   clientName: string;
@@ -14,20 +17,35 @@ interface Appointment {
   price: number;
 }
 
+/**
+ * Componente de agenda para barbeiros.
+ * Permite ao barbeiro visualizar e gerenciar seus agendamentos por data.
+ */
 export default function BarberSchedule() {
+  // Estado para a data selecionada, inicializado com a data atual.
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  // Estado para armazenar a lista de agendamentos.
   const [appointments, setAppointments] = useState<any[]>([]);
+  // Estado para controlar o status de carregamento.
   const [loading, setLoading] = useState(true);
+  // Estado para armazenar mensagens de erro.
   const [error, setError] = useState<string | null>(null);
+  // Hook para acessar as informações do usuário logado.
   const { user } = useAuth();
   
+  // Efeito que carrega os agendamentos quando o componente é montado ou a data selecionada muda.
   useEffect(() => {
     loadAppointments();
-  }, []);
+  }, []); // Dependência vazia para carregar apenas uma vez na montagem
 
+  /**
+   * Carrega os agendamentos do barbeiro a partir da API.
+   * Atualiza os estados de carregamento, agendamentos e erro.
+   */
   const loadAppointments = async () => {
     try {
       setLoading(true);
+      // Chama o serviço de API para obter os agendamentos do barbeiro.
       const data = await apiService.getMyAppointments();
       setAppointments(data);
     } catch (error) {
@@ -38,6 +56,11 @@ export default function BarberSchedule() {
     }
   };
 
+  /**
+   * Retorna a classe CSS para a cor do status do agendamento.
+   * @param {string} status - O status do agendamento (Confirmado, Pendente, Realizado, Cancelado).
+   * @returns {string} - A string de classes CSS Tailwind para a cor correspondente.
+   */
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Confirmado':
@@ -53,12 +76,13 @@ export default function BarberSchedule() {
     }
   };
 
-  // Filtra os agendamentos pela data selecionada
+  // Filtra os agendamentos pela data selecionada para exibição.
   const filteredAppointments = appointments.filter(apt => {
     const aptDate = new Date(apt.dataHora).toISOString().split('T')[0];
     return aptDate === selectedDate;
   });
 
+  // Exibe um spinner de carregamento enquanto os dados estão sendo buscados.
   if (loading) {
     return (
       <div className="space-y-6">
@@ -73,6 +97,7 @@ export default function BarberSchedule() {
     );
   }
 
+  // Exibe uma mensagem de erro se houver problemas ao carregar os agendamentos.
   if (error) {
     return (
       <div className="space-y-6">
@@ -92,7 +117,7 @@ export default function BarberSchedule() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Cabeçalho da página */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -104,7 +129,7 @@ export default function BarberSchedule() {
         </div>
       </div>
 
-      {/* Date Selector */}
+      {/* Seletor de Data */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div className="flex items-center space-x-4">
           <Calendar className="h-5 w-5 text-yellow-500" />
@@ -121,7 +146,7 @@ export default function BarberSchedule() {
         </div>
       </div>
 
-      {/* Appointments List */}
+      {/* Lista de Agendamentos */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -200,8 +225,8 @@ export default function BarberSchedule() {
                       )}
                       {appointment.status === 'Confirmado' && (
                         <button className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-                          Concluir
-                        </button>
+                            Concluir
+                          </button>
                       )}
                     </div>
                   </div>
@@ -212,7 +237,7 @@ export default function BarberSchedule() {
         </div>
       </div>
 
-      {/* Summary */}
+      {/* Resumo do Dia */}
       {filteredAppointments.length > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -249,4 +274,5 @@ export default function BarberSchedule() {
     </div>
   );
 }
+
 

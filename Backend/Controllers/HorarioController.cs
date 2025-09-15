@@ -21,22 +21,40 @@ namespace BarbeariaSaaS.Controllers
         private readonly BarbeariaContext _context;
         private readonly HorarioService _horarioService;
 
+        /// <summary>
+        /// Construtor do controlador. Injeta o contexto do banco de dados (BarbeariaContext) e o serviço de horários (HorarioService).
+        /// </summary>
+        /// <param name="context">O contexto do banco de dados.</param>
+        /// <param name="horarioService">O serviço responsável pela lógica de negócios de horários.</param>
         public HorarioController(BarbeariaContext context, HorarioService horarioService)
         {
             _context = context;
             _horarioService = horarioService;
         }
 
+        /// <summary>
+        /// Retorna o ID do usuário logado a partir dos claims do token JWT.
+        /// </summary>
+        /// <returns>Um inteiro representando o ID do usuário.</returns>
         private int GetUsuarioId()
         {
             return int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
         }
 
+        /// <summary>
+        /// Retorna o tipo de usuário logado (e.g., "Cliente", "Barbeiro", "Gerente") a partir dos claims do token JWT.
+        /// </summary>
+        /// <returns>Uma string representando o tipo de usuário.</returns>
         private string GetTipoUsuario()
         {
             return User.FindFirst("TipoUsuario")?.Value ?? "";
         }
 
+        /// <summary>
+        /// Cria um novo horário disponível para o barbeiro logado. Verifica se o usuário é um barbeiro e se o horário já existe.
+        /// </summary>
+        /// <param name="criarDto">Objeto contendo a data e hora do novo horário.</param>
+        /// <returns>ActionResult<HorarioDisponivelDto> contendo o horário criado ou um erro.</returns>
         [HttpPost]
         public async Task<ActionResult<HorarioDisponivelDto>> CriarHorario(CriarHorarioDto criarDto)
         {
@@ -81,6 +99,10 @@ namespace BarbeariaSaaS.Controllers
             return Ok(horarioDto);
         }
 
+        /// <summary>
+        /// Retorna uma lista de todos os horários disponíveis criados pelo barbeiro logado.
+        /// </summary>
+        /// <returns>ActionResult<List<HorarioDisponivelDto>> contendo uma lista de objetos HorarioDisponivelDto.</returns>
         [HttpGet("meus-horarios")]
         public async Task<ActionResult<List<HorarioDisponivelDto>>> GetMeusHorarios()
         {
@@ -109,6 +131,13 @@ namespace BarbeariaSaaS.Controllers
             return Ok(horarios);
         }
 
+        /// <summary>
+        /// Altera a disponibilidade de um horário específico. Permite que barbeiros alterem seus próprios horários
+        /// e gerentes alterem horários de barbeiros de sua barbearia.
+        /// </summary>
+        /// <param name="id">O ID do horário a ser alterado.</param>
+        /// <param name="disponivel">O novo status de disponibilidade (true para disponível, false para indisponível).</param>
+        /// <returns>IActionResult indicando sucesso (NoContent) ou falha (NotFound, Forbid).</returns>
         [HttpPut("{id}/disponibilidade")]
         public async Task<IActionResult> AlterarDisponibilidade(int id, [FromBody] bool disponivel)
         {
@@ -148,6 +177,12 @@ namespace BarbeariaSaaS.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Remove um horário disponível. Permite que barbeiros removam seus próprios horários
+        /// e gerentes removam horários de barbeiros de sua barbearia. Impede a remoção se houver agendamentos confirmados para o horário.
+        /// </summary>
+        /// <param name="id">O ID do horário a ser removido.</param>
+        /// <returns>IActionResult indicando sucesso (NoContent) ou falha (NotFound, Forbid, BadRequest).</returns>
         [HttpDelete("{id}")]
         public async Task<IActionResult> RemoverHorario(int id)
         {
@@ -198,6 +233,11 @@ namespace BarbeariaSaaS.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Cria múltiplos horários disponíveis em lote para o barbeiro logado. Ignora horários que já existem.
+        /// </summary>
+        /// <param name="horariosDto">Uma lista de objetos CriarHorarioDto contendo as datas e horas dos novos horários.</param>
+        /// <returns>ActionResult<List<HorarioDisponivelDto>> contendo uma lista dos horários que foram efetivamente criados.</returns>
         [HttpPost("lote")]
         public async Task<ActionResult<List<HorarioDisponivelDto>>> CriarHorariosLote([FromBody] List<CriarHorarioDto> horariosDto)
         {
@@ -246,8 +286,14 @@ namespace BarbeariaSaaS.Controllers
         }
 
         /// <summary>
-        /// Gera horários disponíveis para um barbeiro específico
+        /// Gera horários disponíveis para um barbeiro específico dentro de um período definido.
+        /// Apenas gerentes e barbeiros podem usar esta função. Barbeiros só podem gerar horários para si mesmos.
         /// </summary>
+        /// <param name="barbeiroId">O ID do barbeiro para o qual os horários serão gerados.</param>
+        /// <param name="dataInicio">Data de início para a geração de horários (opcional, padrão é hoje).</param>
+        /// <param name="dataFim">Data de fim para a geração de horários (opcional, padrão é 30 dias a partir de hoje).</param>
+        /// <param name="intervaloMinutos">Intervalo em minutos entre os horários gerados (opcional, padrão é 30).</param>
+        /// <returns>IActionResult indicando sucesso com o número de horários gerados ou um erro.</returns>
         [HttpPost("gerar-barbeiro/{barbeiroId}")]
         public async Task<IActionResult> GerarHorariosParaBarbeiro(
             int barbeiroId,
@@ -297,8 +343,13 @@ namespace BarbeariaSaaS.Controllers
         }
 
         /// <summary>
-        /// Gera horários para todos os barbeiros de uma barbearia
+        /// Gera horários disponíveis para todos os barbeiros de uma barbearia dentro de um período definido.
+        /// Apenas gerentes podem usar esta função.
         /// </summary>
+        /// <param name="dataInicio">Data de início para a geração de horários (opcional, padrão é hoje).</param>
+        /// <param name="dataFim">Data de fim para a geração de horários (opcional, padrão é 30 dias a partir de hoje).</param>
+        /// <param name="intervaloMinutos">Intervalo em minutos entre os horários gerados (opcional, padrão é 30).</param>
+        /// <returns>IActionResult indicando sucesso com o número total de horários gerados ou um erro.</returns>
         [HttpPost("gerar-barbearia")]
         public async Task<IActionResult> GerarHorariosParaBarbearia(
             [FromQuery] DateTime? dataInicio = null,
@@ -343,4 +394,5 @@ namespace BarbeariaSaaS.Controllers
         }
     }
 }
+
 

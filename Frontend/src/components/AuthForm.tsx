@@ -4,9 +4,16 @@ import { useNavigate } from 'react-router-dom';
 import { Scissors, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+/**
+ * Componente de formulário de autenticação que lida com login e registro de usuários.
+ * Permite que os usuários se autentiquem com email/senha ou criem uma nova conta como cliente, barbeiro ou gerente.
+ */
 export default function AuthForm() {
+  // Estado para alternar entre os formulários de login e registro.
   const [isLogin, setIsLogin] = useState(true);
+  // Estado para controlar a visibilidade da senha.
   const [showPassword, setShowPassword] = useState(false);
+  // Estado para armazenar os dados do formulário.
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -16,12 +23,19 @@ export default function AuthForm() {
     address: "",
     phone: "",
   });
+  // Estado para indicar o carregamento durante o envio do formulário.
   const [loading, setLoading] = useState(false);
+  // Estado para armazenar erros de validação do formulário.
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   
+  // Hooks do React Router e do contexto de autenticação.
   const { signIn, signUp, signUpBarber, signUpBarbershop } = useAuth();
   const navigate = useNavigate();
 
+  /**
+   * Valida os campos do formulário antes do envio.
+   * @returns {boolean} - Retorna true se o formulário for válido, caso contrário, false.
+   */
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
     
@@ -70,6 +84,10 @@ export default function AuthForm() {
     return Object.keys(newErrors).length === 0;
   };
 
+  /**
+   * Lida com o envio do formulário de autenticação.
+   * @param {React.FormEvent} e - O evento de envio do formulário.
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -137,14 +155,28 @@ export default function AuthForm() {
     }
   };
 
+  /**
+   * Retorna a mensagem de erro para um campo específico.
+   * @param {string} field - O nome do campo.
+   * @returns {string} - A mensagem de erro.
+   */
   const getFieldError = (field: string) => {
     return errors[field] || '';
   };
 
+  /**
+   * Verifica se um campo específico tem um erro.
+   * @param {string} field - O nome do campo.
+   * @returns {boolean} - Retorna true se houver um erro, caso contrário, false.
+   */
   const hasFieldError = (field: string) => {
     return !!errors[field];
   };
 
+  /**
+   * Lida com o clique no botão de login com o Google.
+   * Exibe uma notificação de que a funcionalidade está em desenvolvimento.
+   */
   const handleGoogleSignIn = () => {
     toast.error('Funcionalidade do Google OAuth em desenvolvimento. Para ativar completamente, é necessário configurar as credenciais do Google Cloud Console.');
   };
@@ -197,7 +229,7 @@ export default function AuthForm() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {formData.role === 'manager' ? 'Nome da Barbearia' : 'Nome Completo'}
+                    Tipo de Conta
                   </label>
                   <select
                     value={formData.role}
@@ -373,14 +405,9 @@ export default function AuthForm() {
               type="button"
               onClick={handleGoogleSignIn}
               disabled={loading}
-              className="mt-4 w-full flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="mt-4 w-full flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 disabled:opacity-50 transition-all"
             >
-              <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.5h6.35c-.28 1.45-1.05 2.69-2.2 3.58v2.92h3.75c2.2-2.02 3.47-5 3.47-8.75z"/>
-                <path fill="#34A853" d="M12 23c3.05 0 5.6-1 7.47-2.92l-3.75-2.92c-1.15.7-2.6 1.12-4.22 1.12-3.25 0-6.02-2.19-7.02-5.12H.98v2.92C2.8 20.7 7.15 23 12 23z"/>
-                <path fill="#FBBC05" d="M4.98 14.12c-.2-.58-.32-1.2-.32-1.87s.12-1.29.32-1.87V7.41H1.23c-.6 1.2-.95 2.58-.95 4.09s.35 2.89.95 4.09L4.98 14.12z"/>
-                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.6 4.6 1.8l3.3-3.3c-2.2-2.02-5.02-3.25-8.02-3.25-4.85 0-9.2 2.3-11.02 6.12L4.98 10.1C5.98 7.17 8.75 4.75 12 4.75z"/>
-              </svg>
+              <img className="h-5 w-5 mr-3" src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo" />
               Entrar com Google
             </button>
           </div>
@@ -389,4 +416,5 @@ export default function AuthForm() {
     </div>
   );
 }
+
 

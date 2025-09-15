@@ -16,11 +16,22 @@ namespace BarbeariaSaaS.Controllers
     {
         private readonly BarbeariaContext _context;
 
+        /// <summary>
+        /// Construtor do controlador. Injeta o contexto do banco de dados (BarbeariaContext) para permitir a interação com o Entity Framework Core.
+        /// </summary>
+        /// <param name="context">O contexto do banco de dados.</param>
         public StatsController(BarbeariaContext context)
         {
             _context = context;
         }
 
+        /// <summary>
+        /// Retorna estatísticas detalhadas para um barbeiro específico, como total de clientes, receita total, total de agendamentos,
+        /// avaliação média (mock), performance semanal e serviços mais populares. O período das estatísticas pode ser especificado (semana, mês, trimestre, ano).
+        /// </summary>
+        /// <param name="id">O ID do barbeiro.</param>
+        /// <param name="periodo">O período para o qual as estatísticas devem ser calculadas (ex: "semana", "mes", "trimestre", "ano"). Padrão é "semana".</param>
+        /// <returns>ActionResult contendo um objeto anônimo com as estatísticas do barbeiro ou NotFound se o barbeiro não for encontrado.</returns>
         [HttpGet("barber/{id}")]
         public async Task<ActionResult> GetBarberStats(int id, [FromQuery] string periodo = "semana")
         {
@@ -108,6 +119,15 @@ namespace BarbeariaSaaS.Controllers
             return Ok(response);
         }
 
+        /// <summary>
+        /// Retorna estatísticas detalhadas para uma barbearia específica, destinadas a gerentes.
+        /// Inclui receita total, total de clientes, total de agendamentos, avaliação média (mock),
+        /// performance mensal, serviços mais populares, ranking de barbeiros e progresso da meta mensal.
+        /// O período das estatísticas pode ser especificado (mês, trimestre, ano, semana).
+        /// </summary>
+        /// <param name="barbeariaId">O ID da barbearia.</param>
+        /// <param name="periodo">O período para o qual as estatísticas devem ser calculadas (ex: "mes", "trimestre", "ano", "semana"). Padrão é "mes".</param>
+        /// <returns>ActionResult contendo um objeto anônimo com as estatísticas da barbearia ou NotFound se a barbearia não for encontrada.</returns>
         [HttpGet("manager/{barbeariaId}")]
         public async Task<ActionResult> GetManagerStats(int barbeariaId, [FromQuery] string periodo = "mes")
         {
@@ -237,4 +257,5 @@ namespace BarbeariaSaaS.Controllers
         }
     }
 }
+
 

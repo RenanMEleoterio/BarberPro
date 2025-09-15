@@ -5,6 +5,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { apiService } from '../../services/api';
 
+/**
+ * Interface que define a estrutura dos dados do dashboard do cliente.
+ */
 interface DashboardData {
   Cliente: {
     Id: number;
@@ -37,32 +40,47 @@ interface DashboardData {
   }>;
 }
 
+/**
+ * Componente do Dashboard do Cliente.
+ * Exibe um resumo das informações do cliente, total de agendamentos, próximo agendamento,
+ * agendamentos recentes e barbearias disponíveis.
+ */
 export default function ClientDashboard() {
+  // Hook para acessar as informações do usuário logado.
   const { user } = useAuth();
+  // Estado para armazenar os dados do dashboard.
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  // Estado para controlar o status de carregamento dos dados.
   const [loading, setLoading] = useState(true);
+  // Estado para armazenar mensagens de erro.
   const [error, setError] = useState<string | null>(null);
 
+  // Efeito que busca os dados do dashboard quando o componente é montado ou o usuário muda.
   useEffect(() => {
+    /**
+     * Função assíncrona para buscar os dados do dashboard do cliente.
+     */
     const fetchDashboardData = async () => {
-      if (!user) return;
+      if (!user) return; // Se não houver usuário logado, não faz a requisição.
       
       try {
         setLoading(true);
+        // Chama o serviço de API para obter os dados do dashboard do cliente.
         const data = await apiService.getClientDashboard(parseInt(user.id));
         console.log("Dados do dashboard recebidos:", data);
         setDashboardData(data);
       } catch (err) {
-        console.error('Erro ao carregar dashboard:', err);
-        setError('Erro ao carregar dados do dashboard');
+        console.error("Erro ao carregar dashboard:", err);
+        setError("Erro ao carregar dados do dashboard");
       } finally {
         setLoading(false);
       }
     };
 
     fetchDashboardData();
-  }, [user]);
+  }, [user]); // Dependência do `user` para refazer a busca se o usuário mudar.
 
+  // Exibe um spinner de carregamento enquanto os dados estão sendo buscados.
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -71,6 +89,7 @@ export default function ClientDashboard() {
     );
   }
 
+  // Exibe uma mensagem de erro se houver problemas ao carregar os dados.
   if (error) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -79,6 +98,7 @@ export default function ClientDashboard() {
     );
   }
 
+  // Exibe uma mensagem se nenhum dado for encontrado após o carregamento.
   if (!dashboardData) {
     return (
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
@@ -89,14 +109,15 @@ export default function ClientDashboard() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
+      {/* Cabeçalho de boas-vindas */}
       <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl sm:rounded-2xl p-6 sm:p-8 text-white">
         <h1 className="text-2xl sm:text-3xl font-bold mb-2">Bem-vindo de volta, {dashboardData?.Cliente?.Nome || user?.nome || 'Cliente'}!</h1>
         <p className="text-sm sm:text-base text-yellow-100">Encontre as melhores barbearias e agende seu próximo corte</p>
       </div>
 
-      {/* Stats Cards */}
+      {/* Cards de Estatísticas */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        {/* Card: Total de Agendamentos */}
         <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
@@ -107,6 +128,7 @@ export default function ClientDashboard() {
           </div>
         </div>
 
+        {/* Card: Barbearias Disponíveis */}
         <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
@@ -119,6 +141,7 @@ export default function ClientDashboard() {
           </div>
         </div>
 
+        {/* Card: Próximo Agendamento (resumo) */}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
@@ -134,7 +157,7 @@ export default function ClientDashboard() {
         </div>
       </div>
 
-      {/* Próximo Agendamento */}
+      {/* Seção: Próximo Agendamento (detalhes) */}
       {dashboardData?.ProximoAgendamento && (
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Próximo Agendamento</h2>
@@ -157,8 +180,9 @@ export default function ClientDashboard() {
         </div>
       )}
 
-      {/* Quick Actions */}
+      {/* Seção: Ações Rápidas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Link para Encontrar Barbearias */}
         <Link
           to="/client/barbershops"
           className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700"
@@ -174,6 +198,7 @@ export default function ClientDashboard() {
           </div>
         </Link>
 
+        {/* Link para Meus Agendamentos */}
         <Link
           to="/client/appointments"
           className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700"
@@ -189,6 +214,7 @@ export default function ClientDashboard() {
           </div>
         </Link>
 
+        {/* Card para Avaliações (funcionalidade futura ou placeholder) */}
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center space-x-4">
             <div className="bg-green-100 dark:bg-green-900/20 p-3 rounded-lg">
@@ -202,7 +228,7 @@ export default function ClientDashboard() {
         </div>
       </div>
 
-      {/* Recent Appointments */}
+      {/* Seção: Agendamentos Recentes */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Agendamentos Recentes</h2>
@@ -265,7 +291,7 @@ export default function ClientDashboard() {
         </div>
       </div>
 
-      {/* Barbearias Disponíveis */}
+      {/* Seção: Barbearias Disponíveis (lista resumida) */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Barbearias Disponíveis</h2>
@@ -294,6 +320,7 @@ export default function ClientDashboard() {
               </div>
             ))}
           </div>
+          {/* Link para ver todas as barbearias se houver mais de 4 */}
           {dashboardData?.Barbearias?.length > 4 && (
             <div className="text-center mt-4">
               <Link 
@@ -309,3 +336,5 @@ export default function ClientDashboard() {
     </div>
   );
 }
+
+

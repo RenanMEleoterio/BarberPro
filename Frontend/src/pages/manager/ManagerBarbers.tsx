@@ -4,6 +4,9 @@ import { apiService } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
 
+/**
+ * Interface que define a estrutura de um objeto Barbeiro.
+ */
 interface Barber {
   id: string;
   name: string;
@@ -18,6 +21,9 @@ interface Barber {
   avatar?: string;
 }
 
+/**
+ * Interface que define a estrutura dos dados retornados para a lista de barbeiros e suas estatísticas.
+ */
 interface BarbersData {
   barbeiros: Barber[];
   estatisticas: {
@@ -28,23 +34,39 @@ interface BarbersData {
   };
 }
 
+/**
+ * Componente para gerenciar os barbeiros de uma barbearia.
+ * Permite visualizar, buscar e adicionar barbeiros, além de exibir estatísticas gerais.
+ */
 export default function ManagerBarbers() {
+  // Estado para o termo de busca dos barbeiros.
   const [searchTerm, setSearchTerm] = useState('');
+  // Estado para controlar a visibilidade do modal de adição de barbeiro.
   const [showAddModal, setShowAddModal] = useState(false);
+  // Estado para armazenar os dados dos barbeiros e estatísticas.
   const [barbersData, setBarbersData] = useState<BarbersData | null>(null);
+  // Estado para controlar o status de carregamento.
   const [loading, setLoading] = useState(true);
+  // Estado para armazenar mensagens de erro.
   const [error, setError] = useState<string | null>(null);
+  // Hook para acessar as informações do usuário logado (gerente).
   const { user } = useAuth();
 
+  // Efeito que carrega os dados dos barbeiros quando o componente é montado ou o usuário muda.
   useEffect(() => {
     loadBarbersData();
   }, [user]);
 
+  /**
+   * Carrega os dados dos barbeiros e as estatísticas da barbearia a partir da API.
+   * Atualiza os estados de carregamento, dados dos barbeiros e erro.
+   */
   const loadBarbersData = async () => {
     try {
       setLoading(true);
       setError(null);
       if (user?.barbeariaId) {
+        // Busca os barbeiros e estatísticas associadas à barbearia do gerente.
         const data = await apiService.getManagerBarbers(user.barbeariaId);
         setBarbersData({
           barbeiros: (data.Barbeiros || []).map((b: any) => ({
@@ -71,6 +93,7 @@ export default function ManagerBarbers() {
       }
     } catch (err: any) {
       console.error("Erro ao carregar barbeiros:", err);
+      // Ignora erro 404 para permitir que o componente renderize sem dados.
       if (err.response?.status !== 404) {
         setError("Erro ao carregar dados dos barbeiros");
         toast.error("Erro ao carregar dados dos barbeiros");
@@ -80,6 +103,7 @@ export default function ManagerBarbers() {
     }
   };
 
+  // Extrai os barbeiros e estatísticas do estado, fornecendo valores padrão se não existirem.
   const barbers = barbersData?.barbeiros || [];
   const stats = barbersData?.estatisticas || {
     totalBarbeiros: 0,
@@ -88,6 +112,7 @@ export default function ManagerBarbers() {
     avaliacaoMedia: 0
   };
 
+  // Filtra os barbeiros com base no termo de busca (nome, email ou especialidades).
   const filteredBarbers = barbers.filter(barber =>
     barber.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     barber.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -96,16 +121,27 @@ export default function ManagerBarbers() {
     )
   );
 
+  /**
+   * Retorna a classe CSS para a cor do status do barbeiro.
+   * @param {string} status - O status do barbeiro ('active' ou 'inactive').
+   * @returns {string} - A string de classes CSS Tailwind para a cor correspondente.
+   */
   const getStatusColor = (status: string) => {
     return status === 'active' 
       ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
       : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
   };
 
+  /**
+   * Retorna o texto formatado para o status do barbeiro.
+   * @param {string} status - O status do barbeiro ('active' ou 'inactive').
+   * @returns {string} - O texto do status em português.
+   */
   const getStatusText = (status: string) => {
     return status === 'active' ? 'Ativo' : 'Inativo';
   };
 
+  // Exibe um spinner de carregamento enquanto os dados estão sendo buscados.
   if (loading) {
     return (
       <div className="space-y-6">
@@ -128,13 +164,14 @@ export default function ManagerBarbers() {
 
   return (
     <div className="space-y-6">
+      {/* Exibe mensagem de erro, se houver */}
       {error && (
         <div className="bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg mb-4">
           {error}
         </div>
       )}
       
-      {/* Header */}
+      {/* Cabeçalho da página e botão para adicionar barbeiro */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
@@ -155,7 +192,7 @@ export default function ManagerBarbers() {
         </button>
       </div>
 
-      {/* Search and Filters */}
+      {/* Campo de Busca */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
         <div className="flex items-center space-x-4">
           <div className="flex-1 relative">
@@ -171,8 +208,9 @@ export default function ManagerBarbers() {
         </div>
       </div>
 
-      {/* Statistics Cards */}
+      {/* Cards de Estatísticas dos Barbeiros */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+        {/* Card: Total de Barbeiros */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1">
@@ -187,6 +225,7 @@ export default function ManagerBarbers() {
           </div>
         </div>
 
+        {/* Card: Barbeiros Ativos */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1">
@@ -201,6 +240,7 @@ export default function ManagerBarbers() {
           </div>
         </div>
 
+        {/* Card: Receita Total */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1">
@@ -215,6 +255,7 @@ export default function ManagerBarbers() {
           </div>
         </div>
 
+        {/* Card: Avaliação Média */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1">
@@ -230,7 +271,7 @@ export default function ManagerBarbers() {
         </div>
       </div>
 
-      {/* Barbers List */}
+      {/* Lista de Barbeiros */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -257,6 +298,7 @@ export default function ManagerBarbers() {
               <div key={barber.id} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
+                    {/* Avatar do barbeiro (inicial do nome) */}
                     <div className="h-12 w-12 rounded-full bg-yellow-500 flex items-center justify-center">
                       <span className="text-lg font-bold text-white">
                         {barber.name.charAt(0)}
@@ -268,11 +310,13 @@ export default function ManagerBarbers() {
                         <p className="text-lg font-medium text-gray-900 dark:text-white">
                           {barber.name}
                         </p>
+                        {/* Status do barbeiro (Ativo/Inativo) */}
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(barber.status)}`}>
                           {getStatusText(barber.status)}
                         </span>
                       </div>
                       
+                      {/* Detalhes de contato e data de entrada */}
                       <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex items-center space-x-1">
                           <Mail className="h-4 w-4" />
@@ -288,6 +332,7 @@ export default function ManagerBarbers() {
                         </div>
                       </div>
                       
+                      {/* Especialidades do barbeiro */}
                       <div className="mt-2">
                         <div className="flex flex-wrap gap-1">
                           {barber.specialties.map((specialty, index) => (
@@ -303,6 +348,7 @@ export default function ManagerBarbers() {
                     </div>
                   </div>
                   
+                  {/* Estatísticas individuais do barbeiro */}
                   <div className="flex items-center space-x-6">
                     <div className="text-center">
                       <div className="flex items-center space-x-1">
@@ -334,6 +380,7 @@ export default function ManagerBarbers() {
                       </p>
                     </div>
                     
+                    {/* Botões de ação para o barbeiro */}
                     <div className="flex space-x-2">
                       <button className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
                         Editar
@@ -349,8 +396,6 @@ export default function ManagerBarbers() {
           )}
         </div>
       </div>
-
-
     </div>
   );
 }

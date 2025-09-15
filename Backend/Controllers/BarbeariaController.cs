@@ -15,11 +15,19 @@ namespace BarbeariaSaaS.Controllers
     {
         private readonly BarbeariaContext _context;
 
+        /// <summary>
+        /// Construtor do controlador. Injeta o contexto do banco de dados (BarbeariaContext) para permitir a interação com o Entity Framework Core.
+        /// </summary>
+        /// <param name="context">O contexto do banco de dados.</param>
         public BarbeariaController(BarbeariaContext context)
         {
             _context = context;
         }
 
+        /// <summary>
+        /// Retorna uma lista de todas as barbearias registradas no sistema, incluindo seus IDs, nomes, endereços, telefones e e-mails.
+        /// </summary>
+        /// <returns>ActionResult<IEnumerable<Barbearia>> contendo uma lista de objetos anônimos com informações básicas das barbearias.</returns>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Barbearia>>> GetBarbearias()
         {
@@ -36,6 +44,12 @@ namespace BarbeariaSaaS.Controllers
             return Ok(barbearias);
         }
 
+        /// <summary>
+        /// Retorna os detalhes de uma barbearia específica com base no seu ID. Inclui informações como nome, endereço, telefone, e-mail, logo,
+        /// códigos de convite e barbearia, data de criação, dias de trabalho e horários de funcionamento.
+        /// </summary>
+        /// <param name="id">O ID da barbearia a ser consultada.</param>
+        /// <returns>ActionResult<Barbearia> contendo um objeto anônimo com os detalhes da barbearia ou NotFound se a barbearia não for encontrada.</returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<Barbearia>> GetBarbearia(int id)
         {
@@ -62,6 +76,11 @@ namespace BarbeariaSaaS.Controllers
             });
         }
 
+        /// <summary>
+        /// Retorna uma lista de barbeiros associados a uma barbearia específica. Filtra os usuários pelo BarbeariaId e TipoUsuario (Barbeiro).
+        /// </summary>
+        /// <param name="id">O ID da barbearia.</param>
+        /// <returns>ActionResult<IEnumerable<Usuario>> contendo uma lista de objetos anônimos com ID, nome, email, especialidades e descrição dos barbeiros.</returns>
         [HttpGet("{id}/barbeiros")]
         public async Task<ActionResult<IEnumerable<Usuario>>> GetBarbeirosPorBarbearia(int id)
         {
@@ -79,6 +98,11 @@ namespace BarbeariaSaaS.Controllers
             return Ok(barbeiros);
         }
 
+        /// <summary>
+        /// Retorna detalhes completos de uma barbearia, incluindo uma lista de seus barbeiros com informações adicionais como rating (valor padrão) e agendamentos confirmados.
+        /// </summary>
+        /// <param name="id">O ID da barbearia.</param>
+        /// <returns>ActionResult contendo um objeto anônimo com os detalhes da barbearia e seus barbeiros, ou NotFound se a barbearia não for encontrada.</returns>
         [HttpGet("{id}/detalhes")]
         public async Task<ActionResult> GetBarbeariaDetalhes(int id)
         {
@@ -111,6 +135,13 @@ namespace BarbeariaSaaS.Controllers
             return Ok(resultado);
         }
 
+        /// <summary>
+        /// Atualiza as informações de uma barbearia existente. Permite modificar o nome, endereço, telefone, e-mail, dias de trabalho e horários de funcionamento.
+        /// Lida com exceções de concorrência no banco de dados.
+        /// </summary>
+        /// <param name="id">O ID da barbearia a ser atualizada.</param>
+        /// <param name="updateDto">Objeto contendo os novos dados da barbearia.</param>
+        /// <returns>IActionResult indicando sucesso (NoContent) ou falha (NotFound, BadRequest).</returns>
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateBarbearia(int id, [FromBody] UpdateBarbeariaDto updateDto)
         {

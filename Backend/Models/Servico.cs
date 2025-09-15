@@ -4,27 +4,46 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BarbeariaSaaS.Models
 {
-    // Classe que representa o modelo de dados para um Serviço oferecido por uma barbearia.
+    /// <summary>
+    /// Classe que representa o modelo de dados para um Serviço oferecido por uma barbearia.
+    /// </summary>
     public class Servico
     {
-        [Key] // Define 'Id' como a chave primária da tabela.
+        /// <summary>
+        /// O ID único do serviço. É a chave primária da tabela.
+        /// </summary>
+        [Key]
         public int Id { get; set; }
 
-        [Required] // Campo obrigatório.
-        [StringLength(100)] // Define o tamanho máximo da string.
-        public string Nome { get; set; } // Nome do serviço (ex: 'Corte de Cabelo', 'Barba').
+        /// <summary>
+        /// Nome do serviço (ex: 'Corte de Cabelo', 'Barba'). Campo obrigatório com tamanho máximo de 100 caracteres.
+        /// </summary>
+        [Required]
+        [StringLength(100)]
+        public string Nome { get; set; }
 
-        [Required] // Campo obrigatório.
-        [Column(TypeName = "decimal(18, 2)")] // Define o tipo de coluna no banco de dados para precisão decimal.
-        public decimal Preco { get; set; } // Preço do serviço.
+        /// <summary>
+        /// Preço do serviço. Campo obrigatório com precisão decimal (18 dígitos no total, 2 após a vírgula).
+        /// </summary>
+        [Required]
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal Preco { get; set; }
 
-        [Required] // Campo obrigatório.
-        public int DuracaoMinutos { get; set; } // Duração estimada do serviço em minutos.
+        /// <summary>
+        /// Duração estimada do serviço em minutos. Campo obrigatório.
+        /// </summary>
+        [Required]
+        public int DuracaoMinutos { get; set; }
 
-        // Chave estrangeira para Barbearia:
-        public int BarbeariaId { get; set; } // ID da barbearia que oferece este serviço.
-        [ForeignKey("BarbeariaId")] // Define 'BarbeariaId' como chave estrangeira para a entidade Barbearia.
-        public virtual Barbearia Barbearia { get; set; } // Propriedade de navegação para o objeto Barbearia.
+        /// <summary>
+        /// ID da barbearia que oferece este serviço. Chave estrangeira para a entidade Barbearia.
+        /// </summary>
+        public int BarbeariaId { get; set; }
+        /// <summary>
+        /// Propriedade de navegação para o objeto Barbearia. Define BarbeariaId como chave estrangeira.
+        /// </summary>
+        [ForeignKey("BarbeariaId")]
+        public virtual Barbearia Barbearia { get; set; }
     }
 }
 

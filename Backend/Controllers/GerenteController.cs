@@ -18,11 +18,20 @@ namespace BarbeariaSaaS.Controllers
     {
         private readonly BarbeariaContext _context;
 
+        /// <summary>
+        /// Construtor do controlador. Injeta o contexto do banco de dados (BarbeariaContext) para permitir a interação com o Entity Framework Core.
+        /// </summary>
+        /// <param name="context">O contexto do banco de dados.</param>
         public GerenteController(BarbeariaContext context)
         {
             _context = context;
         }
 
+        /// <summary>
+        /// Retorna informações detalhadas sobre uma barbearia específica, como ID, nome, endereço, telefone, e-mail e código de convite.
+        /// </summary>
+        /// <param name="barbeariaId">O ID da barbearia a ser consultada.</param>
+        /// <returns>ActionResult contendo um objeto anônimo com as informações da barbearia ou NotFound se a barbearia não for encontrada.</returns>
         [HttpGet("barbearia/{barbeariaId}")]
         public async Task<ActionResult> GetBarbeariaInfo(int barbeariaId)
         {
@@ -47,6 +56,11 @@ namespace BarbeariaSaaS.Controllers
             return Ok(response);
         }
 
+        /// <summary>
+        /// Retorna uma lista de barbeiros associados a uma barbearia específica, incluindo seus IDs, nomes, especialidades e descrições.
+        /// </summary>
+        /// <param name="barbeariaId">O ID da barbearia.</param>
+        /// <returns>ActionResult contendo uma lista de objetos BarbeiroDto.</returns>
         [HttpGet("barbeiros/{barbeariaId}")]
         public async Task<ActionResult> GetBarbeiros(int barbeariaId)
         {
@@ -64,6 +78,12 @@ namespace BarbeariaSaaS.Controllers
             return Ok(barbeiros);
         }
 
+        /// <summary>
+        /// Retorna uma lista de clientes que possuem agendamentos ou estão associados a uma barbearia específica,
+        /// incluindo seus IDs, nomes e e-mails.
+        /// </summary>
+        /// <param name="barbeariaId">O ID da barbearia.</param>
+        /// <returns>ActionResult contendo uma lista de objetos anônimos com informações dos clientes.</returns>
         [HttpGet("clientes/{barbeariaId}")]
         public async Task<ActionResult> GetClientes(int barbeariaId)
         {
@@ -80,6 +100,12 @@ namespace BarbeariaSaaS.Controllers
             return Ok(clientes);
         }
 
+        /// <summary>
+        /// Retorna uma lista de todos os agendamentos de uma barbearia específica, incluindo o nome do cliente,
+        /// nome do barbeiro, data/hora e status do agendamento.
+        /// </summary>
+        /// <param name="barbeariaId">O ID da barbearia.</param>
+        /// <returns>ActionResult contendo uma lista de objetos anônimos com informações dos agendamentos.</returns>
         [HttpGet("agendamentos/{barbeariaId}")]
         public async Task<ActionResult> GetAgendamentos(int barbeariaId)
         {
@@ -100,6 +126,11 @@ namespace BarbeariaSaaS.Controllers
             return Ok(agendamentos);
         }
 
+        /// <summary>
+        /// Retorna a contagem de agendamentos para o dia atual em uma barbearia específica.
+        /// </summary>
+        /// <param name="barbeariaId">O ID da barbearia.</param>
+        /// <returns>ActionResult contendo um objeto anônimo com a contagem de agendamentos para hoje.</returns>
         [HttpGet("agendamentos/hoje/{barbeariaId}")]
         public async Task<ActionResult> GetAgendamentosHoje(int barbeariaId)
         {
@@ -117,4 +148,5 @@ namespace BarbeariaSaaS.Controllers
         }
     }
 }
+
 

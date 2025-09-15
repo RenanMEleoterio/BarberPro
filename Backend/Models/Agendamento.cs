@@ -5,61 +5,127 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BarbeariaSaaS.Models
 {
-    // Enumeração para representar os possíveis status de um agendamento.
+    /// <summary>
+    /// Enumeração para representar os possíveis status de um agendamento.
+    /// </summary>
     public enum StatusAgendamento
     {
-        Pendente = 1,   // Agendamento criado, aguardando confirmação.
-        Confirmado = 2, // Agendamento confirmado.
-        Cancelado = 3,  // Agendamento cancelado.
-        Realizado = 4   // Agendamento concluído.
+        /// <summary>
+        /// Agendamento criado, aguardando confirmação.
+        /// </summary>
+        Pendente = 1,
+        /// <summary>
+        /// Agendamento confirmado.
+        /// </summary>
+        Confirmado = 2,
+        /// <summary>
+        /// Agendamento cancelado.
+        /// </summary>
+        Cancelado = 3,
+        /// <summary>
+        /// Agendamento concluído.
+        /// </summary>
+        Realizado = 4
     }
 
-    // Classe que representa o modelo de dados para um Agendamento no sistema.
+    /// <summary>
+    /// Classe que representa o modelo de dados para um Agendamento no sistema.
+    /// </summary>
     public class Agendamento
     {
-        [Key] // Define 'Id' como a chave primária da tabela.
+        /// <summary>
+        /// O ID único do agendamento. É a chave primária da tabela.
+        /// </summary>
+        [Key]
         public int Id { get; set; }
 
-        [Required] // Campo obrigatório.
+        /// <summary>
+        /// O ID do cliente que fez o agendamento. Campo obrigatório.
+        /// </summary>
+        [Required]
         public int ClienteId { get; set; }
-        [ForeignKey("ClienteId")] // Define 'ClienteId' como chave estrangeira para a entidade Usuario (Cliente).
-        public virtual Usuario Cliente { get; set; } // Propriedade de navegação para o objeto Cliente.
+        /// <summary>
+        /// Propriedade de navegação para o objeto Cliente (usuário). Define ClienteId como chave estrangeira.
+        /// </summary>
+        [ForeignKey("ClienteId")]
+        public virtual Usuario Cliente { get; set; }
 
-        [Required] // Campo obrigatório.
+        /// <summary>
+        /// O ID do barbeiro que realizará o serviço. Campo obrigatório.
+        /// </summary>
+        [Required]
         public int BarbeiroId { get; set; }
-        [ForeignKey("BarbeiroId")] // Define 'BarbeiroId' como chave estrangeira para a entidade Usuario (Barbeiro).
-        public virtual Usuario Barbeiro { get; set; } // Propriedade de navegação para o objeto Barbeiro.
+        /// <summary>
+        /// Propriedade de navegação para o objeto Barbeiro (usuário). Define BarbeiroId como chave estrangeira.
+        /// </summary>
+        [ForeignKey("BarbeiroId")]
+        public virtual Usuario Barbeiro { get; set; }
 
-        [Required] // Campo obrigatório.
+        /// <summary>
+        /// O ID da barbearia onde o agendamento será realizado. Campo obrigatório.
+        /// </summary>
+        [Required]
         public int BarbeariaId { get; set; }
-        [ForeignKey("BarbeariaId")] // Define 'BarbeariaId' como chave estrangeira para a entidade Barbearia.
-        public virtual Barbearia Barbearia { get; set; } // Propriedade de navegação para o objeto Barbearia.
+        /// <summary>
+        /// Propriedade de navegação para o objeto Barbearia. Define BarbeariaId como chave estrangeira.
+        /// </summary>
+        [ForeignKey("BarbeariaId")]
+        public virtual Barbearia Barbearia { get; set; }
 
-        [Required] // Campo obrigatório.
-        public DateTime DataHora { get; set; } // Data e hora do agendamento. Será tratada como UTC antes de salvar.
+        /// <summary>
+        /// A data e hora do agendamento. Campo obrigatório. Será tratada como UTC antes de salvar.
+        /// </summary>
+        [Required]
+        public DateTime DataHora { get; set; }
 
-        [Required] // Campo obrigatório.
-        [StringLength(100)] // Define o tamanho máximo da string.
-        public string TipoServico { get; set; } // Descrição do tipo de serviço agendado.
+        /// <summary>
+        /// Descrição do tipo de serviço agendado (ex: "Corte de Cabelo", "Barba"). Campo obrigatório com tamanho máximo de 100 caracteres.
+        /// </summary>
+        [Required]
+        [StringLength(100)]
+        public string TipoServico { get; set; }
 
-        public decimal? PrecoServico { get; set; } // Preço do serviço (opcional).
+        /// <summary>
+        /// O preço do serviço. Campo opcional.
+        /// </summary>
+        public decimal? PrecoServico { get; set; }
 
-        [StringLength(500)] // Define o tamanho máximo da string.
-        public string? Observacoes { get; set; } // Observações adicionais sobre o agendamento (opcional).
+        /// <summary>
+        /// Observações adicionais sobre o agendamento. Campo opcional com tamanho máximo de 500 caracteres.
+        /// </summary>
+        [StringLength(500)]
+        public string? Observacoes { get; set; }
 
-        [Required] // Campo obrigatório.
-        public StatusAgendamento Status { get; set; } // Status atual do agendamento, usando o enum StatusAgendamento.
+        /// <summary>
+        /// O status atual do agendamento, utilizando a enumeração StatusAgendamento. Campo obrigatório.
+        /// </summary>
+        [Required]
+        public StatusAgendamento Status { get; set; }
 
-        [StringLength(50)] // Define o tamanho máximo da string.
-        public string? MetodoPagamento { get; set; } // Método de pagamento utilizado (opcional).
+        /// <summary>
+        /// O método de pagamento utilizado para o serviço. Campo opcional com tamanho máximo de 50 caracteres.
+        /// </summary>
+        [StringLength(50)]
+        public string? MetodoPagamento { get; set; }
 
-        public DateTime DataCriacao { get; set; } = DateTime.UtcNow; // Data de criação do agendamento, definida como UTC.
-        public DateTime DataAtualizacao { get; set; } = DateTime.UtcNow; // Data da última atualização do agendamento, definida como UTC.
+        /// <summary>
+        /// A data e hora de criação do agendamento. Definida automaticamente como UTC no momento da criação.
+        /// </summary>
+        public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
+        /// <summary>
+        /// A data e hora da última atualização do agendamento. Definida automaticamente como UTC no momento da atualização.
+        /// </summary>
+        public DateTime DataAtualizacao { get; set; } = DateTime.UtcNow;
 
-        // FK para HorarioDisponivel (se o agendamento foi feito a partir de um horário específico).
+        /// <summary>
+        /// O ID do horário disponível que foi agendado. Campo opcional, usado para vincular o agendamento a um slot de horário específico.
+        /// </summary>
         public int? HorarioDisponivelId { get; set; }
-        [ForeignKey("HorarioDisponivelId")] // Define 'HorarioDisponivelId' como chave estrangeira para a entidade HorarioDisponivel.
-        public virtual HorarioDisponivel HorarioDisponivel { get; set; } // Propriedade de navegação para o objeto HorarioDisponivel.
+        /// <summary>
+        /// Propriedade de navegação para o objeto HorarioDisponivel. Define HorarioDisponivelId como chave estrangeira.
+        /// </summary>
+        [ForeignKey("HorarioDisponivelId")]
+        public virtual HorarioDisponivel HorarioDisponivel { get; set; }
     }
 }
 

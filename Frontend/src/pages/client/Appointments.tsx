@@ -2,19 +2,33 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, MapPin, Star, Phone, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { apiService } from '../../services/api';
 
+/**
+ * Componente para exibir e gerenciar os agendamentos de um cliente.
+ * Permite filtrar agendamentos por status (todos, agendados, concluídos, cancelados).
+ */
 export default function Appointments() {
+  // Estado para o filtro de agendamentos (ex: 'all', 'scheduled', 'completed', 'cancelled').
   const [filter, setFilter] = useState('all');
+  // Estado para armazenar a lista de agendamentos do cliente.
   const [appointments, setAppointments] = useState<any[]>([]);
+  // Estado para controlar o status de carregamento dos agendamentos.
   const [loading, setLoading] = useState(true);
+  // Estado para armazenar mensagens de erro.
   const [error, setError] = useState<string | null>(null);
 
+  // Efeito que carrega os agendamentos do cliente quando o componente é montado.
   useEffect(() => {
     loadAppointments();
   }, []);
 
+  /**
+   * Carrega os agendamentos do cliente a partir da API.
+   * Atualiza os estados de carregamento, agendamentos e erro.
+   */
   const loadAppointments = async () => {
     try {
       setLoading(true);
+      // Chama o serviço de API para obter os agendamentos com detalhes.
       const data = await apiService.getMyAppointmentsWithDetails();
       setAppointments(data);
     } catch (error) {
@@ -25,11 +39,13 @@ export default function Appointments() {
     }
   };
 
+  // Filtra os agendamentos com base no estado `filter`.
   const filteredAppointments = appointments.filter(appointment => {
-    if (filter === 'all') return true;
-    return appointment.status === filter;
+    if (filter === 'all') return true; // Se o filtro for 'all', retorna todos os agendamentos.
+    return appointment.status === filter; // Caso contrário, filtra pelo status.
   });
 
+  // Exibe um spinner de carregamento enquanto os dados estão sendo buscados.
   if (loading) {
     return (
       <div className="space-y-6">
@@ -44,6 +60,7 @@ export default function Appointments() {
     );
   }
 
+  // Exibe uma mensagem de erro se houver problemas ao carregar os agendamentos.
   if (error) {
     return (
       <div className="space-y-6">
@@ -61,6 +78,11 @@ export default function Appointments() {
     );
   }
 
+  /**
+   * Retorna o ícone correspondente ao status do agendamento.
+   * @param {string} status - O status do agendamento.
+   * @returns {JSX.Element | null} - O ícone Lucide React ou null se não houver correspondência.
+   */
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'scheduled':
@@ -74,6 +96,11 @@ export default function Appointments() {
     }
   };
 
+  /**
+   * Retorna o texto formatado para o status do agendamento.
+   * @param {string} status - O status do agendamento.
+   * @returns {string} - O texto do status em português.
+   */
   const getStatusText = (status: string) => {
     switch (status) {
       case 'scheduled':
@@ -87,6 +114,11 @@ export default function Appointments() {
     }
   };
 
+  /**
+   * Retorna a classe CSS para a cor de fundo do status do agendamento.
+   * @param {string} status - O status do agendamento.
+   * @returns {string} - A string de classes CSS Tailwind para a cor correspondente.
+   */
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'scheduled':
@@ -102,13 +134,13 @@ export default function Appointments() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Cabeçalho da página */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Meus Agendamentos</h1>
         <p className="text-gray-600 dark:text-gray-400">Acompanhe seus agendamentos passados e futuros</p>
       </div>
 
-      {/* Filter Tabs */}
+      {/* Abas de Filtro */}
       <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
         {[
           { key: 'all', label: 'Todos' },
@@ -130,7 +162,7 @@ export default function Appointments() {
         ))}
       </div>
 
-      {/* Appointments List */}
+      {/* Lista de Agendamentos */}
       <div className="space-y-4">
         {filteredAppointments.map((appointment) => (
           <div key={appointment.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
@@ -203,6 +235,7 @@ export default function Appointments() {
         ))}
       </div>
 
+      {/* Mensagem de nenhum agendamento encontrado */}
       {filteredAppointments.length === 0 && (
         <div className="text-center py-12">
           <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -212,4 +245,5 @@ export default function Appointments() {
     </div>
   );
 }
+
 

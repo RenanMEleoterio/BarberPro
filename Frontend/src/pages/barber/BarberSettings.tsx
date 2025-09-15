@@ -3,7 +3,12 @@ import { User, Mail, Phone, Scissors, FileText, Save, AlertCircle } from 'lucide
 import { apiService } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 
+/**
+ * Componente de configurações do perfil do barbeiro.
+ * Permite ao barbeiro visualizar e editar suas informações pessoais e profissionais.
+ */
 export default function BarberSettings() {
+  // Estado para armazenar os dados do formulário do perfil do barbeiro.
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
@@ -11,16 +16,26 @@ export default function BarberSettings() {
     especialidades: '',
     descricao: ''
   });
+  // Estado para controlar o status de carregamento inicial dos dados.
   const [loading, setLoading] = useState(true);
+  // Estado para controlar o status de salvamento das alterações.
   const [saving, setSaving] = useState(false);
+  // Estado para armazenar mensagens de erro.
   const [error, setError] = useState<string | null>(null);
+  // Estado para armazenar mensagens de sucesso.
   const [success, setSuccess] = useState<string | null>(null);
+  // Hook para acessar as informações do usuário logado.
   const { user } = useAuth();
 
+  // Efeito que carrega os dados do barbeiro quando o componente é montado.
   useEffect(() => {
     loadBarberData();
   }, []);
 
+  /**
+   * Carrega os dados do perfil do barbeiro a partir da API.
+   * Atualiza os estados de carregamento e preenche o formulário com os dados existentes.
+   */
   const loadBarberData = async () => {
     try {
       setLoading(true);
@@ -43,6 +58,11 @@ export default function BarberSettings() {
     }
   };
 
+  /**
+   * Lida com a mudança de valores nos campos do formulário.
+   * Atualiza o estado `formData` com os novos valores.
+   * @param {React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>} e - O evento de mudança do input.
+   */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -51,6 +71,11 @@ export default function BarberSettings() {
     }));
   };
 
+  /**
+   * Lida com o envio do formulário de atualização do perfil.
+   * Envia os dados atualizados para a API e exibe mensagens de sucesso ou erro.
+   * @param {React.FormEvent} e - O evento de envio do formulário.
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -61,7 +86,7 @@ export default function BarberSettings() {
       if (user?.id) {
         await apiService.updateBarberProfile(user.id, formData);
         setSuccess('Perfil atualizado com sucesso!');
-        setTimeout(() => setSuccess(null), 3000);
+        setTimeout(() => setSuccess(null), 3000); // Limpa a mensagem de sucesso após 3 segundos.
       }
     } catch (error: any) {
       console.error('Erro ao atualizar perfil:', error);
@@ -71,6 +96,7 @@ export default function BarberSettings() {
     }
   };
 
+  // Exibe um spinner de carregamento enquanto os dados iniciais estão sendo buscados.
   if (loading) {
     return (
       <div className="space-y-6">
@@ -87,13 +113,13 @@ export default function BarberSettings() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Cabeçalho da página */}
       <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-2xl p-8 text-white">
         <h1 className="text-3xl font-bold mb-2">Configurações</h1>
         <p className="text-yellow-100">Gerencie seus dados pessoais e informações profissionais</p>
       </div>
 
-      {/* Messages */}
+      {/* Mensagens de erro ou sucesso */}
       {error && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
           <div className="flex items-center">
@@ -112,7 +138,7 @@ export default function BarberSettings() {
         </div>
       )}
 
-      {/* Settings Form */}
+      {/* Formulário de Configurações */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Informações Pessoais</h2>
@@ -121,7 +147,7 @@ export default function BarberSettings() {
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Nome */}
+            {/* Campo Nome */}
             <div>
               <label htmlFor="nome" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 <User className="h-4 w-4 inline mr-2" />
@@ -139,7 +165,7 @@ export default function BarberSettings() {
               />
             </div>
 
-            {/* Email */}
+            {/* Campo Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 <Mail className="h-4 w-4 inline mr-2" />
@@ -157,7 +183,7 @@ export default function BarberSettings() {
               />
             </div>
 
-            {/* Telefone */}
+            {/* Campo Telefone */}
             <div>
               <label htmlFor="telefone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 <Phone className="h-4 w-4 inline mr-2" />
@@ -175,7 +201,7 @@ export default function BarberSettings() {
             </div>
           </div>
 
-          {/* Especialidades */}
+          {/* Campo Especialidades */}
           <div>
             <label htmlFor="especialidades" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               <Scissors className="h-4 w-4 inline mr-2" />
@@ -192,7 +218,7 @@ export default function BarberSettings() {
             />
           </div>
 
-          {/* Descrição */}
+          {/* Campo Descrição */}
           <div>
             <label htmlFor="descricao" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               <FileText className="h-4 w-4 inline mr-2" />
@@ -209,7 +235,7 @@ export default function BarberSettings() {
             />
           </div>
 
-          {/* Submit Button */}
+          {/* Botão de Envio */}
           <div className="flex justify-end">
             <button
               type="submit"
@@ -225,4 +251,5 @@ export default function BarberSettings() {
     </div>
   );
 }
+
 

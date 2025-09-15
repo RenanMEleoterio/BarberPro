@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using BarbeariaSaaS.Data;
 using BarbeariaSaaS.Models;
 using BarbeariaSaaS.Services;
+using System.Text.RegularExpressions;
 
 namespace BarbeariaSaaS.Controllers
 {
@@ -18,7 +19,12 @@ namespace BarbeariaSaaS.Controllers
         private readonly IAuthService _authService; // Serviço para operações de autenticação (hash de senha, geração de token).
         private readonly IGoogleAuthService _googleAuthService; // Serviço para autenticação via Google.
 
-        // Construtor do controlador, injetando as dependências necessárias.
+        /// <summary>
+        /// Construtor do controlador, injetando as dependências necessárias.
+        /// </summary>
+        /// <param name="context">Contexto do banco de dados para interagir com o EF Core.</param>
+        /// <param name="authService">Serviço para operações de autenticação (hash de senha, geração de token).</param>
+        /// <param name="googleAuthService">Serviço para autenticação via Google.</param>
         public AuthController(BarbeariaContext context, IAuthService authService, IGoogleAuthService googleAuthService)
         {
             _context = context;
@@ -26,6 +32,12 @@ namespace BarbeariaSaaS.Controllers
             _googleAuthService = googleAuthService;
         }
 
+        /// <summary>
+        /// Autentica um usuário no sistema. Valida o email e a senha fornecidos, verifica as credenciais no banco de dados
+        /// e, se válidas, gera um token JWT para o usuário.
+        /// </summary>
+        /// <param name="loginDto">Objeto contendo o email e a senha do usuário para login.</param>
+        /// <returns>ActionResult<SecureLoginResponseDto> contendo os dados do usuário logado e o token JWT, ou um erro de autenticação.</returns>
         [HttpPost("login")] // Define um endpoint POST para login de usuários.
         public async Task<ActionResult<SecureLoginResponseDto>> Login(LoginDto loginDto)
         {
@@ -70,6 +82,12 @@ namespace BarbeariaSaaS.Controllers
             return Ok(response); // Retorna sucesso com os dados do usuário e o token.
         }
 
+        /// <summary>
+        /// Registra um novo cliente no sistema. Valida os dados fornecidos (nome, email, senha), verifica se o email já está em uso,
+        /// cria um novo usuário com tipo Cliente, faz o hash da senha e gera um token JWT.
+        /// </summary>
+        /// <param name="cadastroDto">Objeto contendo os dados para o cadastro do cliente (nome, email, senha).</param>
+        /// <returns>ActionResult<SecureLoginResponseDto> contendo os dados do cliente registrado e o token JWT, ou um erro de validação/cadastro.</returns>
         [HttpPost("cadastro-cliente")] // Define um endpoint POST para cadastro de clientes.
         public async Task<ActionResult<SecureLoginResponseDto>> CadastroCliente(CadastroClienteDto cadastroDto)
         {
@@ -137,6 +155,12 @@ namespace BarbeariaSaaS.Controllers
             }
         }
 
+        /// <summary>
+        /// Registra um novo barbeiro no sistema. Valida os dados (nome, email, senha, código da barbearia), verifica a existência da barbearia pelo código,
+        /// cria um usuário Barbeiro associado à barbearia, faz o hash da senha e gera um token JWT.
+        /// </summary>
+        /// <param name="cadastroDto">Objeto contendo os dados para o cadastro do barbeiro (nome, email, senha, código da barbearia, especialidades, descrição).</param>
+        /// <returns>ActionResult<SecureLoginResponseDto> contendo os dados do barbeiro registrado e o token JWT, ou um erro de validação/cadastro.</returns>
         [HttpPost("cadastro-barbeiro")] // Define um endpoint POST para cadastro de barbeiros.
         public async Task<ActionResult<SecureLoginResponseDto>> CadastroBarbeiro(CadastroBarbeiroDto cadastroDto)
         {
@@ -213,6 +237,12 @@ namespace BarbeariaSaaS.Controllers
             return Ok(response); // Retorna sucesso.
         }
 
+        /// <summary>
+        /// Registra um novo gerente no sistema. Valida os dados (email, ID da barbearia), verifica a existência da barbearia,
+        /// cria um usuário Gerente associado à barbearia, faz o hash da senha e gera um token JWT.
+        /// </summary>
+        /// <param name="cadastroDto">Objeto contendo os dados para o cadastro do gerente (nome, email, senha, ID da barbearia).</param>
+        /// <returns>ActionResult<SecureLoginResponseDto> contendo os dados do gerente registrado e o token JWT, ou um erro de validação/cadastro.</returns>
         [HttpPost("cadastro-gerente")] // Define um endpoint POST para cadastro de gerentes.
         public async Task<ActionResult<SecureLoginResponseDto>> CadastroGerente(CadastroGerenteDto cadastroDto)
         {
@@ -260,6 +290,12 @@ namespace BarbeariaSaaS.Controllers
             return Ok(response); // Retorna sucesso.
         }
 
+        /// <summary>
+        /// Registra uma nova barbearia e seu gerente inicial. Valida os dados da barbearia e do gerente, gera códigos únicos de convite e de barbearia,
+        /// cria a barbearia e um usuário Gerente associado a ela, tudo dentro de uma transação para garantir a integridade dos dados.
+        /// </summary>
+        /// <param name="cadastroDto">Objeto contendo os dados para o cadastro da barbearia (nome, endereço, telefone, email, logo) e do gerente (nome, email, senha).</param>
+        /// <returns>ActionResult<SecureLoginResponseDto> contendo os dados do gerente da barbearia registrada e o token JWT, ou um erro de validação/cadastro.</returns>
         [HttpPost("cadastro-barbearia")] // Define um endpoint POST para cadastro de barbearias e seu gerente inicial.
         public async Task<ActionResult<SecureLoginResponseDto>> CadastroBarbearia(CadastroBarbeariaDto cadastroDto)
         {
@@ -356,146 +392,21 @@ namespace BarbeariaSaaS.Controllers
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync(); // Em caso de erro, reverte a transação.
-                // Loga a exceção completa para depuração.
+                await transaction.RollbackAsync(); // Em caso de erro, desfaz a transação.
                 Console.WriteLine($"Erro ao cadastrar barbearia: {ex.Message}\n{ex.StackTrace}");
                 return StatusCode(500, new { message = "Erro interno do servidor ao cadastrar barbearia", details = ex.Message });
             }
         }
 
-        // Método auxiliar para validar o formato de um email.
-        private bool IsValidEmail(string email)
-        {
-            try
-            {
-                var addr = new System.Net.Mail.MailAddress(email);
-                return addr.Address == email;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        [HttpPost("google-auth")] // Define um endpoint POST para autenticação via Google.
-        public async Task<ActionResult<SecureLoginResponseDto>> GoogleAuth(GoogleAuthDto googleAuthDto)
-        {
-            try
-            {
-                // Verifica o token do Google fornecido.
-                var googleUser = await _googleAuthService.VerifyGoogleTokenAsync(googleAuthDto.IdToken);
-
-                // Verifica se o usuário já existe no banco de dados pelo email ou GoogleId.
-                var existingUser = await _context.Usuarios
-                    .Include(u => u.Barbearia)
-                    .FirstOrDefaultAsync(u => u.Email == googleUser.Email || u.GoogleId == googleUser.Sub);
-
-                if (existingUser != null)
-                {
-                    // Se o usuário já existe, realiza o login.
-                    // Atualiza o GoogleId se ainda não estiver definido.
-                    if (string.IsNullOrEmpty(existingUser.GoogleId))
-                    {
-                        existingUser.GoogleId = googleUser.Sub;
-                        await _context.SaveChangesAsync();
-                    }
-
-                    var token = _authService.GenerateJwtToken(existingUser); // Gera o token JWT para o usuário existente.
-
-                    // Cria o objeto de resposta.
-                    var response = new SecureLoginResponseDto
-                    {
-                        Id = existingUser.Id,
-                        Nome = existingUser.Nome,
-                        Email = existingUser.Email,
-                        TipoUsuario = existingUser.TipoUsuario.ToString(),
-                        BarbeariaId = existingUser.BarbeariaId,
-                        NomeBarbearia = existingUser.Barbearia?.Nome,
-                        Token = token
-                    };
-
-                    return Ok(response); // Retorna sucesso.
-                }
-
-                // Se o usuário não existe, cria um novo usuário Google.
-                return await CreateGoogleUser(googleUser, googleAuthDto);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { message = ex.Message }); // Retorna erro de não autorizado.
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Erro interno do servidor" }); // Retorna erro interno do servidor.
-            }
-        }
-
-        // Método auxiliar para criar um novo usuário a partir dos dados do Google.
-        private async Task<ActionResult<SecureLoginResponseDto>> CreateGoogleUser(GoogleUserInfo googleUser, GoogleAuthDto googleAuthDto)
-        {
-            // Valida o tipo de usuário fornecido na requisição.
-            if (!Enum.TryParse<TipoUsuario>(googleAuthDto.TipoUsuario, out var tipoUsuario))
-            {
-                return BadRequest(new { message = "Tipo de usuário inválido", field = "tipoUsuario" });
-            }
-
-            // Validações adicionais para barbeiro/gerente.
-            Barbearia barbearia = null;
-            if (tipoUsuario == TipoUsuario.Barbeiro || tipoUsuario == TipoUsuario.Gerente)
-            {
-                if (string.IsNullOrWhiteSpace(googleAuthDto.CodigoBarbearia))
-                {
-                    return BadRequest(new { message = "Código da barbearia é obrigatório para barbeiro/gerente", field = "codigoBarbearia" });
-                }
-
-                barbearia = await _context.Barbearias.FirstOrDefaultAsync(b => b.CodigoBarbearia == googleAuthDto.CodigoBarbearia);
-                if (barbearia == null)
-                {
-                    return BadRequest(new { message = "Código da barbearia inválido", field = "codigoBarbearia" });
-                }
-            }
-
-            // Verifica se o email do Google já está em uso por um usuário local.
-            if (await _context.Usuarios.AnyAsync(u => u.Email == googleUser.Email && u.GoogleId == null))
-            {
-                return BadRequest(new { message = "Este email já está registrado localmente. Por favor, faça login com sua senha ou use outro email.", field = "email" });
-            }
-
-            // Cria um novo usuário com base nas informações do Google.
-            var newUser = new Usuario
-            {
-                Nome = googleUser.Name,
-                Email = googleUser.Email,
-                GoogleId = googleUser.Sub,
-                TipoUsuario = tipoUsuario,
-                BarbeariaId = barbearia?.Id, // Associa à barbearia se for barbeiro/gerente.
-                DataCriacao = DateTime.UtcNow
-            };
-
-            _context.Usuarios.Add(newUser); // Adiciona o novo usuário ao contexto.
-            await _context.SaveChangesAsync(); // Salva as alterações.
-
-            var token = _authService.GenerateJwtToken(newUser); // Gera o token JWT para o novo usuário.
-
-            // Cria o objeto de resposta.
-            var response = new SecureLoginResponseDto
-            {
-                Id = newUser.Id,
-                Nome = newUser.Nome,
-                Email = newUser.Email,
-                TipoUsuario = newUser.TipoUsuario.ToString(),
-                BarbeariaId = newUser.BarbeariaId,
-                NomeBarbearia = barbearia?.Nome,
-                Token = token
-            };
-
-            return Ok(response); // Retorna sucesso.
-        }
-
-        [HttpPost("forgot-password")] // Define um endpoint POST para recuperação de senha.
+        /// <summary>
+        /// Inicia o processo de recuperação de senha. Se o email fornecido estiver registrado, gera um token de redefinição de senha,
+        /// o armazena no banco de dados com um tempo de expiração e simula o envio de um link de redefinição (atualmente, apenas loga o token).
+        /// </summary>
+        /// <param name="forgotPasswordDto">Objeto contendo o email do usuário que esqueceu a senha.</param>
+        /// <returns>ActionResult indicando que um link de redefinição será enviado se o email estiver registrado.</returns>
+        [HttpPost("forgot-password")]
         public async Task<ActionResult> ForgotPassword(ForgotPasswordDto forgotPasswordDto)
         {
-            // Validação de email.
             if (string.IsNullOrWhiteSpace(forgotPasswordDto.Email) || !IsValidEmail(forgotPasswordDto.Email))
             {
                 return BadRequest(new { message = "Email inválido", field = "email" });
@@ -522,6 +433,12 @@ namespace BarbeariaSaaS.Controllers
             return Ok(new { message = "Se o email estiver registrado, um link de redefinição de senha será enviado." });
         }
 
+        /// <summary>
+        /// Redefine a senha do usuário usando um token de redefinição. Valida o token e a nova senha, atualiza a senha do usuário no banco de dados
+        /// e invalida o token de redefinição.
+        /// </summary>
+        /// <param name="resetPasswordDto">Objeto contendo o token de redefinição e a nova senha.</param>
+        /// <returns>ActionResult indicando sucesso ou falha na redefinição da senha.</returns>
         [HttpPost("reset-password")] // Define um endpoint POST para redefinição de senha.
         public async Task<ActionResult> ResetPassword(ResetPasswordDto resetPasswordDto)
         {
@@ -546,6 +463,28 @@ namespace BarbeariaSaaS.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Senha redefinida com sucesso." });
+        }
+
+        /// <summary>
+        /// Função auxiliar privada que valida o formato de um endereço de e-mail usando uma expressão regular.
+        /// </summary>
+        /// <param name="email">O endereço de e-mail a ser validado.</param>
+        /// <returns>bool - true se o e-mail for válido, false caso contrário.</returns>
+        private bool IsValidEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return false;
+
+            try
+            {
+                // Usa uma expressão regular para validar o formato do email.
+                // Esta é uma validação básica e pode ser ajustada para ser mais rigorosa se necessário.
+                return Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250));
+            }
+            catch (RegexMatchTimeoutException)
+            {
+                return false;
+            }
         }
     }
 }

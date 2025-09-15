@@ -3,17 +3,31 @@ import { BarChart3, TrendingUp, Users, DollarSign, Calendar, Clock } from 'lucid
 import { apiService } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 
+/**
+ * Componente de Estatísticas para Barbeiros.
+ * Exibe métricas de desempenho, gráficos e insights para o barbeiro logado.
+ */
 export default function BarberStats() {
+  // Estado para o período selecionado (semana, mês, trimestre, ano).
   const [selectedPeriod, setSelectedPeriod] = useState('month');
+  // Estado para armazenar os dados das estatísticas.
   const [statsData, setStatsData] = useState<any>(null);
+  // Estado para controlar o status de carregamento dos dados.
   const [loading, setLoading] = useState(true);
+  // Estado para armazenar mensagens de erro.
   const [error, setError] = useState<string | null>(null);
+  // Hook para acessar as informações do usuário logado.
   const { user } = useAuth();
 
+  // Efeito que carrega os dados das estatísticas quando o componente é montado ou o período selecionado muda.
   useEffect(() => {
     loadStatsData();
   }, [selectedPeriod]);
 
+  /**
+   * Carrega os dados das estatísticas do barbeiro a partir da API.
+   * Lida com estados de carregamento e erro, e define dados padrão em caso de falha.
+   */
   const loadStatsData = async () => {
     try {
       setLoading(true);
@@ -24,6 +38,7 @@ export default function BarberStats() {
       }
     } catch (error) {
       console.error('Erro ao carregar dados das estatísticas:', error);
+      // Define dados vazios para que o componente possa renderizar sem falhar.
       setStatsData({
         totalClients: 0,
         totalRevenue: 0,
@@ -38,18 +53,20 @@ export default function BarberStats() {
     }
   };
 
+  // Mapeia os dados brutos da API para um formato mais amigável para o componente.
   const stats = statsData ? {
     totalClients: statsData.totalClientes || 0,
     totalRevenue: statsData.receitaTotal || 0,
     totalAppointments: statsData.totalAgendamentos || 0,
     averageRating: statsData.avaliacaoMedia || 0,
-    monthlyGrowth: 0,
+    monthlyGrowth: 0, // Este campo não parece ser preenchido pela API no momento.
     popularServices: statsData.servicosPopulares || [],
     weeklyData: statsData.performanceSemanal || [],
     pontualidade: statsData.insights?.pontualidade || 0,
     taxaRetorno: statsData.insights?.taxaRetorno || 0,
     ticketMedio: statsData.insights?.ticketMedio || 0
   } : {
+    // Valores padrão caso não haja dados.
     totalClients: 0,
     totalRevenue: 0,
     totalAppointments: 0,
@@ -62,6 +79,7 @@ export default function BarberStats() {
     ticketMedio: 0
   };
 
+  // Exibe um spinner de carregamento enquanto os dados estão sendo buscados.
   if (loading) {
     return (
       <div className="space-y-6">
@@ -84,7 +102,7 @@ export default function BarberStats() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Cabeçalho da página e seletor de período */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -95,6 +113,7 @@ export default function BarberStats() {
           </p>
         </div>
         
+        {/* Dropdown para selecionar o período de visualização das estatísticas */}
         <div className="flex items-center space-x-2">
           <select
             value={selectedPeriod}
@@ -109,8 +128,9 @@ export default function BarberStats() {
         </div>
       </div>
 
-      {/* Key Metrics */}
+      {/* Seção de Métricas Chave */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Card: Total de Clientes */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -135,6 +155,7 @@ export default function BarberStats() {
           )}
         </div>
 
+        {/* Card: Receita Total */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -159,6 +180,7 @@ export default function BarberStats() {
           )}
         </div>
 
+        {/* Card: Agendamentos */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -183,6 +205,7 @@ export default function BarberStats() {
           )}
         </div>
 
+        {/* Card: Avaliação Média */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -207,9 +230,9 @@ export default function BarberStats() {
         </div>
       </div>
 
-      {/* Charts Section */}
+      {/* Seção de Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Weekly Performance */}
+        {/* Desempenho Semanal */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Desempenho Semanal
@@ -232,7 +255,7 @@ export default function BarberStats() {
                       <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                         <div
                           className="bg-yellow-500 h-2 rounded-full"
-                          style={{ width: `${(day.agendamentos / 20) * 100}%` }}
+                          style={{ width: `${(day.agendamentos / 20) * 100}%` }} // Exemplo de cálculo de largura para barra de progresso
                         ></div>
                       </div>
                     </div>
@@ -251,7 +274,7 @@ export default function BarberStats() {
           )}
         </div>
 
-        {/* Popular Services */}
+        {/* Serviços Mais Populares */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Serviços Mais Populares
@@ -288,7 +311,7 @@ export default function BarberStats() {
                     <div className="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-1 mt-1">
                       <div
                         className="bg-yellow-500 h-1 rounded-full"
-                        style={{ width: `${(service.quantidade / 45) * 100}%` }}
+                        style={{ width: `${(service.quantidade / 45) * 100}%` }} // Exemplo de cálculo de largura para barra de progresso
                       ></div>
                     </div>
                   </div>
@@ -299,7 +322,7 @@ export default function BarberStats() {
         </div>
       </div>
 
-      {/* Performance Insights */}
+      {/* Seção de Insights de Performance */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Insights de Performance
@@ -313,6 +336,7 @@ export default function BarberStats() {
             </div>
           ) : (
             <>
+              {/* Card: Pontualidade */}
               <div className="text-center p-4 bg-green-50 dark:bg-green-900/10 rounded-lg">
                 <Clock className="h-8 w-8 text-green-600 dark:text-green-400 mx-auto mb-2" />
                 <p className="text-sm font-medium text-green-800 dark:text-green-400">
@@ -326,6 +350,7 @@ export default function BarberStats() {
                 </p>
               </div>
               
+              {/* Card: Taxa de Retorno */}
               <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/10 rounded-lg">
                 <Users className="h-8 w-8 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
                 <p className="text-sm font-medium text-blue-800 dark:text-blue-400">
@@ -339,6 +364,7 @@ export default function BarberStats() {
                 </p>
               </div>
               
+              {/* Card: Ticket Médio */}
               <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-900/10 rounded-lg">
                 <DollarSign className="h-8 w-8 text-yellow-600 dark:text-yellow-400 mx-auto mb-2" />
                 <p className="text-sm font-medium text-yellow-800 dark:text-yellow-400">
@@ -358,4 +384,5 @@ export default function BarberStats() {
     </div>
   );
 }
+
 

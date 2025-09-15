@@ -6,6 +6,9 @@ import { ptBR } from 'date-fns/locale';
 import toast from 'react-hot-toast';
 import { apiService } from '../../services/api';
 
+/**
+ * Interface que define a estrutura de um objeto de horário disponível.
+ */
 interface HorarioDisponivel {
   id: number;
   dataHora: string;
@@ -14,6 +17,9 @@ interface HorarioDisponivel {
   estaDisponivel: boolean;
 }
 
+/**
+ * Interface que define a estrutura de um objeto de barbeiro, incluindo seus horários disponíveis.
+ */
 interface Barbeiro {
   id: number;
   nome: string;
@@ -23,22 +29,35 @@ interface Barbeiro {
   horariosDisponiveis: HorarioDisponivel[];
 }
 
+/**
+ * Componente para agendamento de horários em uma barbearia específica.
+ * Permite ao cliente selecionar um barbeiro, uma data e um horário disponível.
+ */
 export default function BookAppointment() {
+  // Hook para obter parâmetros da URL (barbershopId).
   const { barbershopId } = useParams();
+  // Hook para navegação programática.
   const navigate = useNavigate();
   
+  // Estados para armazenar as seleções do usuário e os dados carregados.
   const [selectedBarber, setSelectedBarber] = useState<number | null>(null);
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [barbeiros, setBarbeiros] = useState<Barbeiro[]>([]);
   const [barbershop, setBarbershop] = useState<any>(null);
+  // Estados para controlar o carregamento e erros.
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Efeito que carrega os dados da barbearia e dos barbeiros ao montar o componente ou mudar o ID da barbearia.
   useEffect(() => {
     loadData();
   }, [barbershopId]);
 
+  /**
+   * Carrega os dados da barbearia e dos barbeiros com seus horários disponíveis.
+   * Lida com estados de carregamento e erro.
+   */
   const loadData = async () => {
     try {
       setLoading(true);
@@ -51,11 +70,11 @@ export default function BookAppointment() {
       console.log('=== DEBUG: Carregando dados ===');
       console.log('Barbershop ID:', barbershopId);
 
-      // Carregar dados da barbearia
+      // Carregar dados da barbearia pelo ID.
       const barbeariaData = await apiService.getBarbeariaById(parseInt(barbershopId));
       console.log('Dados da barbearia recebidos:', barbeariaData);
       
-      // Adicionar configurações padrão se não existirem
+      // Adicionar configurações padrão se não existirem nos dados da barbearia.
       const barbershopWithConfig = {
         ...barbeariaData,
         workDays: barbeariaData.workDays || ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
@@ -66,7 +85,7 @@ export default function BookAppointment() {
       console.log('Dados da barbearia com configurações padrão:', barbershopWithConfig);
       setBarbershop(barbershopWithConfig);
 
-      // Carregar barbeiros com horários disponíveis
+      // Carregar barbeiros com horários disponíveis.
       console.log('Carregando barbeiros com horários...');
       const barbeirosData = await apiService.getBarbeirosComHorarios();
       console.log('Barbeiros recebidos:', barbeirosData);
@@ -80,6 +99,12 @@ export default function BookAppointment() {
     }
   };
 
+  /**
+   * Retorna os horários disponíveis para um barbeiro específico em uma determinada data.
+   * @param {number} barbeiroId - O ID do barbeiro.
+   * @param {string} date - A data selecionada no formato 'YYYY-MM-DD'.
+   * @returns {Array<{time: string, horarioId: number}>} - Uma lista de objetos com horário e ID do horário.
+   */
   const getAvailableTimesForDate = (barbeiroId: number, date: string) => {
     const barbeiro = barbeiros.find(b => b.id === barbeiroId);
     if (!barbeiro) return [];
@@ -90,16 +115,17 @@ export default function BookAppointment() {
 
     return barbeiro.horariosDisponiveis
       .filter(h => {
-        // Criar objeto Date a partir da string ISO e extrair apenas a data
+        // Cria objeto Date a partir da string ISO e extrai apenas a data no formato YYYY-MM-DD.
         const horarioDateTime = new Date(h.dataHora);
-        const horarioDate = horarioDateTime.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+        const horarioDate = horarioDateTime.toISOString().split('T')[0]; 
         
         console.log(`Comparando: horário ${h.dataHora} -> data ${horarioDate} com data selecionada ${date}, disponível: ${h.estaDisponivel}`);
         
+        // Filtra horários que correspondem à data selecionada e estão disponíveis.
         return horarioDate === date && h.estaDisponivel;
       })
       .map(h => {
-        // Extrair hora local sem conversão de timezone
+        // Extrai a hora local sem conversão de timezone.
         const horarioDateTime = new Date(h.dataHora);
         const time = horarioDateTime.toLocaleTimeString('pt-BR', { 
           hour: '2-digit', 
@@ -111,21 +137,27 @@ export default function BookAppointment() {
         
         return { time, horarioId: h.id };
       })
-      .sort((a, b) => a.time.localeCompare(b.time)); // Ordena os horários cronologicamente
+      .sort((a, b) => a.time.localeCompare(b.time)); // Ordena os horários cronologicamente.
   };
 
+  /**
+   * Retorna uma lista dos dias da semana, filtrando pelos dias de funcionamento da barbearia.
+   * @returns {Date[]} - Uma lista de objetos Date representando os dias da semana em que a barbearia funciona.
+   */
   const getWeekDays = () => {
     const today = new Date();
+    // Inicia a semana na segunda-feira (1).
     const startWeek = startOfWeek(today, { weekStartsOn: 1 });
+    // Cria um array com os 7 dias da semana a partir da data de início.
     const allDays = Array.from({ length: 7 }, (_, i) => addDays(startWeek, i));
     
-    // Se não temos dados da barbearia ainda, retorna todos os dias
+    // Se os dados da barbearia ou os dias de trabalho não estiverem disponíveis, retorna todos os dias.
     if (!barbershop || !barbershop.workDays) {
       console.log('DEBUG: Sem dados da barbearia ou workDays, retornando todos os dias');
       return allDays;
     }
     
-    // Mapear os dias da semana para os IDs usados no frontend
+    // Mapeamento dos nomes dos dias da semana para os IDs numéricos (0=domingo, 1=segunda, etc.).
     const dayMapping = [
       'sunday',    // 0
       'monday',    // 1
@@ -136,7 +168,7 @@ export default function BookAppointment() {
       'saturday'   // 6
     ];
     
-    // Suportar tanto array quanto string separada por vírgulas
+    // Processa os dias de trabalho da barbearia, que podem ser um array ou uma string separada por vírgulas.
     let enabledWorkDays: string[] = [];
     
     if (Array.isArray(barbershop.workDays)) {
@@ -145,16 +177,16 @@ export default function BookAppointment() {
       enabledWorkDays = barbershop.workDays.split(',').map((day: string) => day.trim());
     } else {
       console.log('DEBUG: workDays em formato não reconhecido:', barbershop.workDays);
-      return allDays; // Fallback para todos os dias
+      return allDays; // Fallback para todos os dias se o formato for desconhecido.
     }
     
     console.log('DEBUG: workDays processados:', enabledWorkDays);
 
-    // Filtrar apenas os dias que a barbearia funciona
+    // Filtra os dias da semana, mantendo apenas aqueles em que a barbearia funciona.
     const filteredDays = allDays.filter(day => {
-      const dayOfWeek = day.getDay(); // 0 for Sunday, 1 for Monday, etc.
-      const dayName = dayMapping[dayOfWeek];
-      const isEnabled = enabledWorkDays.includes(dayName);
+      const dayOfWeek = day.getDay(); // Obtém o dia da semana (0 para domingo, 1 para segunda, etc.).
+      const dayName = dayMapping[dayOfWeek]; // Converte o número do dia para o nome.
+      const isEnabled = enabledWorkDays.includes(dayName); // Verifica se o dia está habilitado.
       
       console.log(`DEBUG: Dia ${dayName} (${dayOfWeek}) - Habilitado: ${isEnabled}`);
       
@@ -166,8 +198,14 @@ export default function BookAppointment() {
     return filteredDays;
   };
 
+  // Obtém os dias da semana em que a barbearia funciona.
   const weekDays = getWeekDays();
 
+  /**
+   * Lida com a submissão do agendamento.
+   * Valida as seleções do usuário e envia os dados para a API para criar o agendamento.
+   * Exibe mensagens de sucesso ou erro e redireciona o usuário após o agendamento.
+   */
   const handleBooking = async () => {
     console.log("=== INICIANDO AGENDAMENTO ===");
     console.log("Estado atual:");
@@ -175,6 +213,7 @@ export default function BookAppointment() {
     console.log("selectedDate:", selectedDate);
     console.log("selectedTime:", selectedTime);
     
+    // Validação para garantir que todos os campos obrigatórios foram selecionados.
     if (!selectedBarber || !selectedDate || !selectedTime) {
       console.log("Validação falhou - campos obrigatórios não preenchidos");
       toast.error("Por favor, selecione todas as opções");
@@ -182,24 +221,26 @@ export default function BookAppointment() {
     }
 
     try {
+      // Prepara os dados do agendamento para enviar à API.
       const agendamentoData = {
         barbeiroId: selectedBarber,
-        dataHora: `${selectedDate}T${selectedTime}:00`,
-        observacoes: "",
-        tipoServico: "Corte de Cabelo" // Valor padrão por enquanto
+        dataHora: `${selectedDate}T${selectedTime}:00`, // Combina data e hora para formar um timestamp ISO.
+        observacoes: "", // Observações vazias por enquanto.
+        tipoServico: "Corte de Cabelo" // Tipo de serviço padrão por enquanto.
       };
 
       console.log("Dados do agendamento sendo enviados:", agendamentoData);
 
+      // Chama o serviço de API para criar o agendamento.
       await apiService.createAgendamento(agendamentoData);
-      toast.success("Agendamento realizado com sucesso!");
-      navigate("/client/appointments");
+      toast.success("Agendamento realizado com sucesso!"); // Exibe mensagem de sucesso.
+      navigate("/client/appointments"); // Redireciona para a página de agendamentos do cliente.
     } catch (error: any) {
       console.error("Erro completo ao agendar:", error);
       console.error("Response data:", error.response?.data);
       console.error("Status:", error.response?.status);
       
-      // Tentar extrair mensagem de erro mais específica
+      // Tenta extrair uma mensagem de erro mais específica do backend.
       let errorMessage = "Erro ao agendar. Tente novamente.";
       
       if (error.message) {
@@ -211,10 +252,11 @@ export default function BookAppointment() {
         }
       }
       
-      toast.error(errorMessage);
+      toast.error(errorMessage); // Exibe a mensagem de erro.
     }
   };
 
+  // Exibe um spinner de carregamento enquanto os dados iniciais estão sendo buscados.
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
@@ -237,6 +279,7 @@ export default function BookAppointment() {
     );
   }
 
+  // Exibe uma mensagem de erro se a barbearia não for encontrada ou houver outro erro.
   if (error || !barbershop) {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
@@ -264,7 +307,7 @@ export default function BookAppointment() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
+      {/* Cabeçalho da página com botão de voltar */}
       <div className="flex items-center space-x-4">
         <button
           onClick={() => navigate('/client/barbershops')}
@@ -279,7 +322,7 @@ export default function BookAppointment() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Barber Selection */}
+        {/* Seção de Seleção de Barbeiro */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center space-x-2 mb-4">
             <User className="h-5 w-5 text-yellow-500" />
@@ -294,7 +337,7 @@ export default function BookAppointment() {
                   onClick={() => {
                     console.log("Selecionando barbeiro:", barbeiro.id, barbeiro.nome);
                     setSelectedBarber(barbeiro.id);
-                    setSelectedTime(''); // Limpar horário selecionado ao trocar barbeiro
+                    setSelectedTime(''); // Limpa o horário selecionado ao trocar de barbeiro.
                   }}
                   className={`w-full p-4 rounded-lg border-2 transition-colors text-left ${
                     selectedBarber === barbeiro.id
@@ -319,7 +362,7 @@ export default function BookAppointment() {
           </div>
         </div>
 
-        {/* Date Selection */}
+        {/* Seção de Seleção de Data */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center space-x-2 mb-4">
             <Calendar className="h-5 w-5 text-yellow-500" />
@@ -345,11 +388,11 @@ export default function BookAppointment() {
                   }`}
                 >
                   <div className="font-medium text-gray-900 dark:text-white">
-                    {format(day, 'EEEE', { locale: ptBR })}
+                    {format(day, 'EEEE', { locale: ptBR })} {/* Exibe o nome do dia da semana em português */}
                     {isToday && <span className="text-yellow-500 ml-2">(Hoje)</span>}
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    {format(day, 'dd/MM', { locale: ptBR })}
+                    {format(day, 'dd/MM', { locale: ptBR })} {/* Exibe a data formatada em português */}
                   </div>
                 </button>
               );
@@ -357,7 +400,7 @@ export default function BookAppointment() {
           </div>
         </div>
 
-        {/* Time Selection */}
+        {/* Seção de Seleção de Horário */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center space-x-2 mb-4">
             <Clock className="h-5 w-5 text-yellow-500" />
@@ -400,7 +443,7 @@ export default function BookAppointment() {
         </div>
       </div>
 
-      {/* Booking Summary */}
+      {/* Resumo do Agendamento */}
       {(selectedBarber || selectedDate || selectedTime) && (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Resumo do Agendamento</h3>
@@ -413,20 +456,27 @@ export default function BookAppointment() {
             )}
             {selectedDate && (
               <p className="text-gray-600 dark:text-gray-400">
-                <span className="font-medium">Data:</span> {format(new Date(selectedDate), 'dd/MM/yyyy', { locale: ptBR })}
+                <span className="font-medium">Data:</span> {new Date(selectedDate).toLocaleDateString('pt-BR')}
               </p>
             )}
             {selectedTime && (
               <p className="text-gray-600 dark:text-gray-400">
-                <span className="font-medium">Horário:</span> {selectedTime}
+                <span className="font-medium">Hora:</span> {selectedTime}
               </p>
             )}
+            <p className="text-gray-600 dark:text-gray-400">
+              <span className="font-medium">Serviço:</span> Corte de Cabelo (Padrão)
+            </p>
+            <p className="text-gray-600 dark:text-gray-400">
+              <span className="font-medium">Preço Estimado:</span> R$ 45,00 (Padrão)
+            </p>
           </div>
 
+          {/* Botão de Confirmação de Agendamento */}
           <button
             onClick={handleBooking}
             disabled={!selectedBarber || !selectedDate || !selectedTime}
-            className="w-full bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3 px-4 rounded-lg font-medium transition-colors"
+            className="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-3 px-4 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Confirmar Agendamento
           </button>
@@ -435,3 +485,5 @@ export default function BookAppointment() {
     </div>
   );
 }
+
+

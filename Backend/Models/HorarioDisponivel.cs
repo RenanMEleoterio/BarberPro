@@ -5,28 +5,49 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BarbeariaSaaS.Models
 {
-    // Classe que representa o modelo de dados para um Horário Disponível de um barbeiro.
+    /// <summary>
+    /// Classe que representa o modelo de dados para um Horário Disponível de um barbeiro.
+    /// </summary>
     public class HorarioDisponivel
     {
-        [Key] // Define 'Id' como a chave primária da tabela.
+        /// <summary>
+        /// O ID único do horário disponível. É a chave primária da tabela.
+        /// </summary>
+        [Key]
         public int Id { get; set; }
 
-        [Required] // Campo obrigatório.
-        public DateTime DataHora { get; set; } // Data e hora do horário disponível.
+        /// <summary>
+        /// A data e hora específicas do horário disponível. Campo obrigatório.
+        /// </summary>
+        [Required]
+        public DateTime DataHora { get; set; }
 
-        [Required] // Campo obrigatório.
-        public int BarbeiroId { get; set; } // ID do barbeiro ao qual este horário pertence.
+        /// <summary>
+        /// O ID do barbeiro ao qual este horário pertence. Campo obrigatório.
+        /// </summary>
+        [Required]
+        public int BarbeiroId { get; set; }
 
-        [ForeignKey("BarbeiroId")] // Define 'BarbeiroId' como chave estrangeira para a entidade Usuario (Barbeiro).
-        public virtual Usuario Barbeiro { get; set; } // Propriedade de navegação para o objeto Barbeiro.
+        /// <summary>
+        /// Propriedade de navegação para o objeto Barbeiro (usuário). Define BarbeiroId como chave estrangeira.
+        /// </summary>
+        [ForeignKey("BarbeiroId")]
+        public virtual Usuario Barbeiro { get; set; }
 
-        [Required] // Campo obrigatório.
-        public bool EstaDisponivel { get; set; } = true; // Indica se o horário está disponível para agendamento (padrão: true).
+        /// <summary>
+        /// Indica se o horário está atualmente disponível para agendamento. Padrão é 'true'. Campo obrigatório.
+        /// </summary>
+        [Required]
+        public bool EstaDisponivel { get; set; } = true;
 
-        public DateTime DataCriacao { get; set; } = DateTime.UtcNow; // Data de criação do registro, definida como UTC.
+        /// <summary>
+        /// A data e hora de criação do registro do horário disponível. Definida automaticamente como UTC.
+        /// </summary>
+        public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
 
-        // Relacionamentos:
-        // Um horário disponível pode estar associado a múltiplos agendamentos (embora geralmente seja um para um).
+        /// <summary>
+        /// Coleção de agendamentos associados a este horário disponível. Um horário pode estar associado a múltiplos agendamentos (embora geralmente seja um para um).
+        /// </summary>
         public virtual ICollection<Agendamento> Agendamentos { get; set; } = new List<Agendamento>();
     }
 }

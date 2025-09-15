@@ -16,11 +16,20 @@ namespace BarbeariaSaaS.Controllers
     {
         private readonly BarbeariaContext _context;
 
+        /// <summary>
+        /// Construtor do controlador. Injeta o contexto do banco de dados (BarbeariaContext) para permitir a interação com o Entity Framework Core.
+        /// </summary>
+        /// <param name="context">O contexto do banco de dados.</param>
         public BarbeiroController(BarbeariaContext context)
         {
             _context = context;
         }
 
+        /// <summary>
+        /// Retorna o perfil de um barbeiro específico com base no seu ID.
+        /// </summary>
+        /// <param name="id">O ID do barbeiro a ser consultado.</param>
+        /// <returns>ActionResult contendo um objeto anônimo com os detalhes do perfil do barbeiro ou NotFound se o barbeiro não for encontrado.</returns>
         [HttpGet("perfil/{id}")]
         public async Task<ActionResult> GetPerfil(int id)
         {
@@ -45,6 +54,14 @@ namespace BarbeariaSaaS.Controllers
             return Ok(perfil);
         }
 
+        /// <summary>
+        /// Atualiza as informações do perfil de um barbeiro existente.
+        /// Permite modificar o nome, email, telefone, especialidades e descrição.
+        /// Inclui validação para garantir que o novo email não esteja em uso por outro usuário.
+        /// </summary>
+        /// <param name="id">O ID do barbeiro a ser atualizado.</param>
+        /// <param name="dto">Objeto contendo os novos dados do perfil do barbeiro.</param>
+        /// <returns>ActionResult contendo o perfil atualizado ou um erro (NotFound, BadRequest, StatusCode 500).</returns>
         [HttpPut("perfil/{id}")]
         public async Task<ActionResult> UpdatePerfil(int id, [FromBody] UpdatePerfilBarbeiroDto dto)
         {
@@ -100,13 +117,32 @@ namespace BarbeariaSaaS.Controllers
         }
     }
 
+    /// <summary>
+    /// DTO para atualização do perfil do barbeiro.
+    /// </summary>
     public class UpdatePerfilBarbeiroDto
     {
+        /// <summary>
+        /// Nome do barbeiro (opcional).
+        /// </summary>
         public string? Nome { get; set; }
+        /// <summary>
+        /// Email do barbeiro (opcional).
+        /// </summary>
         public string? Email { get; set; }
+        /// <summary>
+        /// Telefone do barbeiro (opcional).
+        /// </summary>
         public string? Telefone { get; set; }
+        /// <summary>
+        /// Especialidades do barbeiro (opcional).
+        /// </summary>
         public string? Especialidades { get; set; }
+        /// <summary>
+        /// Descrição do barbeiro (opcional).
+        /// </summary>
         public string? Descricao { get; set; }
     }
 }
+
 

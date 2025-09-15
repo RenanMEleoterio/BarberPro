@@ -24,22 +24,40 @@ namespace BarbeariaSaaS.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Retorna o ID do usuário logado a partir dos claims do token JWT.
+        /// </summary>
+        /// <returns>Um inteiro representando o ID do usuário.</returns>
         private int GetUsuarioId()
         {
             return int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
         }
 
+        /// <summary>
+        /// Retorna o ID da barbearia associada ao usuário logado a partir dos claims do token JWT.
+        /// Pode ser nulo se o usuário não estiver vinculado a uma barbearia.
+        /// </summary>
+        /// <returns>Um inteiro anulável (int?) representando o ID da barbearia.</returns>
         private int? GetBarbeariaId()
         {
             var barbeariaIdClaim = User.FindFirst("BarbeariaId")?.Value;
             return barbeariaIdClaim != null ? int.Parse(barbeariaIdClaim) : null;
         }
 
+        /// <summary>
+        /// Retorna o tipo de usuário logado (e.g., "Cliente", "Barbeiro", "Gerente") a partir dos claims do token JWT.
+        /// </summary>
+        /// <returns>Uma string representando o tipo de usuário.</returns>
         private string GetTipoUsuario()
         {
             return User.FindFirst("TipoUsuario")?.Value ?? "";
         }
 
+        /// <summary>
+        /// Retorna uma lista de barbeiros disponíveis. Clientes podem ver todos os barbeiros de todas as barbearias,
+        /// enquanto outros tipos de usuário veem apenas os barbeiros de sua barbearia.
+        /// </summary>
+        /// <returns>ActionResult<List<BarbeiroDto>> contendo uma lista de objetos BarbeiroDto com informações dos barbeiros e seus horários disponíveis.</returns>
         [HttpGet("barbeiros")]
         public async Task<ActionResult<List<BarbeiroDto>>> GetBarbeiros()
         {
@@ -85,6 +103,12 @@ namespace BarbeariaSaaS.Controllers
             return Ok(barbeiros);
         }
 
+        /// <summary>
+        /// Permite que um cliente crie um novo agendamento. Realiza validações para garantir que o horário não está no passado,
+        /// o barbeiro existe, o cliente não tem agendamento duplicado e o horário está disponível.
+        /// </summary>
+        /// <param name="criarDto">Objeto contendo os dados necessários para criar um agendamento (ID do barbeiro, data/hora, observações, tipo de serviço).</param>
+        /// <returns>ActionResult<AgendamentoDto> contendo o agendamento criado ou um erro.</returns>
         [HttpPost]
         public async Task<ActionResult<AgendamentoDto>> CriarAgendamento(CriarAgendamentoDto criarDto)
         {
@@ -186,6 +210,11 @@ namespace BarbeariaSaaS.Controllers
             return Ok(agendamentoDto);
         }
 
+        /// <summary>
+        /// Retorna uma lista de agendamentos para o usuário logado. Clientes veem seus próprios agendamentos,
+        /// barbeiros veem os agendamentos atribuídos a eles, e gerentes veem todos os agendamentos de sua barbearia.
+        /// </summary>
+        /// <returns>ActionResult<List<AgendamentoDto>> contendo uma lista de objetos AgendamentoDto.</returns>
         [HttpGet("meus-agendamentos")]
         public async Task<ActionResult<List<AgendamentoDto>>> GetMeusAgendamentos()
         {
@@ -234,6 +263,13 @@ namespace BarbeariaSaaS.Controllers
             return Ok(agendamentos);
         }
 
+        /// <summary>
+        /// Atualiza um agendamento existente. Permite modificar a data/hora, observações e status do agendamento,
+        /// com validações de permissão baseadas no tipo de usuário.
+        /// </summary>
+        /// <param name="id">O ID do agendamento a ser atualizado.</param>
+        /// <param name="atualizarDto">Objeto contendo os dados para atualização (nova data/hora, observações, status).</param>
+        /// <returns>ActionResult<AgendamentoDto> contendo o agendamento atualizado ou um erro.</returns>
         [HttpPut("{id}")]
         public async Task<ActionResult<AgendamentoDto>> AtualizarAgendamento(int id, AtualizarAgendamentoDto atualizarDto)
         {
@@ -305,6 +341,12 @@ namespace BarbeariaSaaS.Controllers
             return Ok(agendamentoDto);
         }
 
+        /// <summary>
+        /// Cancela um agendamento existente. Verifica permissões e garante que o agendamento não está no passado
+        /// e ainda não foi cancelado. Libera o horário do barbeiro após o cancelamento.
+        /// </summary>
+        /// <param name="id">O ID do agendamento a ser cancelado.</param>
+        /// <returns>IActionResult indicando sucesso ou falha no cancelamento.</returns>
         [HttpDelete("{id}")]
         public async Task<IActionResult> CancelarAgendamento(int id)
         {
@@ -377,4 +419,5 @@ namespace BarbeariaSaaS.Controllers
         }
     }
 }
+
 

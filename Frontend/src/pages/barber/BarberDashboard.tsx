@@ -4,18 +4,32 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { apiService } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 
+/**
+ * Componente de Dashboard para Barbeiros.
+ * Exibe estatísticas e agendamentos do dia para o barbeiro logado.
+ */
 export default function BarberDashboard() {
+  // Estado para armazenar os dados do dashboard.
   const [dashboardData, setDashboardData] = useState<any>(null);
+  // Estado para controlar o status de carregamento dos dados.
   const [loading, setLoading] = useState(true);
+  // Estado para armazenar mensagens de erro.
   const [error, setError] = useState<string | null>(null);
+  // Estados para controlar a exibição de um toast de notificação.
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  // Hook para acessar as informações do usuário logado.
   const { user } = useAuth();
 
+  // Efeito que carrega os dados do dashboard quando o componente é montado.
   useEffect(() => {
     loadDashboardData();
   }, []);
 
+  /**
+   * Carrega os dados do dashboard do barbeiro a partir da API.
+   * Lida com estados de carregamento, erro e exibe um toast se não houver dados.
+   */
   const loadDashboardData = async () => {
     try {
       setLoading(true);
@@ -36,8 +50,8 @@ export default function BarberDashboard() {
       }
     } catch (err: any) {
       console.error("Erro ao carregar dados do dashboard:", err);
-      // Verifica se é um erro de rede ou servidor (ex: status 500, 404, etc.)
-      // Se for um erro de API, define a mensagem de erro
+      
+      // Tratamento de erros específicos da API ou de conexão.
       if (err.response) {
         setError(`Erro do servidor: ${err.response.status} - ${err.response.data.message || 'Ocorreu um erro.'}`);
       } else if (err.request) {
@@ -45,7 +59,7 @@ export default function BarberDashboard() {
       } else {
         setError("Ocorreu um erro inesperado ao carregar os dados.");
       }
-      // Define dados vazios para que o dashboard seja renderizado sem dados
+      // Define dados vazios para que o dashboard seja renderizado sem dados em caso de erro.
       setDashboardData({
         totalAgendamentosHoje: 0,
         agendamentosConcluidos: 0,
@@ -59,7 +73,7 @@ export default function BarberDashboard() {
     }
   };
 
-  // Se não houver dados, mostrar estado vazio
+  // Extrai e padroniza os dados para exibição, garantindo valores padrão se os dados não existirem.
   const todayAppointments = dashboardData?.agendamentosHoje || [];
   const weeklyData = dashboardData?.performanceSemanal || [];
   
@@ -70,6 +84,15 @@ export default function BarberDashboard() {
     weeklyPercentage: dashboardData?.porcentagem || 0
   };
 
+  /**
+   * Renderiza um card de estatística reutilizável.
+   * @param {string} title - Título do card.
+   * @param {string | number} value - Valor exibido no card.
+   * @param {React.ReactNode} icon - Ícone a ser exibido no card.
+   * @param {string} bgColor - Cor de fundo do ícone.
+   * @param {string} textColor - Cor do texto do ícone.
+   * @returns {JSX.Element} - O elemento JSX do card de estatística.
+   */
   const renderStatCard = (title: string, value: string | number, icon: React.ReactNode, bgColor: string, textColor: string) => (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
       <div className="flex items-center justify-between">
@@ -84,6 +107,7 @@ export default function BarberDashboard() {
     </div>
   );
 
+  // Exibe um spinner de carregamento enquanto os dados estão sendo buscados.
   if (loading) {
     return (
       <div className="space-y-6">
@@ -98,27 +122,27 @@ export default function BarberDashboard() {
     );
   }
 
-
-
   return (
     <div className="space-y-6">
+      {/* Toast de notificação */}
       {showToast && (
         <div className="fixed top-4 right-4 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-down">
           {toastMessage}
         </div>
       )}
+      {/* Mensagem de erro */}
       {error && (
         <div className="bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-40 mb-4">
           {error}
         </div>
       )}
-      {/* Header */}
+      {/* Cabeçalho do Dashboard */}
       <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-2xl p-8 text-white">
         <h1 className="text-3xl font-bold mb-2">Dashboard do Barbeiro</h1>
         <p className="text-yellow-100">Gerencie seus agendamentos e acompanhe seu desempenho</p>
       </div>
 
-      {/* Stats Cards */}
+      {/* Cards de Estatísticas */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {renderStatCard(
           "Agendamentos Hoje",
@@ -151,7 +175,7 @@ export default function BarberDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Today's Appointments */}
+        {/* Agendamentos de Hoje */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Agendamentos de Hoje</h2>
@@ -201,7 +225,7 @@ export default function BarberDashboard() {
           </div>
         </div>
 
-        {/* Weekly Performance Chart */}
+        {/* Gráfico de Performance Semanal */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Performance da Semana</h2>
@@ -235,3 +259,5 @@ export default function BarberDashboard() {
     </div>
   );
 }
+
+

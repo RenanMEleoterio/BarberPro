@@ -5,67 +5,130 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BarbeariaSaaS.Models
 {
-    // Enumeração para representar os diferentes tipos de usuários no sistema.
+    /// <summary>
+    /// Enumeração para representar os diferentes tipos de usuários no sistema.
+    /// </summary>
     public enum TipoUsuario
     {
-        Cliente = 1,  // Usuário que agenda serviços.
-        Barbeiro = 2, // Usuário que presta serviços.
-        Gerente = 3   // Usuário que gerencia a barbearia.
+        /// <summary>
+        /// Usuário que agenda serviços.
+        /// </summary>
+        Cliente = 1,
+        /// <summary>
+        /// Usuário que presta serviços.
+        /// </summary>
+        Barbeiro = 2,
+        /// <summary>
+        /// Usuário que gerencia a barbearia.
+        /// </summary>
+        Gerente = 3
     }
 
-    // Classe que representa o modelo de dados para um Usuário no sistema.
+    /// <summary>
+    /// Classe que representa o modelo de dados para um Usuário no sistema.
+    /// </summary>
     public class Usuario
     {
-        [Key] // Define 'Id' como a chave primária da tabela.
+        /// <summary>
+        /// O ID único do usuário. É a chave primária da tabela.
+        /// </summary>
+        [Key]
         public int Id { get; set; }
 
-        [Required] // Campo obrigatório.
-        [StringLength(100)] // Define o tamanho máximo da string.
-        public string Nome { get; set; } // Nome completo do usuário.
+        /// <summary>
+        /// Nome completo do usuário. Campo obrigatório com tamanho máximo de 100 caracteres.
+        /// </summary>
+        [Required]
+        [StringLength(100)]
+        public string Nome { get; set; }
 
-        [Required] // Campo obrigatório.
-        [EmailAddress] // Valida o formato do email.
-        [StringLength(100)] // Define o tamanho máximo da string.
-        public string Email { get; set; } // Endereço de email do usuário (único).
+        /// <summary>
+        /// Endereço de email do usuário. Campo obrigatório, deve ser único e ter formato de email válido. Tamanho máximo de 100 caracteres.
+        /// </summary>
+        [Required]
+        [EmailAddress]
+        [StringLength(100)]
+        public string Email { get; set; }
 
-        [StringLength(255)] // Define o tamanho máximo da string.
-        public string? SenhaHash { get; set; } // Hash da senha do usuário (opcional para usuários do Google).
+        /// <summary>
+        /// Hash da senha do usuário. Campo opcional, pois usuários autenticados via Google podem não ter uma senha local. Tamanho máximo de 255 caracteres.
+        /// </summary>
+        [StringLength(255)]
+        public string? SenhaHash { get; set; }
 
-        [StringLength(100)] // Define o tamanho máximo da string.
-        public string? GoogleId { get; set; } // ID único do usuário no Google, se autenticado via Google.
+        /// <summary>
+        /// ID único do usuário no Google, se autenticado via Google. Campo opcional com tamanho máximo de 100 caracteres.
+        /// </summary>
+        [StringLength(100)]
+        public string? GoogleId { get; set; }
 
-        [Required] // Campo obrigatório.
-        public TipoUsuario TipoUsuario { get; set; } // Tipo de usuário, usando o enum TipoUsuario.
+        /// <summary>
+        /// Tipo de usuário, utilizando a enumeração TipoUsuario. Campo obrigatório.
+        /// </summary>
+        [Required]
+        public TipoUsuario TipoUsuario { get; set; }
 
-        // FK para Barbearia (aplicável apenas para Barbeiro e Gerente).
-        public int? BarbeariaId { get; set; } // ID da barbearia à qual o usuário está associado (opcional).
+        /// <summary>
+        /// ID da barbearia à qual o usuário está associado. Campo opcional, aplicável a Barbeiros e Gerentes.
+        /// </summary>
+        public int? BarbeariaId { get; set; }
 
-        [ForeignKey("BarbeariaId")] // Define 'BarbeariaId' como chave estrangeira para a entidade Barbearia.
-        public virtual Barbearia Barbearia { get; set; } // Propriedade de navegação para o objeto Barbearia.
+        /// <summary>
+        /// Propriedade de navegação para o objeto Barbearia. Define BarbeariaId como chave estrangeira.
+        /// </summary>
+        [ForeignKey("BarbeariaId")]
+        public virtual Barbearia Barbearia { get; set; }
 
-        // Propriedades específicas para Barbeiro:
-        [StringLength(500)] // Define o tamanho máximo da string.
-        public string Foto { get; set; } // URL ou caminho para a foto de perfil do barbeiro (opcional).
-        [StringLength(500)] // Define o tamanho máximo da string.
-        public string Especialidades { get; set; } // Lista de especialidades do barbeiro (ex: 'Corte Masculino, Barba').
+        /// <summary>
+        /// URL ou caminho para a foto de perfil do usuário. Campo opcional com tamanho máximo de 500 caracteres.
+        /// </summary>
+        [StringLength(500)]
+        public string Foto { get; set; }
+        /// <summary>
+        /// Lista de especialidades do barbeiro (ex: 'Corte Masculino, Barba'). Campo opcional com tamanho máximo de 500 caracteres.
+        /// </summary>
+        [StringLength(500)]
+        public string Especialidades { get; set; }
 
-        [StringLength(1000)] // Define o tamanho máximo da string.
-        public string Descricao { get; set; } // Descrição ou biografia do barbeiro.
+        /// <summary>
+        /// Descrição ou biografia do usuário. Campo opcional com tamanho máximo de 1000 caracteres.
+        /// </summary>
+        [StringLength(1000)]
+        public string Descricao { get; set; }
 
-        public DateTime DataCriacao { get; set; } = DateTime.UtcNow; // Data de criação do usuário, definida como UTC.
+        /// <summary>
+        /// Data de criação do usuário. Definida automaticamente como UTC no momento da criação.
+        /// </summary>
+        public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
 
-        [StringLength(20)] // Define o tamanho máximo da string.
-        public string? Telefone { get; set; } // Número de telefone do usuário (opcional).
+        /// <summary>
+        /// Número de telefone do usuário. Campo opcional com tamanho máximo de 20 caracteres.
+        /// </summary>
+        [StringLength(20)]
+        public string? Telefone { get; set; }
 
-        // Relacionamentos:
-        // Um barbeiro pode ter múltiplos horários disponíveis.
+        /// <summary>
+        /// Coleção de horários disponíveis criados por este usuário (se for um barbeiro).
+        /// </summary>
         public virtual ICollection<HorarioDisponivel> HorariosDisponiveis { get; set; } = new List<HorarioDisponivel>();
-        // Um barbeiro pode ter múltiplos agendamentos como prestador de serviço.
+        /// <summary>
+        /// Coleção de agendamentos onde este usuário atua como barbeiro.
+        /// </summary>
         public virtual ICollection<Agendamento> AgendamentosComoBarbeiro { get; set; } = new List<Agendamento>();
-        // Um cliente pode ter múltiplos agendamentos como solicitante de serviço.
+        /// <summary>
+        /// Coleção de agendamentos onde este usuário atua como cliente.
+        /// </summary>
         public virtual ICollection<Agendamento> AgendamentosComoCliente { get; set; } = new List<Agendamento>();
+        /// <summary>
+        /// Token de redefinição de senha. Campo opcional com tamanho máximo de 255 caracteres.
+        /// </summary>
         [StringLength(255)]
         public string? PasswordResetToken { get; set; }
+        /// <summary>
+        /// Data e hora de expiração do token de redefinição de senha. Campo opcional.
+        /// </summary>
         public DateTime? PasswordResetTokenExpires { get; set; }
     }
 }
+
+

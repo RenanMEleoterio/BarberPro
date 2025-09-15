@@ -4,6 +4,9 @@ import { apiService } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
 
+/**
+ * Interface que define a estrutura dos dados de estatísticas retornados pela API.
+ */
 interface StatsData {
   totalRevenue: number;
   totalClients: number;
@@ -45,23 +48,38 @@ interface StatsData {
   };
 }
 
+/**
+ * Componente para exibir as estatísticas gerais da barbearia para o gerente.
+ * Inclui receita total, clientes, agendamentos, avaliação média, top barbeiros,
+ * performance mensal, serviços populares, meta mensal e métricas de eficiência e satisfação.
+ */
 export default function ManagerStats() {
+  // Estado para o período selecionado (semana, mês, trimestre, ano).
   const [selectedPeriod, setSelectedPeriod] = useState('mes');
+  // Estado para armazenar os dados de estatísticas.
   const [statsData, setStatsData] = useState<StatsData | null>(null);
+  // Estado para controlar o status de carregamento.
   const [loading, setLoading] = useState(true);
+  // Estado para armazenar mensagens de erro.
   const [error, setError] = useState<string | null>(null);
+  // Hook para acessar as informações do usuário logado (gerente).
   const { user } = useAuth();
 
+  // Efeito que carrega os dados de estatísticas quando o componente é montado ou o período/usuário muda.
   useEffect(() => {
     loadStatsData();
   }, [user, selectedPeriod]);
 
+  /**
+   * Carrega os dados de estatísticas da barbearia a partir da API.
+   * Lida com estados de carregamento e erro, e mapeia o período selecionado para o formato do backend.
+   */
   const loadStatsData = async () => {
     try {
       setLoading(true);
       setError(null);
       if (user?.barbeariaId) {
-        // Mapear os períodos do frontend para o formato do backend
+        // Mapeia os períodos do frontend para o formato esperado pelo backend.
         const periodoMap: { [key: string]: string } = {
           'semana': 'semana',
           'mes': 'mes',
@@ -70,15 +88,16 @@ export default function ManagerStats() {
         };
         
         const periodoBackend = periodoMap[selectedPeriod] || 'mes';
+        // Chama o serviço de API para obter as estatísticas do gerente.
         const data = await apiService.getManagerStats(user.barbeariaId, periodoBackend);
         setStatsData({
           totalRevenue: data.ReceitaTotal || 0,
           totalClients: data.TotalClientes || 0,
           totalAppointments: data.TotalAgendamentos || 0,
           averageRating: data.AvaliacaoMedia || 0,
-          monthlyGrowth: 0, // Não retornado pelo backend
-          barbersCount: 0, // Não retornado pelo backend
-          activeBarbers: 0, // Não retornado pelo backend
+          monthlyGrowth: 0, // Não retornado pelo backend, valor mockado ou a ser implementado.
+          barbersCount: 0, // Não retornado pelo backend, valor mockado ou a ser implementado.
+          activeBarbers: 0, // Não retornado pelo backend, valor mockado ou a ser implementado.
           topBarbers: (data.RankingBarbeiros || []).map((b: any) => ({
             name: b.Nome || 'Barbeiro',
             revenue: b.Receita || 0,
@@ -123,6 +142,7 @@ export default function ManagerStats() {
     }
   };
 
+  // Extrai os dados de estatísticas do estado, fornecendo valores padrão se não existirem.
   const stats = statsData || {
     totalRevenue: 0,
     totalClients: 0,
@@ -139,6 +159,7 @@ export default function ManagerStats() {
     satisfacao: { excelente: 78, bom: 18, regular: 4 }
   };
 
+  // Exibe um spinner de carregamento enquanto os dados estão sendo buscados.
   if (loading) {
     return (
       <div className="space-y-6">
@@ -161,13 +182,14 @@ export default function ManagerStats() {
 
   return (
     <div className="space-y-6">
+      {/* Exibe mensagem de erro, se houver */}
       {error && (
         <div className="bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg mb-4">
           {error}
         </div>
       )}
       
-      {/* Header */}
+      {/* Cabeçalho da página e seletor de período */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
@@ -192,8 +214,9 @@ export default function ManagerStats() {
         </div>
       </div>
 
-      {/* Main Stats Cards */}
+      {/* Cards de Estatísticas Principais */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+        {/* Card: Receita Total */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1">
@@ -208,6 +231,7 @@ export default function ManagerStats() {
           </div>
         </div>
 
+        {/* Card: Total de Clientes */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1">
@@ -222,6 +246,7 @@ export default function ManagerStats() {
           </div>
         </div>
 
+        {/* Card: Agendamentos */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1">
@@ -236,6 +261,7 @@ export default function ManagerStats() {
           </div>
         </div>
 
+        {/* Card: Avaliação Média */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1">
@@ -251,9 +277,9 @@ export default function ManagerStats() {
         </div>
       </div>
 
-      {/* Performance Chart and Top Barbers */}
+      {/* Gráfico de Performance e Top Barbeiros */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Performance Chart */}
+        {/* Seção: Performance Mensal */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -287,7 +313,7 @@ export default function ManagerStats() {
           </div>
         </div>
 
-        {/* Top Barbers */}
+        {/* Seção: Top Barbeiros */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -337,9 +363,9 @@ export default function ManagerStats() {
         </div>
       </div>
 
-      {/* Service Stats and Goals */}
+      {/* Estatísticas de Serviço e Metas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Service Stats */}
+        {/* Seção: Serviços Populares */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -380,9 +406,9 @@ export default function ManagerStats() {
           </div>
         </div>
 
-        {/* Goals and Efficiency */}
+        {/* Seção: Metas e Eficiência */}
         <div className="space-y-6">
-          {/* Monthly Goal */}
+          {/* Meta Mensal */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -417,39 +443,68 @@ export default function ManagerStats() {
             </div>
           </div>
 
-          {/* Efficiency Metrics */}
+          {/* Métricas de Eficiência */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Eficiência
+                Métricas de Eficiência
               </h3>
               <Clock className="h-5 w-5 text-gray-400" />
             </div>
-            
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  Tempo Médio - Corte
-                </span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {stats.eficiencia.tempoMedioCorte} min
-                </span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">Tempo Médio de Corte</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{stats.eficiencia.tempoMedioCorte} min</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  Tempo Médio - Barba
-                </span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {stats.eficiencia.tempoMedioBarba} min
-                </span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">Tempo Médio de Barba</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{stats.eficiencia.tempoMedioBarba} min</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  Tempo Médio - Completo
-                </span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {stats.eficiencia.tempoMedioCompleto} min
-                </span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">Tempo Médio Completo</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{stats.eficiencia.tempoMedioCompleto} min</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Métricas de Satisfação do Cliente */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Satisfação do Cliente
+              </h3>
+              <Star className="h-5 w-5 text-gray-400" />
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Excelente</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{stats.satisfacao.excelente}%</span>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div 
+                  className="bg-green-500 h-2 rounded-full" 
+                  style={{ width: `${stats.satisfacao.excelente}%` }}
+                ></div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Bom</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{stats.satisfacao.bom}%</span>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div 
+                  className="bg-yellow-500 h-2 rounded-full" 
+                  style={{ width: `${stats.satisfacao.bom}%` }}
+                ></div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Regular</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{stats.satisfacao.regular}%</span>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div 
+                  className="bg-red-500 h-2 rounded-full" 
+                  style={{ width: `${stats.satisfacao.regular}%` }}
+                ></div>
               </div>
             </div>
           </div>

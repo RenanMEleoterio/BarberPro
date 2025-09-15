@@ -2,8 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Settings, Save, Clock, DollarSign, Users, Bell, Shield, MapPin } from 'lucide-react';
 import { apiService, LoginResponse } from '../../services/api';
 
+/**
+ * Componente de configurações para o gerente da barbearia.
+ * Permite ao gerente visualizar e editar informações gerais da barbearia, horários de funcionamento,
+ * serviços oferecidos e gerenciar a equipe de barbeiros.
+ */
 export default function ManagerSettings() {
+  // Estado para controlar a aba ativa (Geral, Horários, Serviços, Equipe).
   const [activeTab, setActiveTab] = useState('general');
+  // Estado para armazenar os dados da barbearia, incluindo informações de contato, horários, serviços e notificações.
   const [barbershopData, setBarbershopData] = useState({
     id: 0,
     nome: "",
@@ -13,7 +20,7 @@ export default function ManagerSettings() {
     openTime: "08:00",
     closeTime: "18:00",
     workDays: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"],
-    services: [], // Inicializa como array vazio
+    services: [], // Inicializa como array vazio para os serviços.
     notifications: {
       newAppointments: true,
       cancellations: true,
@@ -21,17 +28,27 @@ export default function ManagerSettings() {
       dailyReport: false,
     },
   });
+  // Estado para controlar o status de carregamento dos dados iniciais.
   const [loading, setLoading] = useState(true);
+  // Estado para armazenar mensagens de erro.
   const [error, setError] = useState<string | null>(null);
+  // Estado para armazenar mensagens de sucesso após salvar alterações.
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  // Estado para controlar a visibilidade do modal de adição de serviço.
   const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState(false);
+  // Estado para armazenar os dados do novo serviço a ser adicionado.
   const [newService, setNewService] = useState({
     nome: '',
     preco: 0,
     duracaoMinutos: 0,
   });
 
+  // Efeito que carrega os dados da barbearia ao montar o componente.
   useEffect(() => {
+    /**
+     * Função assíncrona para buscar os dados da barbearia e seus serviços.
+     * Obtém o ID da barbearia do localStorage e faz chamadas à API.
+     */
     const fetchBarbershopData = async () => {
       try {
         setLoading(true);
@@ -46,11 +63,13 @@ export default function ManagerSettings() {
           throw new Error('ID da barbearia não encontrado nos dados do usuário.');
         }
 
+        // Realiza chamadas paralelas para obter dados da barbearia e seus serviços.
         const [barbershopResponse, servicesResponse] = await Promise.all([
           apiService.getBarbeariaById(barbeariaId),
           apiService.getServicosByBarbeariaId(barbeariaId)
         ]);
 
+        // Atualiza o estado com os dados recebidos da API.
         setBarbershopData({
           id: barbershopResponse.id,
           nome: barbershopResponse.nome,
@@ -78,6 +97,10 @@ export default function ManagerSettings() {
     fetchBarbershopData();
   }, []);
 
+  /**
+   * Lida com o salvamento das configurações gerais da barbearia.
+   * Envia os dados atualizados para a API e exibe mensagens de sucesso ou erro.
+   */
   const handleSave = async () => {
     try {
       const userDataString = localStorage.getItem("user");
@@ -91,6 +114,7 @@ export default function ManagerSettings() {
         throw new Error("ID da barbearia não encontrado nos dados do usuário.");
       }
 
+      // Chama a API para atualizar os dados da barbearia.
       await apiService.updateBarbearia(barbeariaId, {
         nome: barbershopData.nome,
         endereco: barbershopData.endereco,
@@ -105,6 +129,10 @@ export default function ManagerSettings() {
     }
   };
 
+  /**
+   * Lida com a adição de um novo serviço à barbearia.
+   * Envia os dados do novo serviço para a API, atualiza a lista de serviços e fecha o modal.
+   */
   const handleAddService = async () => {
     try {
       const userDataString = localStorage.getItem("user");
@@ -113,26 +141,30 @@ export default function ManagerSettings() {
       const barbeariaId = userData.barbeariaId;
       if (!barbeariaId) throw new Error("ID da barbearia não encontrado nos dados do usuário.");
 
+      // Chama a API para adicionar o novo serviço.
       await apiService.addServico({ nome: newService.nome, preco: newService.preco, duracaoMinutos: newService.duracaoMinutos, barbeariaId });
+      // Recarrega a lista de serviços para refletir a adição.
       const updatedServices = await apiService.getServicosByBarbeariaId(barbeariaId);
       setBarbershopData({ ...barbershopData, services: updatedServices });
       setSuccessMessage("Serviço adicionado com sucesso!");
       setError(null);
-      setIsAddServiceModalOpen(false); // Fecha o modal após adicionar
-      setNewService({ nome: '', preco: 0, duracaoMinutos: 0 }); // Limpa o formulário
+      setIsAddServiceModalOpen(false); // Fecha o modal após adicionar.
+      setNewService({ nome: '', preco: 0, duracaoMinutos: 0 }); // Limpa o formulário do novo serviço.
     } catch (err: any) {
       setError(err.message || "Erro ao adicionar serviço.");
       setSuccessMessage(null);
     }
   };
 
+  // Definição das abas de navegação das configurações.
   const tabs = [
     { id: 'general', name: 'Geral', icon: Settings },
     { id: 'schedule', name: 'Horários', icon: Clock },
     { id: 'services', name: 'Serviços', icon: DollarSign },
-    { id: 'team', name: 'Equipe', icon: Users }
+    { id: 'team', name: 'Equipe', icon: Users } // Esta aba pode ser um link para ManagerBarbers
   ];
 
+  // Definição dos dias da semana para seleção de horários de funcionamento.
   const weekDays = [
     { id: 'monday', name: 'Segunda-feira' },
     { id: 'tuesday', name: 'Terça-feira' },
@@ -143,6 +175,10 @@ export default function ManagerSettings() {
     { id: 'sunday', name: 'Domingo' }
   ];
 
+  /**
+   * Renderiza as configurações gerais da barbearia.
+   * Inclui campos para nome, telefone, endereço e email.
+   */
   const renderGeneralSettings = () => (
     <div className="space-y-6">
       <div>
@@ -202,6 +238,10 @@ export default function ManagerSettings() {
     </div>
   );
 
+  /**
+   * Renderiza as configurações de horário de funcionamento da barbearia.
+   * Inclui campos para horário de abertura, fechamento e seleção dos dias de funcionamento.
+   */
   const renderScheduleSettings = () => (
     <div className="space-y-6">
       <div>
@@ -270,6 +310,10 @@ export default function ManagerSettings() {
     </div>
   );
 
+  /**
+   * Renderiza as configurações de serviços da barbearia.
+   * Exibe a lista de serviços existentes e um botão para adicionar novos serviços.
+   */
   const renderServicesSettings = () => (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -297,7 +341,7 @@ export default function ManagerSettings() {
                   type="text"
                   value={service.nome}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                  readOnly
+                  readOnly // Campo de nome do serviço é somente leitura.
                 />
               </div>
               
@@ -309,6 +353,7 @@ export default function ManagerSettings() {
                   type="number"
                   value={service.preco}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  // Adicionar onChange para permitir edição do preço
                 />
               </div>
               <div>
@@ -319,6 +364,7 @@ export default function ManagerSettings() {
                   type="number"
                   value={service.duracaoMinutos}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  // Adicionar onChange para permitir edição da duração
                 />
               </div>
             </div>
@@ -369,9 +415,9 @@ export default function ManagerSettings() {
               </button>
               <button
                 onClick={handleAddService}
-                className="px-4 py-2 rounded-lg bg-yellow-600 text-white hover:bg-yellow-700 transition-colors"
+                className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors"
               >
-                Adicionar Serviço
+                Adicionar
               </button>
             </div>
           </div>
@@ -380,44 +426,93 @@ export default function ManagerSettings() {
     </div>
   );
 
-  const renderTeamSettings = () => (
-    <div className="space-y-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        Gerenciar Equipe
-      </h3>
-      <p className="text-gray-700 dark:text-gray-300">
-        Gerencie os barbeiros e outros membros da equipe aqui.
-      </p>
-    </div>
-  );
+  // Exibe um spinner de carregamento enquanto os dados estão sendo buscados.
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-2xl p-8 text-white">
+          <h1 className="text-3xl font-bold mb-2">Configurações da Barbearia</h1>
+          <p className="text-yellow-100">Carregando dados...</p>
+        </div>
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Configurações da Barbearia</h1>        <div className="flex flex-wrap gap-4 mb-6 p-2">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 rounded-lg ${activeTab === tab.id ? 'bg-yellow-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}`}
-          >
-            {tab.name}
-          </button>
-        ))}
+    <div className="space-y-6">
+      {/* Cabeçalho da página */}
+      <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl sm:rounded-2xl p-4 sm:p-8 text-white">
+        <h1 className="text-xl sm:text-3xl font-bold mb-2">Configurações da Barbearia</h1>
+        <p className="text-sm sm:text-base text-yellow-100">Gerencie as informações e operações da sua barbearia</p>
       </div>
 
-      {activeTab === 'general' && renderGeneralSettings()}
-      {activeTab === 'schedule' && renderScheduleSettings()}
-      {activeTab === 'services' && renderServicesSettings()}
-      {activeTab === 'team' && renderTeamSettings()}
-
-      {successMessage && (
-        <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg">
-          {successMessage}
+      {/* Mensagens de erro ou sucesso */}
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-4">
+          <div className="flex items-center">
+            <Shield className="h-5 w-5 text-red-600 dark:text-red-400 mr-2" />
+            <span className="text-red-800 dark:text-red-200">{error}</span>
+          </div>
         </div>
       )}
-      {error && (
-        <div className="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg">
-          {error}
+
+      {successMessage && (
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-4">
+          <div className="flex items-center">
+            <Save className="h-5 w-5 text-green-600 dark:text-green-400 mr-2" />
+            <span className="text-green-800 dark:text-green-200">{successMessage}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Navegação por abas */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+        <div className="flex border-b border-gray-200 dark:border-gray-700">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center space-x-2 px-4 py-2 text-sm font-medium rounded-t-lg transition-colors
+                ${activeTab === tab.id
+                  ? 'text-yellow-600 border-b-2 border-yellow-600'
+                  : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}
+              `}
+            >
+              <tab.icon className="h-4 w-4" />
+              <span>{tab.name}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="p-6">
+          {/* Conteúdo das abas */}
+          {activeTab === 'general' && renderGeneralSettings()}
+          {activeTab === 'schedule' && renderScheduleSettings()}
+          {activeTab === 'services' && renderServicesSettings()}
+          {activeTab === 'team' && (
+            <div className="text-center py-8">
+              <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Gerenciar Equipe</h3>
+              <p className="text-gray-600 dark:text-gray-400">Vá para a seção de Gerenciar Barbeiros para configurar sua equipe.</p>
+              {/* Link ou botão para a página ManagerBarbers */}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Botão Salvar (visível apenas para abas que permitem salvar) */}
+      {(activeTab === 'general' || activeTab === 'schedule') && (
+        <div className="flex justify-end mt-6">
+          <button
+            onClick={handleSave}
+            className="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2"
+          >
+            <Save className="h-5 w-5" />
+            <span>Salvar Alterações</span>
+          </button>
         </div>
       )}
     </div>

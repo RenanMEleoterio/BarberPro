@@ -8,23 +8,34 @@ using BarbeariaSaaS.Models;
 
 namespace BarbeariaSaaS.Services
 {
+    /// <summary>
+    /// Serviço responsável pela gestão de horários disponíveis para barbeiros.
+    /// Inclui funcionalidades para gerar, limpar e atualizar a disponibilidade de horários.
+    /// </summary>
     public class HorarioService
     {
         private readonly BarbeariaContext _context;
 
+        /// <summary>
+        /// Construtor do serviço de horários. Injeta o contexto do banco de dados (BarbeariaContext).
+        /// </summary>
+        /// <param name="context">O contexto do banco de dados.</param>
         public HorarioService(BarbeariaContext context)
         {
             _context = context;
         }
 
         /// <summary>
-        /// Gera horários disponíveis para um barbeiro baseado na configuração da barbearia
+        /// Gera horários disponíveis para um barbeiro específico dentro de um período de datas,
+        /// com base nas configurações de dias de trabalho e horários de abertura/fechamento da barbearia.
+        /// Evita a criação de horários duplicados.
         /// </summary>
-        /// <param name="barbeiroId">ID do barbeiro</param>
-        /// <param name="dataInicio">Data de início para gerar horários</param>
-        /// <param name="dataFim">Data final para gerar horários</param>
-        /// <param name="intervaloMinutos">Intervalo entre agendamentos em minutos (padrão: 30)</param>
-        /// <returns>Lista de horários criados</returns>
+        /// <param name="barbeiroId">ID do barbeiro para o qual os horários serão gerados.</param>
+        /// <param name="dataInicio">Data de início do período para geração de horários.</param>
+        /// <param name="dataFim">Data final do período para geração de horários.</param>
+        /// <param name="intervaloMinutos">Intervalo de tempo entre cada horário disponível em minutos (padrão: 30).</param>
+        /// <returns>Uma lista de objetos HorarioDisponivel que foram gerados e salvos no banco de dados.</returns>
+        /// <exception cref="ArgumentException">Lançada se o barbeiro não for encontrado ou não estiver vinculado a uma barbearia.</exception>
         public async Task<List<HorarioDisponivel>> GerarHorariosParaBarbeiro(
             int barbeiroId, 
             DateTime dataInicio, 
@@ -43,9 +54,9 @@ namespace BarbeariaSaaS.Services
             var barbearia = barbeiro.Barbearia;
             var horariosGerados = new List<HorarioDisponivel>();
 
-            // Configurações padrão se não estiverem definidas
+            // Configurações padrão se não estiverem definidas na barbearia
             var workDays = !string.IsNullOrEmpty(barbearia.WorkDays) 
-                ? barbearia.WorkDays.Split(',').Select(d => d.Trim()).ToList()
+                ? barbearia.WorkDays.Split(",", StringSplitOptions.RemoveEmptyEntries).Select(d => d.Trim().ToLower()).ToList()
                 : new List<string> { "monday", "tuesday", "wednesday", "thursday", "friday", "saturday" };
 
             var openTime = !string.IsNullOrEmpty(barbearia.OpenTime) 
@@ -56,7 +67,7 @@ namespace BarbeariaSaaS.Services
                 ? TimeSpan.Parse(barbearia.CloseTime) 
                 : new TimeSpan(18, 0, 0); // 18:00
 
-            // Mapear dias da semana
+            // Mapear dias da semana de DayOfWeek para string (minúsculas)
             var dayMapping = new Dictionary<DayOfWeek, string>
             {
                 { DayOfWeek.Sunday, "sunday" },
@@ -68,36 +79,36 @@ namespace BarbeariaSaaS.Services
                 { DayOfWeek.Saturday, "saturday" }
             };
 
-            // Buscar horários já existentes para evitar duplicatas
+            // Buscar horários já existentes para o barbeiro no período, para evitar duplicatas
             var horariosExistentes = await _context.HorariosDisponiveis
                 .Where(h => h.BarbeiroId == barbeiroId && 
-                           h.DataHora >= dataInicio && 
-                           h.DataHora <= dataFim)
+                           h.DataHora >= dataInicio.ToUniversalTime() && 
+                           h.DataHora <= dataFim.ToUniversalTime())
                 .Select(h => h.DataHora)
                 .ToListAsync();
 
-            // Gerar horários para cada dia no período
+            // Gerar horários para cada dia no período especificado
             for (var data = dataInicio.Date; data <= dataFim.Date; data = data.AddDays(1))
             {
                 var dayOfWeek = data.DayOfWeek;
                 var dayName = dayMapping[dayOfWeek];
 
-                // Verificar se a barbearia funciona neste dia
+                // Verificar se a barbearia funciona neste dia da semana
                 if (!workDays.Contains(dayName))
                 {
                     continue;
                 }
 
-                // Gerar horários para este dia
+                // Gerar horários para o dia atual, dentro do horário de funcionamento da barbearia
                 var currentTime = openTime;
                 while (currentTime < closeTime)
                 {
                     var dataHora = data.Add(currentTime);
                     
-                    // Converter para UTC para armazenar no banco
+                    // Converter para UTC para armazenar no banco de dados de forma consistente
                     var dataHoraUtc = DateTime.SpecifyKind(dataHora, DateTimeKind.Utc);
 
-                    // Verificar se já existe este horário
+                    // Verificar se já existe um horário idêntico para evitar duplicatas
                     if (!horariosExistentes.Contains(dataHoraUtc))
                     {
                         var horario = new HorarioDisponivel
@@ -115,7 +126,7 @@ namespace BarbeariaSaaS.Services
                 }
             }
 
-            // Salvar horários gerados no banco
+            // Salvar todos os novos horários gerados no banco de dados
             if (horariosGerados.Any())
             {
                 _context.HorariosDisponiveis.AddRange(horariosGerados);
@@ -126,25 +137,27 @@ namespace BarbeariaSaaS.Services
         }
 
         /// <summary>
-        /// Gera horários para todos os barbeiros de uma barbearia
+        /// Gera horários disponíveis para todos os barbeiros de uma barbearia específica dentro de um período de datas.
         /// </summary>
-        /// <param name="barbeariaId">ID da barbearia</param>
-        /// <param name="dataInicio">Data de início</param>
-        /// <param name="dataFim">Data final</param>
-        /// <param name="intervaloMinutos">Intervalo entre agendamentos</param>
-        /// <returns>Número total de horários gerados</returns>
+        /// <param name="barbeariaId">ID da barbearia cujos barbeiros terão horários gerados.</param>
+        /// <param name="dataInicio">Data de início do período para geração de horários.</param>
+        /// <param name="dataFim">Data final do período para geração de horários.</param>
+        /// <param name="intervaloMinutos">Intervalo de tempo entre cada horário disponível em minutos (padrão: 30).</param>
+        /// <returns>O número total de horários gerados para todos os barbeiros da barbearia.</returns>
         public async Task<int> GerarHorariosParaBarbearia(
             int barbeariaId, 
             DateTime dataInicio, 
             DateTime dataFim, 
             int intervaloMinutos = 30)
         {
+            // Busca todos os barbeiros associados à barbearia especificada.
             var barbeiros = await _context.Usuarios
                 .Where(u => u.BarbeariaId == barbeariaId && u.TipoUsuario == TipoUsuario.Barbeiro)
                 .ToListAsync();
 
             var totalHorarios = 0;
 
+            // Itera sobre cada barbeiro e gera horários para ele.
             foreach (var barbeiro in barbeiros)
             {
                 var horariosGerados = await GerarHorariosParaBarbeiro(
@@ -160,15 +173,18 @@ namespace BarbeariaSaaS.Services
         }
 
         /// <summary>
-        /// Remove horários antigos (passados) que não foram utilizados
+        /// Remove horários disponíveis antigos (que já passaram) que não foram agendados.
+        /// Isso ajuda a manter o banco de dados limpo e relevante.
         /// </summary>
-        /// <returns>Número de horários removidos</returns>
+        /// <returns>O número de horários removidos.</returns>
         public async Task<int> LimparHorariosAntigos()
         {
+            // Busca horários que já passaram e ainda estão marcados como disponíveis.
             var horariosAntigos = await _context.HorariosDisponiveis
                 .Where(h => h.DataHora < DateTime.UtcNow && h.EstaDisponivel)
                 .ToListAsync();
 
+            // Se houver horários antigos, remove-os do contexto e salva as mudanças.
             if (horariosAntigos.Any())
             {
                 _context.HorariosDisponiveis.RemoveRange(horariosAntigos);
@@ -179,12 +195,13 @@ namespace BarbeariaSaaS.Services
         }
 
         /// <summary>
-        /// Verifica e atualiza disponibilidade de horários baseado em agendamentos existentes
+        /// Verifica e atualiza a disponibilidade de horários com base nos agendamentos existentes.
+        /// Marca como indisponíveis os horários que já possuem um agendamento confirmado.
         /// </summary>
-        /// <returns>Número de horários atualizados</returns>
+        /// <returns>O número de horários cuja disponibilidade foi atualizada.</returns>
         public async Task<int> AtualizarDisponibilidadeHorarios()
         {
-            // Buscar horários que estão marcados como disponíveis mas têm agendamentos confirmados
+            // Busca horários que estão marcados como disponíveis, mas que possuem um agendamento confirmado associado.
             var horariosComAgendamento = await _context.HorariosDisponiveis
                 .Where(h => h.EstaDisponivel)
                 .Where(h => _context.Agendamentos.Any(a => 
@@ -193,11 +210,13 @@ namespace BarbeariaSaaS.Services
                     a.Status == StatusAgendamento.Confirmado))
                 .ToListAsync();
 
+            // Para cada horário encontrado, marca-o como indisponível.
             foreach (var horario in horariosComAgendamento)
             {
                 horario.EstaDisponivel = false;
             }
 
+            // Se houve atualizações, salva as mudanças no banco de dados.
             if (horariosComAgendamento.Any())
             {
                 await _context.SaveChangesAsync();
@@ -207,4 +226,5 @@ namespace BarbeariaSaaS.Services
         }
     }
 }
+
 
