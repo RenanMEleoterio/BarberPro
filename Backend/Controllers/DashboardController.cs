@@ -203,7 +203,7 @@ namespace BarbeariaSaaS.Controllers
             var inicioMes = new DateTime(hoje.Year, hoje.Month, 1, 0, 0, 0, DateTimeKind.Utc);
             var fimMes = inicioMes.AddMonths(1);
 
-            var agendamentosMes = await _context.Agendamentos
+            var totalAgendamentosMesBarbearia = await _context.Agendamentos
                 .Where(a => a.BarbeariaId == barbeariaId && 
                            a.DataHora >= inicioMes && 
                            a.DataHora < fimMes)
@@ -252,20 +252,20 @@ namespace BarbeariaSaaS.Controllers
 
             foreach (var barbeiro in barbeiros)
             {
-                var agendamentosMes = await _context.Agendamentos
+                var agendamentosDoBarbeiro = await _context.Agendamentos
                     .Where(a => a.BarbeiroId == barbeiro.Id && 
                                a.DataHora >= inicioMes && 
                                a.DataHora < fimMes)
                     .ToListAsync();
 
-                var agendamentosRealizados = agendamentosMes
+                var agendamentosRealizados = agendamentosDoBarbeiro
                     .Where(a => a.Status == StatusAgendamento.Realizado)
                     .ToList();
 
                 var receitaMensal = agendamentosRealizados
                     .Sum(a => a.PrecoServico ?? 0);
 
-                var clientesUnicos = agendamentosMes
+                var clientesUnicos = agendamentosDoBarbeiro
                     .Select(a => a.ClienteId)
                     .Distinct()
                     .Count();
@@ -336,12 +336,7 @@ namespace BarbeariaSaaS.Controllers
                     Telefone = barbearia.Telefone,
                     Email = barbearia.Email
                 },
-                TotalBarbeiros = totalBarbeiros,
-                AgendamentosMes = agendamentosMes,
-                ConcluídosMes = agendamentosConcluidos,
-                ReceitaTotal = receitaTotal,
-                PerformanceSemanal = performanceSemanal,
-                Barbeiros = barbeirosComEstatisticas,
+
                 FormasPagamento = new {
                     Pix = totalPagamentos > 0 ? (pagamentosPix * 100 / totalPagamentos) : 0,
                     Cartao = totalPagamentos > 0 ? (pagamentosCartao * 100 / totalPagamentos) : 0,
@@ -412,20 +407,20 @@ namespace BarbeariaSaaS.Controllers
 
             foreach (var barbeiro in barbeiros)
             {
-                var agendamentosMes = await _context.Agendamentos
+                var agendamentosDoBarbeiro = await _context.Agendamentos
                     .Where(a => a.BarbeiroId == barbeiro.Id && 
                                a.DataHora >= inicioMes && 
                                a.DataHora < fimMes)
                     .ToListAsync();
 
-                var agendamentosRealizados = agendamentosMes
+                var agendamentosRealizados = agendamentosDoBarbeiro
                     .Where(a => a.Status == StatusAgendamento.Realizado)
                     .ToList();
 
                 var receitaMensal = agendamentosRealizados
                     .Sum(a => a.PrecoServico ?? 0);
 
-                var clientesUnicos = agendamentosMes
+                var clientesUnicos = agendamentosDoBarbeiro
                     .Select(a => a.ClienteId)
                     .Distinct()
                     .Count();
@@ -496,12 +491,7 @@ namespace BarbeariaSaaS.Controllers
                     Telefone = barbearia.Telefone,
                     Email = barbearia.Email
                 },
-                TotalBarbeiros = totalBarbeiros,
-                AgendamentosMes = agendamentosMes,
-                ConcluídosMes = agendamentosConcluidos,
-                ReceitaTotal = receitaTotal,
-                PerformanceSemanal = performanceSemanal,
-                Barbeiros = barbeirosComEstatisticas,
+
                 FormasPagamento = new {
                     Pix = totalPagamentos > 0 ? (pagamentosPix * 100 / totalPagamentos) : 0,
                     Cartao = totalPagamentos > 0 ? (pagamentosCartao * 100 / totalPagamentos) : 0,
