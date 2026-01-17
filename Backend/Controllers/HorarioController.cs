@@ -338,7 +338,13 @@ namespace BarbeariaSaaS.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Erro interno do servidor", details = ex.Message });
+                Console.WriteLine($"Erro ao gerar horários para barbeiro: {ex.Message}\n{ex.StackTrace}\nInner: {ex.InnerException?.Message}");
+                return StatusCode(500, new 
+                { 
+                    message = "Erro interno do servidor", 
+                    details = ex.Message,
+                    inner = ex.InnerException?.Message 
+                });
             }
         }
 
@@ -389,7 +395,13 @@ namespace BarbeariaSaaS.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Erro interno do servidor", details = ex.Message });
+                Console.WriteLine($"Erro ao gerar horários para barbearia: {ex.Message}\n{ex.StackTrace}\nInner: {ex.InnerException?.Message}");
+                return StatusCode(500, new 
+                { 
+                    message = "Erro interno do servidor", 
+                    details = ex.Message,
+                    inner = ex.InnerException?.Message 
+                });
             }
         }
     }
