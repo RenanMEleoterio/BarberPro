@@ -182,8 +182,12 @@ namespace BarbeariaSaaS.Controllers
                 return BadRequest(new { message = "Senha deve ter pelo menos 6 caracteres", field = "senha" });
             }
 
-            // Validação de código da barbearia.
-            if (string.IsNullOrWhiteSpace(cadastroDto.CodigoBarbearia))
+            // Validação de código de identificação da barbearia (pode ser Código da Barbearia ou Código de Convite).
+            var codigoIdentificacao = !string.IsNullOrWhiteSpace(cadastroDto.CodigoBarbearia)
+                ? cadastroDto.CodigoBarbearia
+                : cadastroDto.CodigoConvite;
+
+            if (string.IsNullOrWhiteSpace(codigoIdentificacao))
             {
                 return BadRequest(new { message = "Código da barbearia é obrigatório", field = "codigoBarbearia" });
             }
@@ -194,9 +198,11 @@ namespace BarbeariaSaaS.Controllers
                 return BadRequest(new { message = "Este email já está em uso", field = "email" });
             }
 
-            // Busca a barbearia pelo código fornecido.
-            var barbearia = await _context.Barbearias
-                .FirstOrDefaultAsync(b => b.CodigoBarbearia == cadastroDto.CodigoBarbearia);
+            // Busca a barbearia pelo código fornecido (prioriza Código da Barbearia, mas aceita também Código de Convite).
+            var barbeariaQuery = _context.Barbearias.AsQueryable();
+            var barbearia = !string.IsNullOrWhiteSpace(cadastroDto.CodigoBarbearia)
+                ? await barbeariaQuery.FirstOrDefaultAsync(b => b.CodigoBarbearia == cadastroDto.CodigoBarbearia)
+                : await barbeariaQuery.FirstOrDefaultAsync(b => b.CodigoConvite == cadastroDto.CodigoConvite);
 
             // Se a barbearia não for encontrada, retorna erro.
             if (barbearia == null)
@@ -204,37 +210,45 @@ namespace BarbeariaSaaS.Controllers
                 return BadRequest(new { message = "Código da barbearia inválido", field = "codigoBarbearia" });
             }
 
-            // Cria um novo objeto de usuário para o barbeiro.
-            var usuario = new Usuario
+            try
             {
-                Nome = cadastroDto.Nome,
-                Email = cadastroDto.Email,
-                SenhaHash = _authService.HashPassword(cadastroDto.Senha),
-                TipoUsuario = TipoUsuario.Barbeiro,
-                BarbeariaId = barbearia.Id,
-                Especialidades = cadastroDto.Especialidades,
-                Descricao = cadastroDto.Descricao,
-                DataCriacao = DateTime.UtcNow // Define a data de criação como UTC.
-            };
+                // Cria um novo objeto de usuário para o barbeiro.
+                var usuario = new Usuario
+                {
+                    Nome = cadastroDto.Nome,
+                    Email = cadastroDto.Email,
+                    SenhaHash = _authService.HashPassword(cadastroDto.Senha),
+                    TipoUsuario = TipoUsuario.Barbeiro,
+                    BarbeariaId = barbearia.Id,
+                    Especialidades = cadastroDto.Especialidades ?? string.Empty,
+                    Descricao = cadastroDto.Descricao ?? string.Empty,
+                    DataCriacao = DateTime.UtcNow // Define a data de criação como UTC.
+                };
 
-            _context.Usuarios.Add(usuario); // Adiciona o barbeiro ao contexto.
-            await _context.SaveChangesAsync(); // Salva as alterações.
+                _context.Usuarios.Add(usuario); // Adiciona o barbeiro ao contexto.
+                await _context.SaveChangesAsync(); // Salva as alterações.
 
-            var token = _authService.GenerateJwtToken(usuario); // Gera o token JWT.
+                var token = _authService.GenerateJwtToken(usuario); // Gera o token JWT.
 
-            // Cria o objeto de resposta.
-            var response = new SecureLoginResponseDto
+                // Cria o objeto de resposta.
+                var response = new SecureLoginResponseDto
+                {
+                    Id = usuario.Id,
+                    Nome = usuario.Nome,
+                    Email = usuario.Email,
+                    TipoUsuario = usuario.TipoUsuario.ToString(),
+                    BarbeariaId = usuario.BarbeariaId,
+                    NomeBarbearia = barbearia.Nome,
+                    Token = token
+                };
+
+                return Ok(response); // Retorna sucesso.
+            }
+            catch (Exception ex)
             {
-                Id = usuario.Id,
-                Nome = usuario.Nome,
-                Email = usuario.Email,
-                TipoUsuario = usuario.TipoUsuario.ToString(),
-                BarbeariaId = usuario.BarbeariaId,
-                NomeBarbearia = barbearia.Nome,
-                Token = token
-            };
-
-            return Ok(response); // Retorna sucesso.
+                Console.WriteLine($"Erro ao cadastrar barbeiro: {ex.Message}\n{ex.StackTrace}");
+                return StatusCode(500, new { message = "Erro interno do servidor ao cadastrar barbeiro", details = ex.Message });
+            }
         }
 
         /// <summary>

@@ -17,7 +17,7 @@ function showLoginForm(userType) {
     const modalTitle = document.getElementById('modalTitle');
     const registerLink = document.getElementById('registerLink');
     const createBarbeariaLink = document.getElementById('createBarbeariaLink');
-    const codigoConviteGroup = document.getElementById('codigoConviteGroup');
+    const codigoBarbeariaGroup = document.getElementById('codigoBarbeariaGroup');
     
     // Configurar título e opções baseado no tipo de usuário
     switch(userType) {
@@ -25,19 +25,19 @@ function showLoginForm(userType) {
             modalTitle.textContent = 'Login - Cliente';
             registerLink.style.display = 'block';
             createBarbeariaLink.style.display = 'none';
-            codigoConviteGroup.style.display = 'none';
+            codigoBarbeariaGroup.style.display = 'none';
             break;
         case 'barbeiro':
             modalTitle.textContent = 'Login - Barbeiro';
             registerLink.style.display = 'block';
             createBarbeariaLink.style.display = 'none';
-            codigoConviteGroup.style.display = 'none';
+            codigoBarbeariaGroup.style.display = 'none';
             break;
         case 'gerente':
             modalTitle.textContent = 'Login - Gerente';
             registerLink.style.display = 'none';
             createBarbeariaLink.style.display = 'block';
-            codigoConviteGroup.style.display = 'none';
+            codigoBarbeariaGroup.style.display = 'none';
             break;
     }
     
@@ -58,11 +58,11 @@ function showRegisterForm() {
     if (currentUserType === 'barbeiro') {
         registerTitle.textContent = 'Cadastro - Barbeiro';
         barbeiroFields.style.display = 'block';
-        document.getElementById('regCodigoConvite').required = true;
+        document.getElementById('regCodigoBarbearia').required = true;
     } else {
         registerTitle.textContent = 'Cadastro - Cliente';
         barbeiroFields.style.display = 'none';
-        document.getElementById('regCodigoConvite').required = false;
+        document.getElementById('regCodigoBarbearia').required = false;
     }
     
     registerModal.style.display = 'block';
@@ -207,7 +207,7 @@ async function handleRegister(event) {
             nome: formData.get('nome'),
             email: formData.get('email'),
             senha: formData.get('senha'),
-            codigoConvite: formData.get('codigoConvite'),
+            codigoBarbearia: formData.get('codigoBarbearia'),
             especialidades: formData.get('especialidades'),
             descricao: formData.get('descricao')
         };
@@ -277,11 +277,11 @@ async function handleBarbeariaRegister(event) {
             localStorage.setItem('user', JSON.stringify(result.gerente));
             currentUser = result.gerente;
             
-            // Mostrar modal de sucesso com código de convite
+            // Mostrar modal de sucesso com código da barbearia para cadastro de barbeiros
             document.getElementById('successContent').innerHTML = `
                 <div class="success-info">
                     <h3>Barbearia "${result.nomeBarbearia}" criada com sucesso!</h3>
-                    <p><strong>Código de Convite para Barbeiros:</strong></p>
+                    <p><strong>Código da Barbearia para Barbeiros:</strong></p>
                     <div class="codigo-convite">${result.codigoConvite}</div>
                     <p><small>Compartilhe este código com seus barbeiros para que eles possam se cadastrar na plataforma.</small></p>
                 </div>

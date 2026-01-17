@@ -37,6 +37,13 @@ namespace BarbeariaSaaS.DTOs
         public string CodigoBarbearia { get; set; }
 
         /// <summary>
+        /// Código de convite da barbearia. Opcional e usado como alternativa ao Código da Barbearia
+        /// para compatibilidade com fluxos antigos de cadastro.
+        /// </summary>
+        [StringLength(10, ErrorMessage = "O código de convite deve ter no máximo 10 caracteres.")]
+        public string? CodigoConvite { get; set; }
+
+        /// <summary>
         /// As especialidades do barbeiro (opcional), por exemplo, "Corte Masculino", "Barba Clássica".
         /// </summary>
         public string? Especialidades { get; set; }
