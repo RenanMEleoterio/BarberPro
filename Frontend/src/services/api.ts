@@ -349,6 +349,18 @@ class ApiService {
     });
   }
 
+  async generateHorariosParaBarbearia(dataInicio?: string, dataFim?: string, intervaloMinutos: number = 30) {
+    const params = new URLSearchParams();
+    if (dataInicio) params.append('dataInicio', dataInicio);
+    if (dataFim) params.append('dataFim', dataFim);
+    if (intervaloMinutos) params.append('intervaloMinutos', intervaloMinutos.toString());
+    const query = params.toString();
+    const endpoint = query ? `/horario/gerar-barbearia?${query}` : '/horario/gerar-barbearia';
+    return this.request(endpoint, {
+      method: 'POST'
+    });
+  }
+
   /**
    * Atualiza o status de um agendamento existente.
    * @param {number} id - O ID do agendamento a ser atualizado.

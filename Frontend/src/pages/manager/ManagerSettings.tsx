@@ -116,7 +116,6 @@ export default function ManagerSettings() {
         throw new Error("ID da barbearia não encontrado nos dados do usuário.");
       }
 
-      // Chama a API para atualizar os dados da barbearia.
       await apiService.updateBarbearia(barbeariaId, {
         nome: barbershopData.nome,
         endereco: barbershopData.endereco,
@@ -126,7 +125,14 @@ export default function ManagerSettings() {
         closeTime: barbershopData.closeTime,
         workDays: barbershopData.workDays.join(','),
       });
-      setSuccessMessage("Configurações salvas com sucesso!");
+
+      try {
+        await apiService.generateHorariosParaBarbearia();
+      } catch (generationError) {
+        console.error("Erro ao gerar horários para a barbearia:", generationError);
+      }
+
+      setSuccessMessage("Configurações salvas com sucesso e horários gerados para a barbearia!");
       setError(null);
     } catch (err: any) {
       setError(err.message || "Erro ao salvar configurações.");
