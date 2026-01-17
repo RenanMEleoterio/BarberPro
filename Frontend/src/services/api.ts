@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://barberpro-op6v.onrender.com/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'https://barberpro-op6v.onrender.com/api';
 
 /**
  * Interface que define a estrutura de uma requisição de login.

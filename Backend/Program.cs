@@ -32,7 +32,6 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<BarbeariaContext>(options =>
 {
     var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL") ?? builder.Configuration.GetConnectionString("DefaultConnection");
-    Console.WriteLine($"DEBUG: Connection String: {connectionString}"); // Log de depuração para a string de conexão.
     options.UseNpgsql(connectionString);
 });
 
@@ -62,18 +61,21 @@ builder.Services.AddScoped<HorarioService>();
 builder.Services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
 
 // Configura as políticas de CORS (Cross-Origin Resource Sharing).
-// Permite requisições de origens específicas (netlify.app, localhost:3000, localhost:5173).
-// Permite qualquer método HTTP, qualquer cabeçalho e o envio de credenciais (cookies, cabeçalhos de autorização).
+// Os domínios permitidos podem ser configurados em "Cors:AllowedOrigins" no appsettings ou variáveis de ambiente.
+// Caso não haja configuração, utiliza uma lista padrão adequada para desenvolvimento e produção atuais.
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() 
+                    ?? new[]
+                    {
+                        "https://barberproapp.netlify.app",
+                        "http://localhost:3000",
+                        "http://localhost:5173"
+                    };
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
         policy =>
         {
-            policy.WithOrigins(
-                "https://barberproapp.netlify.app",
-                "http://localhost:3000", 
-                "http://localhost:5173"
-            )
+            policy.WithOrigins(allowedOrigins)
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials();
