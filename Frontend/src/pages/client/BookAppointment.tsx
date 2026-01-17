@@ -445,43 +445,45 @@ export default function BookAppointment() {
         </div>
 
         {/* Seção de Seleção de Horário */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 flex flex-col">
           <div className="flex items-center space-x-2 mb-4">
             <Clock className="h-5 w-5 text-yellow-500" />
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Escolha o Horário</h2>
           </div>
           
           {!selectedBarber || !selectedDate ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500 dark:text-gray-400">
+            <div className="flex-1 flex items-center justify-center">
+              <p className="text-gray-500 dark:text-gray-400 text-center">
                 Selecione um barbeiro e uma data primeiro
               </p>
             </div>
           ) : (
-            <div className="space-y-2 max-h-80 overflow-y-auto">
-              {getAvailableTimesForDate(selectedBarber, selectedDate).map(({ time, horarioId }) => (
-                <button
-                  key={horarioId}
-                  onClick={() => {
-                    console.log("Selecionando horário:", time);
-                    setSelectedTime(time);
-                  }}
-                  className={`w-full p-3 rounded-lg border-2 text-sm font-medium text-left transition-colors ${
-                    selectedTime === time
-                      ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 text-gray-900 dark:text-white'
-                      : 'border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white hover:border-yellow-500'
-                  }`}
-                >
-                  {time}
-                </button>
-              ))}
-              {getAvailableTimesForDate(selectedBarber, selectedDate).length === 0 && (
-                <div className="text-center py-4">
-                  <p className="text-gray-500 dark:text-gray-400">
-                    Nenhum horário disponível para esta data
-                  </p>
-                </div>
-              )}
+            <div className="flex-1 overflow-y-auto">
+              <div className="grid grid-cols-2 gap-2">
+                {getAvailableTimesForDate(selectedBarber, selectedDate).map(({ time, horarioId }) => (
+                  <button
+                    key={horarioId}
+                    onClick={() => {
+                      console.log("Selecionando horário:", time);
+                      setSelectedTime(time);
+                    }}
+                    className={`w-full p-3 rounded-lg border-2 text-sm font-medium text-center transition-colors ${
+                      selectedTime === time
+                        ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 text-gray-900 dark:text-white'
+                        : 'border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white hover:border-yellow-500'
+                    }`}
+                  >
+                    {time}
+                  </button>
+                ))}
+                {getAvailableTimesForDate(selectedBarber, selectedDate).length === 0 && (
+                  <div className="col-span-2 text-center py-4">
+                    <p className="text-gray-500 dark:text-gray-400">
+                      Nenhum horário disponível para esta data
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
