@@ -100,7 +100,21 @@ class ApiService {
         throw new Error(errorMessage);
       }
 
-      return await response.json();
+      if (response.status === 204 || response.status === 205) {
+        return undefined as T;
+      }
+
+      const text = await response.text();
+
+      if (!text) {
+        return undefined as T;
+      }
+
+      try {
+        return JSON.parse(text) as T;
+      } catch {
+        return text as unknown as T;
+      }
     } catch (error) {
       console.error('Erro na requisição:', error);
       throw error;
