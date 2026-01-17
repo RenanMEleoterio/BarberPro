@@ -304,20 +304,16 @@ namespace BarbeariaSaaS.Controllers
             try
             {
                 var tipoUsuario = GetTipoUsuario();
-                
-                // Apenas gerentes e barbeiros podem gerar horários
                 if (tipoUsuario != "Gerente" && tipoUsuario != "Barbeiro")
                 {
                     return Forbid("Apenas gerentes e barbeiros podem gerar horários");
                 }
 
-                // Se for barbeiro, só pode gerar para si mesmo
                 if (tipoUsuario == "Barbeiro" && GetUsuarioId() != barbeiroId)
                 {
                     return Forbid("Barbeiros só podem gerar horários para si mesmos");
                 }
 
-                // Definir período padrão se não fornecido (próximos 30 dias)
                 var inicio = dataInicio ?? DateTime.Today;
                 var fim = dataFim ?? DateTime.Today.AddDays(30);
 
@@ -338,6 +334,18 @@ namespace BarbeariaSaaS.Controllers
             }
             catch (Exception ex)
             {
+                var innerMessage = ex.InnerException?.Message ?? string.Empty;
+                if (innerMessage.Contains("IX_HorariosDisponiveis_BarbeiroId_DataHora") || innerMessage.Contains("23505"))
+                {
+                    Console.WriteLine($"Tentativa de gerar horários duplicados para barbeiro {barbeiroId}: {innerMessage}");
+                    return Ok(new 
+                    { 
+                        message = "Horários já existentes foram ignorados",
+                        detalhes = "Foram detectados horários duplicados para o barbeiro informado",
+                        codigo = "HORARIOS_DUPLICADOS"
+                    });
+                }
+
                 Console.WriteLine($"Erro ao gerar horários para barbeiro: {ex.Message}\n{ex.StackTrace}\nInner: {ex.InnerException?.Message}");
                 return StatusCode(500, new 
                 { 
@@ -365,8 +373,6 @@ namespace BarbeariaSaaS.Controllers
             try
             {
                 var tipoUsuario = GetTipoUsuario();
-                
-                // Apenas gerentes podem gerar horários para toda a barbearia
                 if (tipoUsuario != "Gerente")
                 {
                     return Forbid("Apenas gerentes podem gerar horários para toda a barbearia");
@@ -378,7 +384,6 @@ namespace BarbeariaSaaS.Controllers
                     return BadRequest(new { message = "Usuário não está vinculado a uma barbearia" });
                 }
 
-                // Definir período padrão se não fornecido (próximos 30 dias)
                 var inicio = dataInicio ?? DateTime.Today;
                 var fim = dataFim ?? DateTime.Today.AddDays(30);
 
@@ -395,6 +400,18 @@ namespace BarbeariaSaaS.Controllers
             }
             catch (Exception ex)
             {
+                var innerMessage = ex.InnerException?.Message ?? string.Empty;
+                if (innerMessage.Contains("IX_HorariosDisponiveis_BarbeiroId_DataHora") || innerMessage.Contains("23505"))
+                {
+                    Console.WriteLine($"Tentativa de gerar horários duplicados para barbearia: {innerMessage}");
+                    return Ok(new 
+                    { 
+                        message = "Horários já existentes foram ignorados",
+                        detalhes = "Foram detectados horários duplicados para um ou mais barbeiros da barbearia",
+                        codigo = "HORARIOS_DUPLICADOS"
+                    });
+                }
+
                 Console.WriteLine($"Erro ao gerar horários para barbearia: {ex.Message}\n{ex.StackTrace}\nInner: {ex.InnerException?.Message}");
                 return StatusCode(500, new 
                 { 

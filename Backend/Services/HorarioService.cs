@@ -54,20 +54,18 @@ namespace BarbeariaSaaS.Services
             var barbearia = barbeiro.Barbearia;
             var horariosGerados = new List<HorarioDisponivel>();
 
-            // Configurações padrão se não estiverem definidas na barbearia
             var workDays = !string.IsNullOrEmpty(barbearia.WorkDays) 
                 ? barbearia.WorkDays.Split(",", StringSplitOptions.RemoveEmptyEntries).Select(d => d.Trim().ToLower()).ToList()
                 : new List<string> { "monday", "tuesday", "wednesday", "thursday", "friday", "saturday" };
 
             var openTime = !string.IsNullOrEmpty(barbearia.OpenTime) 
                 ? TimeSpan.Parse(barbearia.OpenTime) 
-                : new TimeSpan(8, 0, 0); // 08:00
+                : new TimeSpan(8, 0, 0);
 
             var closeTime = !string.IsNullOrEmpty(barbearia.CloseTime) 
                 ? TimeSpan.Parse(barbearia.CloseTime) 
-                : new TimeSpan(18, 0, 0); // 18:00
+                : new TimeSpan(18, 0, 0);
 
-            // Mapear dias da semana de DayOfWeek para string (minúsculas)
             var dayMapping = new Dictionary<DayOfWeek, string>
             {
                 { DayOfWeek.Sunday, "sunday" },
@@ -79,37 +77,38 @@ namespace BarbeariaSaaS.Services
                 { DayOfWeek.Saturday, "saturday" }
             };
 
-            // Buscar horários já existentes para o barbeiro no período, para evitar duplicatas
             var horariosExistentes = await _context.HorariosDisponiveis
                 .Where(h => h.BarbeiroId == barbeiroId && 
                            h.DataHora >= dataInicio.ToUniversalTime() && 
                            h.DataHora <= dataFim.ToUniversalTime())
-                .Select(h => h.DataHora)
+                .Include(h => h.Agendamentos)
                 .ToListAsync();
 
-            // Gerar horários para cada dia no período especificado
+            var datasExistentes = horariosExistentes
+                .Select(h => h.DataHora)
+                .ToHashSet();
+
+            var horariosIdeais = new HashSet<DateTime>();
+
             for (var data = dataInicio.Date; data <= dataFim.Date; data = data.AddDays(1))
             {
                 var dayOfWeek = data.DayOfWeek;
                 var dayName = dayMapping[dayOfWeek];
 
-                // Verificar se a barbearia funciona neste dia da semana
                 if (!workDays.Contains(dayName))
                 {
                     continue;
                 }
 
-                // Gerar horários para o dia atual, dentro do horário de funcionamento da barbearia
                 var currentTime = openTime;
                 while (currentTime < closeTime)
                 {
                     var dataHora = data.Add(currentTime);
-                    
-                    // Converter para UTC para armazenar no banco de dados de forma consistente
                     var dataHoraUtc = DateTime.SpecifyKind(dataHora, DateTimeKind.Utc);
 
-                    // Verificar se já existe um horário idêntico para evitar duplicatas
-                    if (!horariosExistentes.Contains(dataHoraUtc))
+                    horariosIdeais.Add(dataHoraUtc);
+
+                    if (!datasExistentes.Contains(dataHoraUtc))
                     {
                         var horario = new HorarioDisponivel
                         {
@@ -126,10 +125,23 @@ namespace BarbeariaSaaS.Services
                 }
             }
 
-            // Salvar todos os novos horários gerados no banco de dados
+            var horariosParaRemover = horariosExistentes
+                .Where(h => !horariosIdeais.Contains(h.DataHora) &&
+                            !h.Agendamentos.Any(a => a.Status == StatusAgendamento.Confirmado))
+                .ToList();
+
+            if (horariosParaRemover.Any())
+            {
+                _context.HorariosDisponiveis.RemoveRange(horariosParaRemover);
+            }
+
             if (horariosGerados.Any())
             {
                 _context.HorariosDisponiveis.AddRange(horariosGerados);
+            }
+
+            if (horariosGerados.Any() || horariosParaRemover.Any())
+            {
                 await _context.SaveChangesAsync();
             }
 
