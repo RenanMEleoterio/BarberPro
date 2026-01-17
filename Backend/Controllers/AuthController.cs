@@ -115,15 +115,17 @@ namespace BarbeariaSaaS.Controllers
                 return BadRequest(new { message = "Este email já está em uso", field = "email" });
             }
 
-            // Cria um novo objeto de usuário com os dados fornecidos.
             var usuario = new Usuario
             {
                 Nome = cadastroDto.Nome,
                 Email = cadastroDto.Email,
-                SenhaHash = _authService.HashPassword(cadastroDto.Senha), // Gera o hash da senha.
-                TipoUsuario = TipoUsuario.Cliente, // Define o tipo de usuário como Cliente.
-                BarbeariaId = null, // Clientes não estão associados a uma barbearia específica inicialmente.
-                DataCriacao = DateTime.UtcNow // Define a data de criação como UTC.
+                SenhaHash = _authService.HashPassword(cadastroDto.Senha),
+                TipoUsuario = TipoUsuario.Cliente,
+                BarbeariaId = null,
+                Foto = string.Empty,
+                Especialidades = string.Empty,
+                Descricao = string.Empty,
+                DataCriacao = DateTime.UtcNow
             };
 
             try
@@ -149,9 +151,8 @@ namespace BarbeariaSaaS.Controllers
             }
             catch (Exception ex)
             {
-                // Em caso de erro, loga a exceção e retorna um erro interno do servidor.
-                Console.WriteLine($"Erro ao cadastrar cliente: {ex.Message}\n{ex.StackTrace}");
-                return StatusCode(500, new { message = "Erro interno do servidor ao cadastrar cliente", details = ex.Message });
+                Console.WriteLine($"Erro ao cadastrar cliente: {ex.Message}\n{ex.StackTrace}\nInner: {ex.InnerException?.Message}");
+                return StatusCode(500, new { message = "Erro interno do servidor ao cadastrar cliente", details = ex.Message, inner = ex.InnerException?.Message });
             }
         }
 
@@ -212,7 +213,6 @@ namespace BarbeariaSaaS.Controllers
 
             try
             {
-                // Cria um novo objeto de usuário para o barbeiro.
                 var usuario = new Usuario
                 {
                     Nome = cadastroDto.Nome,
@@ -222,7 +222,8 @@ namespace BarbeariaSaaS.Controllers
                     BarbeariaId = barbearia.Id,
                     Especialidades = cadastroDto.Especialidades ?? string.Empty,
                     Descricao = cadastroDto.Descricao ?? string.Empty,
-                    DataCriacao = DateTime.UtcNow // Define a data de criação como UTC.
+                    Foto = string.Empty,
+                    DataCriacao = DateTime.UtcNow
                 };
 
                 _context.Usuarios.Add(usuario); // Adiciona o barbeiro ao contexto.
@@ -246,8 +247,8 @@ namespace BarbeariaSaaS.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erro ao cadastrar barbeiro: {ex.Message}\n{ex.StackTrace}");
-                return StatusCode(500, new { message = "Erro interno do servidor ao cadastrar barbeiro", details = ex.Message });
+                Console.WriteLine($"Erro ao cadastrar barbeiro: {ex.Message}\n{ex.StackTrace}\nInner: {ex.InnerException?.Message}");
+                return StatusCode(500, new { message = "Erro interno do servidor ao cadastrar barbeiro", details = ex.Message, inner = ex.InnerException?.Message });
             }
         }
 
@@ -273,7 +274,6 @@ namespace BarbeariaSaaS.Controllers
                 return BadRequest(new { message = "Barbearia não encontrada" });
             }
 
-            // Cria um novo objeto de usuário para o gerente.
             var gerente = new Usuario
             {
                 Nome = cadastroDto.Nome,
@@ -281,7 +281,10 @@ namespace BarbeariaSaaS.Controllers
                 SenhaHash = _authService.HashPassword(cadastroDto.Senha),
                 TipoUsuario = TipoUsuario.Gerente,
                 BarbeariaId = cadastroDto.BarbeariaId,
-                DataCriacao = DateTime.UtcNow // Define a data de criação como UTC.
+                Foto = string.Empty,
+                Especialidades = string.Empty,
+                Descricao = string.Empty,
+                DataCriacao = DateTime.UtcNow
             };
 
             _context.Usuarios.Add(gerente); // Adiciona o gerente ao contexto.
