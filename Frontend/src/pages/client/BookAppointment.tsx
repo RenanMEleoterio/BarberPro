@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Calendar, Clock, User, ArrowLeft } from 'lucide-react';
-import { format, addDays, startOfWeek } from 'date-fns';
+import { format, addDays, startOfWeek, addWeeks } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import toast from 'react-hot-toast';
 import { apiService } from '../../services/api';
@@ -48,6 +48,7 @@ export default function BookAppointment() {
   // Estados para controlar o carregamento e erros.
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [weekOffset, setWeekOffset] = useState(0);
 
   // Efeito que carrega os dados da barbearia e dos barbeiros ao montar o componente ou mudar o ID da barbearia.
   useEffect(() => {
@@ -146,9 +147,8 @@ export default function BookAppointment() {
    */
   const getWeekDays = () => {
     const today = new Date();
-    // Inicia a semana na segunda-feira (1).
-    const startWeek = startOfWeek(today, { weekStartsOn: 1 });
-    // Cria um array com os 7 dias da semana a partir da data de início.
+    const baseDate = addWeeks(today, weekOffset);
+    const startWeek = startOfWeek(baseDate, { weekStartsOn: 1 });
     const allDays = Array.from({ length: 7 }, (_, i) => addDays(startWeek, i));
     
     // Se os dados da barbearia ou os dias de trabalho não estiverem disponíveis, retorna todos os dias.
@@ -198,8 +198,30 @@ export default function BookAppointment() {
     return filteredDays;
   };
 
-  // Obtém os dias da semana em que a barbearia funciona.
   const weekDays = getWeekDays();
+  const weekStartDate = weekDays.length > 0 ? weekDays[0] : null;
+  const weekEndDate = weekDays.length > 0 ? weekDays[weekDays.length - 1] : null;
+  const weekLabel =
+    weekStartDate && weekEndDate
+      ? `${format(weekStartDate, 'dd/MM', { locale: ptBR })} - ${format(weekEndDate, 'dd/MM', {
+          locale: ptBR,
+        })}`
+      : '';
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayStr = format(today, 'yyyy-MM-dd');
+
+  const changeWeek = (delta: number) => {
+    setWeekOffset((prev) => {
+      const next = prev + delta;
+      if (next < 0) {
+        return 0;
+      }
+      return next;
+    });
+    setSelectedDate('');
+    setSelectedTime('');
+  };
 
   /**
    * Lida com a submissão do agendamento.
@@ -362,37 +384,65 @@ export default function BookAppointment() {
           </div>
         </div>
 
-        {/* Seção de Seleção de Data */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center space-x-2 mb-4">
-            <Calendar className="h-5 w-5 text-yellow-500" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Escolha o Dia</h2>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-2">
+              <Calendar className="h-5 w-5 text-yellow-500" />
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Escolha o Dia</h2>
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => changeWeek(-1)}
+                disabled={weekOffset === 0}
+                className="px-2 py-1 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Semana anterior
+              </button>
+              <button
+                onClick={() => changeWeek(1)}
+                className="px-2 py-1 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200"
+              >
+                Próxima semana
+              </button>
+            </div>
           </div>
-          
+          {weekLabel && (
+            <div className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+              Semana: {weekLabel}
+            </div>
+          )}
           <div className="space-y-2">
             {weekDays.map((day) => {
               const dateStr = format(day, 'yyyy-MM-dd');
-              const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
-              
+              const isToday = dateStr === todayStr;
+              const isPastDay = day < today;
+              let buttonClasses = 'w-full p-3 rounded-lg border-2 transition-colors text-left ';
+              if (isPastDay) {
+                buttonClasses += 'border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 opacity-60 cursor-not-allowed';
+              } else if (selectedDate === dateStr) {
+                buttonClasses += 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20';
+              } else {
+                buttonClasses += 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500';
+              }
               return (
                 <button
                   key={dateStr}
                   onClick={() => {
+                    if (isPastDay) {
+                      return;
+                    }
                     console.log("Selecionando data:", dateStr);
                     setSelectedDate(dateStr);
                   }}
-                  className={`w-full p-3 rounded-lg border-2 transition-colors text-left ${
-                    selectedDate === dateStr
-                      ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
-                  }`}
+                  disabled={isPastDay}
+                  className={buttonClasses}
                 >
                   <div className="font-medium text-gray-900 dark:text-white">
-                    {format(day, 'EEEE', { locale: ptBR })} {/* Exibe o nome do dia da semana em português */}
+                    {format(day, 'EEEE', { locale: ptBR })}
                     {isToday && <span className="text-yellow-500 ml-2">(Hoje)</span>}
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    {format(day, 'dd/MM', { locale: ptBR })} {/* Exibe a data formatada em português */}
+                    {format(day, 'dd/MM', { locale: ptBR })}
                   </div>
                 </button>
               );
