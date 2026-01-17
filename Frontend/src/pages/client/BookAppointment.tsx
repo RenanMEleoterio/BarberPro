@@ -458,7 +458,7 @@ export default function BookAppointment() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-2 max-h-80 overflow-y-auto">
+            <div className="space-y-2 max-h-80 overflow-y-auto">
               {getAvailableTimesForDate(selectedBarber, selectedDate).map(({ time, horarioId }) => (
                 <button
                   key={horarioId}
@@ -466,17 +466,17 @@ export default function BookAppointment() {
                     console.log("Selecionando horário:", time);
                     setSelectedTime(time);
                   }}
-                  className={`p-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`w-full p-3 rounded-lg border-2 text-sm font-medium text-left transition-colors ${
                     selectedTime === time
-                      ? 'bg-yellow-500 text-white'
-                      : 'border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white hover:border-yellow-500'
+                      ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 text-gray-900 dark:text-white'
+                      : 'border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white hover:border-yellow-500'
                   }`}
                 >
                   {time}
                 </button>
               ))}
               {getAvailableTimesForDate(selectedBarber, selectedDate).length === 0 && (
-                <div className="col-span-2 text-center py-4">
+                <div className="text-center py-4">
                   <p className="text-gray-500 dark:text-gray-400">
                     Nenhum horário disponível para esta data
                   </p>
