@@ -76,9 +76,11 @@ export default function ManagerSettings() {
           endereco: barbershopResponse.endereco,
           telefone: barbershopResponse.telefone,
           email: barbershopResponse.email,
-          openTime: '08:00', // Dados mockados, ajustar com dados reais do backend
-          closeTime: '18:00', // Dados mockados, ajustar com dados reais do backend
-          workDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'], // Dados mockados, ajustar com dados reais do backend
+          openTime: barbershopResponse.openTime || '08:00',
+          closeTime: barbershopResponse.closeTime || '18:00',
+          workDays: barbershopResponse.workDays
+            ? barbershopResponse.workDays.split(',').map((day: string) => day.trim())
+            : ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
           services: servicesResponse, // Dados reais do backend
           notifications: {
             newAppointments: true,
@@ -120,6 +122,9 @@ export default function ManagerSettings() {
         endereco: barbershopData.endereco,
         telefone: barbershopData.telefone,
         email: barbershopData.email,
+        openTime: barbershopData.openTime,
+        closeTime: barbershopData.closeTime,
+        workDays: barbershopData.workDays.join(','),
       });
       setSuccessMessage("Configurações salvas com sucesso!");
       setError(null);
