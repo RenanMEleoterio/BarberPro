@@ -116,29 +116,23 @@ export default function BookAppointment() {
 
     return barbeiro.horariosDisponiveis
       .filter(h => {
-        // Cria objeto Date a partir da string ISO e extrai apenas a data no formato YYYY-MM-DD.
-        const horarioDateTime = new Date(h.dataHora);
-        const horarioDate = horarioDateTime.toISOString().split('T')[0]; 
-        
-        console.log(`Comparando: horário ${h.dataHora} -> data ${horarioDate} com data selecionada ${date}, disponível: ${h.estaDisponivel}`);
-        
-        // Filtra horários que correspondem à data selecionada e estão disponíveis.
-        return horarioDate === date && h.estaDisponivel;
+        const [datePart] = h.dataHora.split('T');
+        const matchesDate = datePart === date;
+        console.log(
+          `Comparando: horário ${h.dataHora} -> data ${datePart} com data selecionada ${date}, disponível: ${h.estaDisponivel}`,
+        );
+        return matchesDate && h.estaDisponivel;
       })
       .map(h => {
-        // Extrai a hora local sem conversão de timezone.
-        const horarioDateTime = new Date(h.dataHora);
-        const time = horarioDateTime.toLocaleTimeString('pt-BR', { 
-          hour: '2-digit', 
-          minute: '2-digit',
-          hour12: false 
-        });
-        
-        console.log(`Horário mapeado: ${h.dataHora} -> ${time}`);
-        
+        const parts = h.dataHora.split('T');
+        const timeRaw = parts.length > 1 ? parts[1] : '';
+        const time = timeRaw.replace('Z', '').slice(0, 5);
+
+        console.log(`Horário mapeado (string bruta): ${h.dataHora} -> ${time}`);
+
         return { time, horarioId: h.id };
       })
-      .sort((a, b) => a.time.localeCompare(b.time)); // Ordena os horários cronologicamente.
+      .sort((a, b) => a.time.localeCompare(b.time));
   };
 
   /**
