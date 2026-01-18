@@ -84,8 +84,14 @@ export default function Appointments() {
       toast.error('Erro ao identificar a barbearia. Tente novamente.');
       return;
     }
-    
-    navigate(`/client/book/${appointment.barbershopId}`, {
+
+    const appointmentDateTime = new Date(`${appointment.date}T${appointment.time}`);
+    if (appointmentDateTime <= new Date()) {
+      toast.error('Não é possível reagendar um horário que já passou.');
+      return;
+    }
+
+    navigate(`/client/barbershops/${appointment.barbershopId}/book`, {
       state: {
         reschedulingAppointmentId: appointment.id,
         initialBarberId: appointment.barberId

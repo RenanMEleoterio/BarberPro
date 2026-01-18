@@ -293,7 +293,6 @@ namespace BarbeariaSaaS.Controllers
                 return NotFound();
             }
 
-            // Verificar permissões
             if (tipoUsuario == "Cliente" && agendamento.ClienteId != usuarioId)
             {
                 return Forbid();
@@ -311,7 +310,11 @@ namespace BarbeariaSaaS.Controllers
                 }
             }
 
-            // Validação de Status: Não permitir edição se já foi realizado ou cancelado
+            if (agendamento.DataHora <= DateTime.UtcNow)
+            {
+                return BadRequest(new { message = "Não é possível editar um agendamento com data/hora já expirada." });
+            }
+
             if (agendamento.Status == StatusAgendamento.Realizado || agendamento.Status == StatusAgendamento.Cancelado)
             {
                 return BadRequest(new { message = "Não é possível editar um agendamento concluído ou cancelado." });
