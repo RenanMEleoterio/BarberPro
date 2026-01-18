@@ -192,6 +192,7 @@ namespace BarbeariaSaaS.Controllers
                 .Where(a => a.Id == agendamento.Id)
                 .Include(a => a.Cliente)
                 .Include(a => a.Barbeiro)
+                .Include(a => a.Barbearia)
                 .Select(a => new AgendamentoDto
                 {
                     Id = a.Id,
@@ -200,6 +201,8 @@ namespace BarbeariaSaaS.Controllers
                     EmailCliente = a.Cliente.Email,
                     BarbeiroId = a.BarbeiroId,
                     NomeBarbeiro = a.Barbeiro.Nome,
+                    BarbeariaId = a.BarbeariaId,
+                    NomeBarbearia = a.Barbearia.Nome,
                     DataHora = a.DataHora,
                     Observacoes = a.Observacoes,
                     Status = a.Status.ToString(),
@@ -223,7 +226,8 @@ namespace BarbeariaSaaS.Controllers
 
             IQueryable<Agendamento> query = _context.Agendamentos
                 .Include(a => a.Cliente)
-                .Include(a => a.Barbeiro);
+                .Include(a => a.Barbeiro)
+                .Include(a => a.Barbearia);
 
             if (tipoUsuario == "Cliente")
             {
@@ -253,6 +257,8 @@ namespace BarbeariaSaaS.Controllers
                     EmailCliente = a.Cliente.Email,
                     BarbeiroId = a.BarbeiroId,
                     NomeBarbeiro = a.Barbeiro.Nome,
+                    BarbeariaId = a.BarbeariaId,
+                    NomeBarbearia = a.Barbearia.Nome,
                     DataHora = a.DataHora,
                     Observacoes = a.Observacoes,
                     Status = a.Status.ToString(),
@@ -279,6 +285,7 @@ namespace BarbeariaSaaS.Controllers
             var agendamento = await _context.Agendamentos
                 .Include(a => a.Cliente)
                 .Include(a => a.Barbeiro)
+                .Include(a => a.Barbearia)
                 .FirstOrDefaultAsync(a => a.Id == id);
 
             if (agendamento == null)
@@ -304,10 +311,57 @@ namespace BarbeariaSaaS.Controllers
                 }
             }
 
-            // Atualizar campos
-            if (atualizarDto.NovaDataHora.HasValue)
+            // Validação de Status: Não permitir edição se já foi realizado ou cancelado
+            if (agendamento.Status == StatusAgendamento.Realizado || agendamento.Status == StatusAgendamento.Cancelado)
             {
-                agendamento.DataHora = atualizarDto.NovaDataHora.Value;
+                return BadRequest(new { message = "Não é possível editar um agendamento concluído ou cancelado." });
+            }
+
+            // Atualizar campos
+            if (atualizarDto.NovaDataHora.HasValue && atualizarDto.NovaDataHora.Value != agendamento.DataHora)
+            {
+                var novaDataHora = DateTime.SpecifyKind(atualizarDto.NovaDataHora.Value, DateTimeKind.Utc);
+
+                if (novaDataHora <= DateTime.UtcNow)
+                {
+                    return BadRequest(new { message = "Não é possível reagendar para uma data no passado." });
+                }
+
+                // Verificar disponibilidade do novo horário
+                var novoHorarioDisponivel = await _context.HorariosDisponiveis
+                    .FirstOrDefaultAsync(h => h.BarbeiroId == agendamento.BarbeiroId && 
+                                            h.DataHora == novaDataHora && 
+                                            h.EstaDisponivel);
+
+                if (novoHorarioDisponivel == null)
+                {
+                    return BadRequest(new { message = "O novo horário escolhido não está disponível." });
+                }
+
+                // Liberar o horário antigo
+                if (agendamento.HorarioDisponivelId.HasValue)
+                {
+                    var horarioAntigo = await _context.HorariosDisponiveis.FindAsync(agendamento.HorarioDisponivelId.Value);
+                    if (horarioAntigo != null)
+                    {
+                        horarioAntigo.EstaDisponivel = true;
+                    }
+                }
+                else
+                {
+                    // Tentar encontrar o horário antigo pela data/hora se o ID for nulo (compatibilidade)
+                    var horarioAntigo = await _context.HorariosDisponiveis
+                        .FirstOrDefaultAsync(h => h.BarbeiroId == agendamento.BarbeiroId && h.DataHora == agendamento.DataHora);
+                    if (horarioAntigo != null)
+                    {
+                        horarioAntigo.EstaDisponivel = true;
+                    }
+                }
+
+                // Ocupar o novo horário
+                novoHorarioDisponivel.EstaDisponivel = false;
+                agendamento.HorarioDisponivelId = novoHorarioDisponivel.Id;
+                agendamento.DataHora = novaDataHora;
             }
 
             if (!string.IsNullOrEmpty(atualizarDto.Observacoes))
@@ -332,6 +386,8 @@ namespace BarbeariaSaaS.Controllers
                 EmailCliente = agendamento.Cliente.Email,
                 BarbeiroId = agendamento.BarbeiroId,
                 NomeBarbeiro = agendamento.Barbeiro.Nome,
+                BarbeariaId = agendamento.BarbeariaId,
+                NomeBarbearia = agendamento.Barbearia.Nome,
                 DataHora = agendamento.DataHora,
                 Observacoes = agendamento.Observacoes,
                 Status = agendamento.Status.ToString(),

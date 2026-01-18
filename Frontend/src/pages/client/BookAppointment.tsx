@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Calendar, Clock, User, ArrowLeft } from 'lucide-react';
 import { format, addDays, startOfWeek, addWeeks } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -38,9 +38,14 @@ export default function BookAppointment() {
   const { barbershopId } = useParams();
   // Hook para navegação programática.
   const navigate = useNavigate();
+  const location = useLocation();
   
+  // Dados de reagendamento vindos da navegação anterior
+  const { reschedulingAppointmentId, initialBarberId } = location.state || {};
+  const isRescheduling = !!reschedulingAppointmentId;
+
   // Estados para armazenar as seleções do usuário e os dados carregados.
-  const [selectedBarber, setSelectedBarber] = useState<number | null>(null);
+  const [selectedBarber, setSelectedBarber] = useState<number | null>(initialBarberId || null);
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [barbeiros, setBarbeiros] = useState<Barbeiro[]>([]);
@@ -54,6 +59,13 @@ export default function BookAppointment() {
   useEffect(() => {
     loadData();
   }, [barbershopId]);
+
+  // Se vier um initialBarberId, garante que ele está setado (redundância para garantir)
+  useEffect(() => {
+    if (initialBarberId) {
+      setSelectedBarber(initialBarberId);
+    }
+  }, [initialBarberId]);
 
   /**
    * Carrega os dados da barbearia e dos barbeiros com seus horários disponíveis.
@@ -119,18 +131,12 @@ export default function BookAppointment() {
       .filter(h => {
         const [datePart] = h.dataHora.split('T');
         const matchesDate = datePart === date;
-        console.log(
-          `Comparando: horário ${h.dataHora} -> data ${datePart} com data selecionada ${date}, disponível: ${h.estaDisponivel}`,
-        );
         return matchesDate && h.estaDisponivel;
       })
       .map(h => {
         const parts = h.dataHora.split('T');
         const timeRaw = parts.length > 1 ? parts[1] : '';
         const time = timeRaw.replace('Z', '').slice(0, 5);
-
-        console.log(`Horário mapeado (string bruta): ${h.dataHora} -> ${time}`);
-
         return { time, horarioId: h.id };
       })
       .sort((a, b) => a.time.localeCompare(b.time));
@@ -146,13 +152,10 @@ export default function BookAppointment() {
     const startWeek = startOfWeek(baseDate, { weekStartsOn: 1 });
     const allDays = Array.from({ length: 7 }, (_, i) => addDays(startWeek, i));
     
-    // Se os dados da barbearia ou os dias de trabalho não estiverem disponíveis, retorna todos os dias.
     if (!barbershop || !barbershop.workDays) {
-      console.log('DEBUG: Sem dados da barbearia ou workDays, retornando todos os dias');
       return allDays;
     }
     
-    // Mapeamento dos nomes dos dias da semana para os IDs numéricos (0=domingo, 1=segunda, etc.).
     const dayMapping = [
       'sunday',    // 0
       'monday',    // 1
@@ -163,7 +166,6 @@ export default function BookAppointment() {
       'saturday'   // 6
     ];
     
-    // Processa os dias de trabalho da barbearia, que podem ser um array ou uma string separada por vírgulas.
     let enabledWorkDays: string[] = [];
     
     if (Array.isArray(barbershop.workDays)) {
@@ -171,24 +173,15 @@ export default function BookAppointment() {
     } else if (typeof barbershop.workDays === 'string') {
       enabledWorkDays = barbershop.workDays.split(',').map((day: string) => day.trim());
     } else {
-      console.log('DEBUG: workDays em formato não reconhecido:', barbershop.workDays);
-      return allDays; // Fallback para todos os dias se o formato for desconhecido.
+      return allDays;
     }
     
-    console.log('DEBUG: workDays processados:', enabledWorkDays);
-
-    // Filtra os dias da semana, mantendo apenas aqueles em que a barbearia funciona.
     const filteredDays = allDays.filter(day => {
-      const dayOfWeek = day.getDay(); // Obtém o dia da semana (0 para domingo, 1 para segunda, etc.).
-      const dayName = dayMapping[dayOfWeek]; // Converte o número do dia para o nome.
-      const isEnabled = enabledWorkDays.includes(dayName); // Verifica se o dia está habilitado.
-      
-      console.log(`DEBUG: Dia ${dayName} (${dayOfWeek}) - Habilitado: ${isEnabled}`);
-      
+      const dayOfWeek = day.getDay();
+      const dayName = dayMapping[dayOfWeek];
+      const isEnabled = enabledWorkDays.includes(dayName);
       return isEnabled;
     });
-    
-    console.log('DEBUG: Dias filtrados:', filteredDays.map(d => dayMapping[d.getDay()]));
     
     return filteredDays;
   };
@@ -220,8 +213,7 @@ export default function BookAppointment() {
 
   /**
    * Lida com a submissão do agendamento.
-   * Valida as seleções do usuário e envia os dados para a API para criar o agendamento.
-   * Exibe mensagens de sucesso ou erro e redireciona o usuário após o agendamento.
+   * Valida as seleções do usuário e envia os dados para a API para criar ou atualizar o agendamento.
    */
   const handleBooking = async () => {
     console.log("=== INICIANDO AGENDAMENTO ===");
@@ -230,35 +222,39 @@ export default function BookAppointment() {
     console.log("selectedDate:", selectedDate);
     console.log("selectedTime:", selectedTime);
     
-    // Validação para garantir que todos os campos obrigatórios foram selecionados.
     if (!selectedBarber || !selectedDate || !selectedTime) {
-      console.log("Validação falhou - campos obrigatórios não preenchidos");
       toast.error("Por favor, selecione todas as opções");
       return;
     }
 
     try {
-      // Prepara os dados do agendamento para enviar à API.
-      const agendamentoData = {
-        barbeiroId: selectedBarber,
-        dataHora: `${selectedDate}T${selectedTime}:00`, // Combina data e hora para formar um timestamp ISO.
-        observacoes: "", // Observações vazias por enquanto.
-        tipoServico: "Corte de Cabelo" // Tipo de serviço padrão por enquanto.
-      };
+      if (isRescheduling) {
+        // Lógica de Atualização (Reagendamento)
+        const updateData = {
+          novaDataHora: `${selectedDate}T${selectedTime}:00`
+        };
+        console.log("Dados de atualização:", updateData);
+        
+        await apiService.updateAgendamento(parseInt(reschedulingAppointmentId), updateData);
+        toast.success("Agendamento reagendado com sucesso!");
+        navigate("/client/appointments");
+      } else {
+        // Lógica de Criação (Novo Agendamento)
+        const agendamentoData = {
+          barbeiroId: selectedBarber,
+          dataHora: `${selectedDate}T${selectedTime}:00`,
+          observacoes: "",
+          tipoServico: "Corte de Cabelo"
+        };
+        console.log("Dados de criação:", agendamentoData);
 
-      console.log("Dados do agendamento sendo enviados:", agendamentoData);
-
-      // Chama o serviço de API para criar o agendamento.
-      await apiService.createAgendamento(agendamentoData);
-      toast.success("Agendamento realizado com sucesso!"); // Exibe mensagem de sucesso.
-      navigate("/client/appointments"); // Redireciona para a página de agendamentos do cliente.
+        await apiService.createAgendamento(agendamentoData);
+        toast.success("Agendamento realizado com sucesso!");
+        navigate("/client/appointments");
+      }
     } catch (error: any) {
-      console.error("Erro completo ao agendar:", error);
-      console.error("Response data:", error.response?.data);
-      console.error("Status:", error.response?.status);
-      
-      // Tenta extrair uma mensagem de erro mais específica do backend.
-      let errorMessage = "Erro ao agendar. Tente novamente.";
+      console.error("Erro completo ao agendar/reagendar:", error);
+      let errorMessage = isRescheduling ? "Erro ao reagendar. Tente novamente." : "Erro ao agendar. Tente novamente.";
       
       if (error.message) {
         try {
@@ -269,11 +265,10 @@ export default function BookAppointment() {
         }
       }
       
-      toast.error(errorMessage); // Exibe a mensagem de erro.
+      toast.error(errorMessage);
     }
   };
 
-  // Exibe um spinner de carregamento enquanto os dados iniciais estão sendo buscados.
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
@@ -285,7 +280,9 @@ export default function BookAppointment() {
             <ArrowLeft className="h-5 w-5 text-gray-600 dark:text-gray-400" />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Agendar Horário</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              {isRescheduling ? 'Reagendar Horário' : 'Agendar Horário'}
+            </h1>
             <p className="text-gray-600 dark:text-gray-400">Carregando dados...</p>
           </div>
         </div>
@@ -296,7 +293,6 @@ export default function BookAppointment() {
     );
   }
 
-  // Exibe uma mensagem de erro se a barbearia não for encontrada ou houver outro erro.
   if (error || !barbershop) {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
@@ -327,13 +323,15 @@ export default function BookAppointment() {
       {/* Cabeçalho da página com botão de voltar */}
       <div className="flex items-center space-x-4">
         <button
-          onClick={() => navigate('/client/barbershops')}
+          onClick={() => navigate(isRescheduling ? '/client/appointments' : '/client/barbershops')}
           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
         >
           <ArrowLeft className="h-5 w-5 text-gray-600 dark:text-gray-400" />
         </button>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Agendar Horário</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            {isRescheduling ? 'Reagendar Horário' : 'Agendar Horário'}
+          </h1>
           <p className="text-gray-600 dark:text-gray-400">{barbershop.name}</p>
         </div>
       </div>
@@ -343,7 +341,9 @@ export default function BookAppointment() {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center space-x-2 mb-4">
             <User className="h-5 w-5 text-yellow-500" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Escolha o Barbeiro</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              {isRescheduling ? 'Barbeiro (Fixo)' : 'Escolha o Barbeiro'}
+            </h2>
           </div>
           
           <div className="space-y-3">
@@ -352,14 +352,21 @@ export default function BookAppointment() {
                 <button
                   key={barbeiro.id}
                   onClick={() => {
-                    console.log("Selecionando barbeiro:", barbeiro.id, barbeiro.nome);
-                    setSelectedBarber(barbeiro.id);
-                    setSelectedTime(''); // Limpa o horário selecionado ao trocar de barbeiro.
+                    // Se estiver reagendando, não permite trocar o barbeiro (conforme regra de negócio)
+                    // A menos que queira permitir, mas o requisito diz "já abri na barbearia escolhida e o barbeiro selecionado"
+                    if (!isRescheduling) {
+                      console.log("Selecionando barbeiro:", barbeiro.id, barbeiro.nome);
+                      setSelectedBarber(barbeiro.id);
+                      setSelectedTime(''); // Limpa o horário selecionado ao trocar de barbeiro.
+                    }
                   }}
+                  disabled={isRescheduling && selectedBarber !== barbeiro.id} // Desabilita outros barbeiros no reagendamento
                   className={`w-full p-4 rounded-lg border-2 transition-colors text-left ${
                     selectedBarber === barbeiro.id
                       ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                      : isRescheduling 
+                        ? 'border-gray-200 dark:border-gray-600 opacity-50 cursor-not-allowed'
+                        : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
                   }`}
                 >
                   <div className="font-medium text-gray-900 dark:text-white">{barbeiro.nome}</div>
@@ -493,7 +500,9 @@ export default function BookAppointment() {
       {/* Resumo do Agendamento */}
       {(selectedBarber || selectedDate || selectedTime) && (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Resumo do Agendamento</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            {isRescheduling ? 'Resumo do Reagendamento' : 'Resumo do Agendamento'}
+          </h3>
           
           <div className="space-y-2 mb-6">
             {selectedBarber && (
@@ -525,7 +534,7 @@ export default function BookAppointment() {
             disabled={!selectedBarber || !selectedDate || !selectedTime}
             className="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-3 px-4 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Confirmar Agendamento
+            {isRescheduling ? 'Confirmar Reagendamento' : 'Confirmar Agendamento'}
           </button>
         </div>
       )}

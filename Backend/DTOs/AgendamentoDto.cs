@@ -65,6 +65,14 @@ namespace BarbeariaSaaS.DTOs
         /// </summary>
         public string NomeBarbeiro { get; set; }
         /// <summary>
+        /// O ID da barbearia.
+        /// </summary>
+        public int BarbeariaId { get; set; }
+        /// <summary>
+        /// O nome da barbearia.
+        /// </summary>
+        public string NomeBarbearia { get; set; }
+        /// <summary>
         /// A data e hora do agendamento.
         /// </summary>
         public DateTime DataHora { get; set; }

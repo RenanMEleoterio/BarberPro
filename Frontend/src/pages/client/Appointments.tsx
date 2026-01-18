@@ -77,14 +77,20 @@ export default function Appointments() {
 
   /**
    * Redireciona para reagendamento.
-   * Como a API de "update" apenas muda status, reagendar significa criar um novo.
-   * Tenta redirecionar para a barbearia do agendamento original se possível.
+   * Navega para a tela de agendamento com os dados pré-preenchidos para edição.
    */
   const handleReschedule = (appointment: any) => {
-    // Se tivermos o ID da barbearia no futuro, podemos usar: navigate(`/client/book/${appointment.barbershopId}`);
-    // Por enquanto, vamos para a lista de barbearias ou para a tela de agendamento geral se houver rota
-    navigate('/client/barbershops');
-    toast.success('Escolha um novo horário para seu agendamento.');
+    if (!appointment.barbershopId) {
+      toast.error('Erro ao identificar a barbearia. Tente novamente.');
+      return;
+    }
+    
+    navigate(`/client/book/${appointment.barbershopId}`, {
+      state: {
+        reschedulingAppointmentId: appointment.id,
+        initialBarberId: appointment.barberId
+      }
+    });
   };
 
   /**

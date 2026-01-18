@@ -366,6 +366,19 @@ class ApiService {
   }
 
   /**
+   * Atualiza os dados de um agendamento existente (data, observações, status).
+   * @param {number} id - O ID do agendamento a ser atualizado.
+   * @param {any} data - Os dados a serem atualizados.
+   * @returns {Promise<any>} - Uma promessa que resolve com a confirmação da atualização.
+   */
+  async updateAgendamento(id: number, data: any) {
+    return this.request(`/agendamento/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
+
+  /**
    * Atualiza o status de um agendamento existente.
    * @param {number} id - O ID do agendamento a ser atualizado.
    * @param {string} status - O novo status do agendamento.
@@ -523,7 +536,9 @@ class ApiService {
     
     return agendamentos.map((agendamento: any) => ({
       id: agendamento.id.toString(),
-      barbershop: 'Barbearia', // Nome da barbearia pode ser adicionado no backend.
+      barbershopId: agendamento.barbeariaId,
+      barbershop: agendamento.nomeBarbearia || 'Barbearia', 
+      barberId: agendamento.barbeiroId,
       barber: agendamento.nomeBarbeiro,
       date: agendamento.dataHora.split('T')[0],
       time: agendamento.dataHora.split('T')[1].substring(0, 5),
