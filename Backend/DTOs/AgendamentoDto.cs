@@ -103,7 +103,7 @@ namespace BarbeariaSaaS.DTOs
         /// <summary>
         /// Novas observações para o agendamento (opcional).
         /// </summary>
-        public string Observacoes { get; set; }
+        public string? Observacoes { get; set; }
         /// <summary>
         /// Novo status para o agendamento (opcional).
         /// </summary>
