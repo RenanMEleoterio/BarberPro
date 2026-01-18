@@ -91,8 +91,12 @@ class ApiService {
         let errorMessage = 'Erro na requisição';
         
         try {
-          const parsedError = JSON.parse(errorData);
-          errorMessage = JSON.stringify(parsedError);
+          const parsedError = JSON.parse(errorData) as ApiError | { message?: string };
+          if (parsedError && typeof parsedError === 'object' && 'message' in parsedError && typeof parsedError.message === 'string') {
+            errorMessage = parsedError.message;
+          } else {
+            errorMessage = errorData || `Erro ${response.status}`;
+          }
         } catch {
           errorMessage = errorData || `Erro ${response.status}`;
         }

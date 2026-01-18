@@ -50,7 +50,11 @@ export default function BarberSchedule() {
       setAppointments(data);
     } catch (error) {
       console.error('Erro ao carregar agendamentos:', error);
-      setError('Erro ao carregar agendamentos. Tente novamente.');
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : 'Erro ao carregar agendamentos. Tente novamente.';
+      setError(message);
     } finally {
       setLoading(false);
     }

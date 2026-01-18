@@ -32,7 +32,11 @@ export default function Barbershops() {
       setBarbershops(data);
     } catch (error) {
       console.error('Erro ao carregar barbearias:', error);
-      setError('Erro ao carregar barbearias. Tente novamente.');
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : 'Erro ao carregar barbearias. Tente novamente.';
+      setError(message);
     } finally {
       setLoading(false);
     }

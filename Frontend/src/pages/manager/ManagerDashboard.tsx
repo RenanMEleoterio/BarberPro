@@ -46,7 +46,11 @@ export default function ManagerDashboard() {
       }
     } catch (err: any) {
       console.error("Erro ao carregar dados do dashboard:", err);
-      setError("Erro ao carregar dados do dashboard");
+      const message =
+        err instanceof Error && err.message
+          ? err.message
+          : "Erro ao carregar dados do dashboard";
+      setError(message);
     } finally {
       setLoading(false);
     }

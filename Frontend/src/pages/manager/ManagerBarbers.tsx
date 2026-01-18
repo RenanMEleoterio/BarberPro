@@ -93,10 +93,13 @@ export default function ManagerBarbers() {
       }
     } catch (err: any) {
       console.error("Erro ao carregar barbeiros:", err);
-      // Ignora erro 404 para permitir que o componente renderize sem dados.
       if (err.response?.status !== 404) {
-        setError("Erro ao carregar dados dos barbeiros");
-        toast.error("Erro ao carregar dados dos barbeiros");
+        const message =
+          err instanceof Error && err.message
+            ? err.message
+            : "Erro ao carregar dados dos barbeiros";
+        setError(message);
+        toast.error(message);
       }
     } finally {
       setLoading(false);

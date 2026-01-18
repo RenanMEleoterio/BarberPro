@@ -71,11 +71,9 @@ export default function BookAppointment() {
       console.log('=== DEBUG: Carregando dados ===');
       console.log('Barbershop ID:', barbershopId);
 
-      // Carregar dados da barbearia pelo ID.
       const barbeariaData = await apiService.getBarbeariaById(parseInt(barbershopId));
       console.log('Dados da barbearia recebidos:', barbeariaData);
       
-      // Adicionar configurações padrão se não existirem nos dados da barbearia.
       const barbershopWithConfig = {
         ...barbeariaData,
         workDays: barbeariaData.workDays || ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
@@ -86,15 +84,18 @@ export default function BookAppointment() {
       console.log('Dados da barbearia com configurações padrão:', barbershopWithConfig);
       setBarbershop(barbershopWithConfig);
 
-      // Carregar barbeiros com horários disponíveis.
       console.log('Carregando barbeiros com horários...');
       const barbeirosData = await apiService.getBarbeirosComHorarios();
       console.log('Barbeiros recebidos:', barbeirosData);
       setBarbeiros(barbeirosData);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao carregar dados:', error);
-      setError('Erro ao carregar dados. Tente novamente.');
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : 'Erro ao carregar dados. Tente novamente.';
+      setError(message);
     } finally {
       setLoading(false);
     }

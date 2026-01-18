@@ -135,8 +135,12 @@ export default function ManagerStats() {
       }
     } catch (err: any) {
       console.error("Erro ao carregar estatísticas:", err);
-      setError("Erro ao carregar estatísticas");
-      toast.error("Erro ao carregar estatísticas");
+      const message =
+        err instanceof Error && err.message
+          ? err.message
+          : "Erro ao carregar estatísticas";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }

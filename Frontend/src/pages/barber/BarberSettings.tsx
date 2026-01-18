@@ -52,7 +52,11 @@ export default function BarberSettings() {
       }
     } catch (error: any) {
       console.error('Erro ao carregar dados do barbeiro:', error);
-      setError('Erro ao carregar dados do perfil');
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : 'Erro ao carregar dados do perfil';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -90,7 +94,11 @@ export default function BarberSettings() {
       }
     } catch (error: any) {
       console.error('Erro ao atualizar perfil:', error);
-      setError('Erro ao atualizar perfil. Tente novamente.');
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : 'Erro ao atualizar perfil. Tente novamente.';
+      setError(message);
     } finally {
       setSaving(false);
     }

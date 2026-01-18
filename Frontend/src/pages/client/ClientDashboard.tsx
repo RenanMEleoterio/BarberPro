@@ -67,17 +67,20 @@ export default function ClientDashboard() {
      * Função assíncrona para buscar os dados do dashboard do cliente.
      */
     const fetchDashboardData = async () => {
-      if (!user) return; // Se não houver usuário logado, não faz a requisição.
+      if (!user) return;
       
       try {
         setLoading(true);
-        // Chama o serviço de API para obter os dados do dashboard do cliente.
         const data = await apiService.getClientDashboard(parseInt(user.id));
         console.log("Dados do dashboard recebidos:", data);
         setDashboardData(data);
-      } catch (err) {
+      } catch (err: any) {
         console.error("Erro ao carregar dashboard:", err);
-        setError("Erro ao carregar dados do dashboard");
+        const message =
+          err instanceof Error && err.message
+            ? err.message
+            : "Erro ao carregar dados do dashboard";
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -95,14 +98,17 @@ export default function ClientDashboard() {
       await apiService.cancelAppointment(id);
       toast.success('Agendamento cancelado com sucesso!');
       
-      // Recarregar dados
       if (user) {
         const data = await apiService.getClientDashboard(parseInt(user.id));
         setDashboardData(data);
       }
     } catch (error) {
       console.error('Erro ao cancelar:', error);
-      toast.error('Erro ao cancelar agendamento.');
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : 'Erro ao cancelar agendamento.';
+      toast.error(message);
     } finally {
       setProcessingId(null);
     }

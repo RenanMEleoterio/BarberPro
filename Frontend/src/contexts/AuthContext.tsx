@@ -97,9 +97,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       setUser(mappedUser); // Atualiza o estado do usuário.
       return mappedUser;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro no login:', error);
-      throw new Error('Email ou senha inválidos'); // Lança um erro genérico para o usuário.
+      if (error?.message) {
+        throw new Error(error.message);
+      }
+      throw new Error('Email ou senha inválidos');
     } finally {
       setLoading(false); // Finaliza o estado de carregamento.
     }

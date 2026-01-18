@@ -36,12 +36,15 @@ export default function Appointments() {
   const loadAppointments = async () => {
     try {
       setLoading(true);
-      // Chama o serviço de API para obter os agendamentos com detalhes.
       const data = await apiService.getMyAppointmentsWithDetails();
       setAppointments(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao carregar agendamentos:', error);
-      setError('Erro ao carregar agendamentos. Tente novamente.');
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : 'Erro ao carregar agendamentos. Tente novamente.';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -62,7 +65,11 @@ export default function Appointments() {
       loadAppointments(); // Recarrega a lista para atualizar status
     } catch (error) {
       console.error('Erro ao cancelar:', error);
-      toast.error('Erro ao cancelar agendamento.');
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : 'Erro ao cancelar agendamento.';
+      toast.error(message);
     } finally {
       setProcessingId(null);
     }
