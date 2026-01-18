@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, MapPin, Star, Phone, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Calendar, Clock, MapPin, Star, Phone, CheckCircle, XCircle, AlertCircle, X, Info, Scissors } from 'lucide-react';
 import { apiService } from '../../services/api';
+import toast from 'react-hot-toast';
 
 /**
  * Componente para exibir e gerenciar os agendamentos de um cliente.
  * Permite filtrar agendamentos por status (todos, agendados, concluídos, cancelados).
  */
 export default function Appointments() {
+  const navigate = useNavigate();
   // Estado para o filtro de agendamentos (ex: 'all', 'scheduled', 'completed', 'cancelled').
   const [filter, setFilter] = useState('all');
   // Estado para armazenar a lista de agendamentos do cliente.
@@ -15,6 +18,11 @@ export default function Appointments() {
   const [loading, setLoading] = useState(true);
   // Estado para armazenar mensagens de erro.
   const [error, setError] = useState<string | null>(null);
+  
+  // Estado para controlar o modal de detalhes
+  const [selectedAppointment, setSelectedAppointment] = useState<any | null>(null);
+  // Estado para controlar o processamento de ações (cancelamento)
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
   // Efeito que carrega os agendamentos do cliente quando o componente é montado.
   useEffect(() => {
@@ -37,6 +45,53 @@ export default function Appointments() {
     } finally {
       setLoading(false);
     }
+  };
+
+  /**
+   * Cancela um agendamento.
+   */
+  const handleCancel = async (id: string) => {
+    if (!window.confirm('Tem certeza que deseja cancelar este agendamento?')) {
+      return;
+    }
+
+    try {
+      setProcessingId(id);
+      await apiService.cancelAppointment(parseInt(id));
+      toast.success('Agendamento cancelado com sucesso!');
+      loadAppointments(); // Recarrega a lista para atualizar status
+    } catch (error) {
+      console.error('Erro ao cancelar:', error);
+      toast.error('Erro ao cancelar agendamento.');
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  /**
+   * Redireciona para reagendamento.
+   * Como a API de "update" apenas muda status, reagendar significa criar um novo.
+   * Tenta redirecionar para a barbearia do agendamento original se possível.
+   */
+  const handleReschedule = (appointment: any) => {
+    // Se tivermos o ID da barbearia no futuro, podemos usar: navigate(`/client/book/${appointment.barbershopId}`);
+    // Por enquanto, vamos para a lista de barbearias ou para a tela de agendamento geral se houver rota
+    navigate('/client/barbershops');
+    toast.success('Escolha um novo horário para seu agendamento.');
+  };
+
+  /**
+   * Abre o modal de detalhes.
+   */
+  const handleViewDetails = (appointment: any) => {
+    setSelectedAppointment(appointment);
+  };
+
+  /**
+   * Fecha o modal de detalhes.
+   */
+  const closeModal = () => {
+    setSelectedAppointment(null);
   };
 
   // Filtra os agendamentos com base no estado `filter`.
@@ -213,10 +268,17 @@ export default function Appointments() {
               <div className="flex items-center space-x-2">
                 {appointment.status === 'scheduled' && (
                   <>
-                    <button className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                      Cancelar
+                    <button 
+                      onClick={() => handleCancel(appointment.id)}
+                      disabled={processingId === appointment.id}
+                      className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {processingId === appointment.id ? 'Cancelando...' : 'Cancelar'}
                     </button>
-                    <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                    <button 
+                      onClick={() => handleReschedule(appointment)}
+                      className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    >
                       Reagendar
                     </button>
                   </>
@@ -226,7 +288,10 @@ export default function Appointments() {
                     Avaliar
                   </button>
                 )}
-                <button className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                <button 
+                  onClick={() => handleViewDetails(appointment)}
+                  className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                >
                   Detalhes
                 </button>
               </div>
@@ -240,6 +305,97 @@ export default function Appointments() {
         <div className="text-center py-12">
           <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-500 dark:text-gray-400">Nenhum agendamento encontrado</p>
+        </div>
+      )}
+
+      {/* Modal de Detalhes */}
+      {selectedAppointment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-fade-in-down">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Detalhes do Agendamento</h3>
+              <button 
+                onClick={closeModal}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Status</span>
+                <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(selectedAppointment.status)}`}>
+                  {getStatusText(selectedAppointment.status)}
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-start space-x-3">
+                  <div className="bg-yellow-100 dark:bg-yellow-900/20 p-2 rounded-lg mt-1">
+                    <Scissors className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white">{selectedAppointment.barbershop}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Profissional: {selectedAppointment.barber}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <Calendar className="h-5 w-5 text-gray-400" />
+                  <span className="text-gray-700 dark:text-gray-300">
+                    {new Date(selectedAppointment.date).toLocaleDateString('pt-BR')}
+                  </span>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <Clock className="h-5 w-5 text-gray-400" />
+                  <span className="text-gray-700 dark:text-gray-300">{selectedAppointment.time}</span>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <MapPin className="h-5 w-5 text-gray-400" />
+                  <span className="text-gray-700 dark:text-gray-300">{selectedAppointment.address}</span>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <Phone className="h-5 w-5 text-gray-400" />
+                  <span className="text-gray-700 dark:text-gray-300">{selectedAppointment.phone}</span>
+                </div>
+              </div>
+
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-gray-600 dark:text-gray-400">Serviço</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{selectedAppointment.service}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600 dark:text-gray-400">Valor</span>
+                  <span className="font-bold text-lg text-green-600 dark:text-green-400">R$ {selectedAppointment.price.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-3">
+              <button 
+                onClick={closeModal}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded-lg font-medium transition-colors"
+              >
+                Fechar
+              </button>
+              {selectedAppointment.status === 'scheduled' && (
+                <button 
+                  onClick={() => {
+                    handleCancel(selectedAppointment.id);
+                    closeModal();
+                  }}
+                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors"
+                >
+                  Cancelar Agendamento
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

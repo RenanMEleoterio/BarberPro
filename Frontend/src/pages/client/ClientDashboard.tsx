@@ -1,9 +1,9 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Calendar, MapPin, Clock, Star, Scissors } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Calendar, MapPin, Clock, Star, Scissors, X, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useEffect, useState } from 'react';
 import { apiService } from '../../services/api';
+import toast from 'react-hot-toast';
 
 /**
  * Interface que define a estrutura dos dados do dashboard do cliente.
@@ -46,6 +46,7 @@ interface DashboardData {
  * agendamentos recentes e barbearias disponíveis.
  */
 export default function ClientDashboard() {
+  const navigate = useNavigate();
   // Hook para acessar as informações do usuário logado.
   const { user } = useAuth();
   // Estado para armazenar os dados do dashboard.
@@ -54,6 +55,11 @@ export default function ClientDashboard() {
   const [loading, setLoading] = useState(true);
   // Estado para armazenar mensagens de erro.
   const [error, setError] = useState<string | null>(null);
+  
+  // Estado para controlar o modal de detalhes
+  const [selectedAppointment, setSelectedAppointment] = useState<any | null>(null);
+  // Estado para controlar o processamento de ações
+  const [processingId, setProcessingId] = useState<number | null>(null);
 
   // Efeito que busca os dados do dashboard quando o componente é montado ou o usuário muda.
   useEffect(() => {
@@ -79,6 +85,60 @@ export default function ClientDashboard() {
 
     fetchDashboardData();
   }, [user]); // Dependência do `user` para refazer a busca se o usuário mudar.
+
+  const handleCancel = async (id: number) => {
+    if (!window.confirm('Tem certeza que deseja cancelar este agendamento?')) {
+      return;
+    }
+    try {
+      setProcessingId(id);
+      await apiService.cancelAppointment(id);
+      toast.success('Agendamento cancelado com sucesso!');
+      
+      // Recarregar dados
+      if (user) {
+        const data = await apiService.getClientDashboard(parseInt(user.id));
+        setDashboardData(data);
+      }
+    } catch (error) {
+      console.error('Erro ao cancelar:', error);
+      toast.error('Erro ao cancelar agendamento.');
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleReschedule = () => {
+    navigate('/client/barbershops');
+    toast.success('Escolha um novo horário para seu agendamento.');
+  };
+
+  const handleViewDetails = (appointment: any) => {
+    setSelectedAppointment(appointment);
+  };
+
+  const closeModal = () => {
+    setSelectedAppointment(null);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Agendado':
+      case 'Confirmado':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
+      case 'Concluído':
+      case 'Realizado':
+        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
+      case 'Cancelado':
+        return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    return status; // Já vem formatado do backend neste endpoint, mas mantemos a função para consistência se precisar traduzir
+  };
 
   // Exibe um spinner de carregamento enquanto os dados estão sendo buscados.
   if (loading) {
@@ -237,41 +297,67 @@ export default function ClientDashboard() {
           {dashboardData?.AgendamentosRecentes?.length > 0 ? (
             <div className="space-y-4">
               {dashboardData.AgendamentosRecentes.map((appointment) => (
-                <div key={appointment.Id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <div className="bg-yellow-100 dark:bg-yellow-900/20 p-2 rounded-lg">
-                      <Scissors className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                <div key={appointment.Id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+                    <div className="flex items-center space-x-4">
+                      <div className="bg-yellow-100 dark:bg-yellow-900/20 p-2 rounded-lg">
+                        <Scissors className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-gray-900 dark:text-white">{appointment.Barbearia}</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">com {appointment.Barbeiro}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-medium text-gray-900 dark:text-white">{appointment.Barbearia}</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">com {appointment.Barbeiro}</p>
+                    
+                    <div className="flex w-full sm:w-auto justify-between sm:justify-end gap-8">
+                      <div className="text-right">
+                        <div className="flex items-center justify-end space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                          <Calendar className="h-4 w-4" />
+                          <span>{appointment.Data}</span>
+                        </div>
+                        <div className="flex items-center justify-end space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                          <Clock className="h-4 w-4" />
+                          <span>{appointment.Hora}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="text-right">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.Status)}`}>
+                          {appointment.Status}
+                        </span>
+                        {appointment.Preco && (
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            R$ {appointment.Preco.toFixed(2)}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                      <Calendar className="h-4 w-4" />
-                      <span>{appointment.Data}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                      <Clock className="h-4 w-4" />
-                      <span>{appointment.Hora}</span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      appointment.Status === 'Confirmado' 
-                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
-                        : appointment.Status === 'Realizado'
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                        : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-                    }`}>
-                      {appointment.Status}
-                    </span>
-                    {appointment.Preco && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        R$ {appointment.Preco.toFixed(2)}
-                      </p>
+
+                  <div className="flex justify-end space-x-3 pt-3 border-t border-gray-200 dark:border-gray-600">
+                    {(appointment.Status === 'Confirmado' || appointment.Status === 'Agendado') && (
+                      <>
+                        <button 
+                          onClick={() => handleCancel(appointment.Id)}
+                          disabled={processingId === appointment.Id}
+                          className="text-red-600 hover:text-red-700 text-sm font-medium disabled:opacity-50 transition-colors"
+                        >
+                          {processingId === appointment.Id ? 'Cancelando...' : 'Cancelar'}
+                        </button>
+                        <button 
+                          onClick={() => handleReschedule()}
+                          className="text-yellow-600 hover:text-yellow-700 text-sm font-medium transition-colors"
+                        >
+                          Reagendar
+                        </button>
+                      </>
                     )}
+                    <button 
+                      onClick={() => handleViewDetails(appointment)}
+                      className="text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 text-sm font-medium transition-colors"
+                    >
+                      Detalhes
+                    </button>
                   </div>
                 </div>
               ))}
@@ -333,6 +419,104 @@ export default function ClientDashboard() {
           )}
         </div>
       </div>
+
+      {/* Modal de Detalhes */}
+      {selectedAppointment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-fade-in-down">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Detalhes do Agendamento</h3>
+              <button onClick={closeModal} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Status</span>
+                <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(selectedAppointment.Status)}`}>
+                  {selectedAppointment.Status}
+                </span>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex items-start space-x-3">
+                  <Scissors className="h-5 w-5 text-yellow-500 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">Barbearia</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{selectedAppointment.Barbearia}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-3">
+                  <Star className="h-5 w-5 text-yellow-500 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">Barbeiro</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{selectedAppointment.Barbeiro}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <Calendar className="h-5 w-5 text-yellow-500 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">Data</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{selectedAppointment.Data}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <Clock className="h-5 w-5 text-yellow-500 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">Horário</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{selectedAppointment.Hora}</p>
+                  </div>
+                </div>
+
+                {selectedAppointment.Preco && (
+                  <div className="flex items-start space-x-3">
+                    <div className="h-5 w-5 flex items-center justify-center text-yellow-500 font-bold text-xs">$</div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">Valor</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">R$ {selectedAppointment.Preco.toFixed(2)}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700 flex space-x-3">
+                 {(selectedAppointment.Status === 'Confirmado' || selectedAppointment.Status === 'Agendado') && (
+                    <>
+                      <button 
+                        onClick={() => {
+                          handleCancel(selectedAppointment.Id);
+                          closeModal();
+                        }}
+                        disabled={processingId === selectedAppointment.Id}
+                        className="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                      >
+                        Cancelar
+                      </button>
+                      <button 
+                        onClick={() => {
+                          handleReschedule();
+                          closeModal();
+                        }}
+                        className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                      >
+                        Reagendar
+                      </button>
+                    </>
+                 )}
+                 <button 
+                    onClick={closeModal}
+                    className="flex-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                 >
+                   Fechar
+                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
