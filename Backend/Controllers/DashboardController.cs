@@ -37,7 +37,6 @@ namespace BarbeariaSaaS.Controllers
         public async Task<ActionResult> GetClientDashboard(int id)
         {
             var cliente = await _context.Usuarios
-                .Include(u => u.Barbearia)
                 .FirstOrDefaultAsync(u => u.Id == id && u.TipoUsuario == TipoUsuario.Cliente);
 
             if (cliente == null)
@@ -50,25 +49,16 @@ namespace BarbeariaSaaS.Controllers
             var proximoAgendamento = await _context.Agendamentos
                 .Include(a => a.Barbeiro)
                 .Include(a => a.Barbearia)
-                .Where(a => a.ClienteId == id && a.DataHora > DateTime.UtcNow)
+                .Where(a => a.ClienteId == id && a.DataHora > DateTime.UtcNow && a.Status == StatusAgendamento.Confirmado)
                 .OrderBy(a => a.DataHora)
                 .FirstOrDefaultAsync();
 
-            var agendamentosRecentes = await _context.Agendamentos
+            var agendamentosRecentesDb = await _context.Agendamentos
                 .Include(a => a.Barbeiro)
                 .Include(a => a.Barbearia)
                 .Where(a => a.ClienteId == id)
                 .OrderByDescending(a => a.DataHora)
                 .Take(5)
-                .Select(a => new {
-                    Id = a.Id,
-                    Data = a.DataHora.ToString("dd/MM/yyyy"),
-                    Hora = a.DataHora.ToString("HH:mm"),
-                    Barbeiro = a.Barbeiro.Nome,
-                    Barbearia = a.Barbearia.Nome,
-                    Status = a.Status.ToString(),
-                    Preco = a.PrecoServico
-                })
                 .ToListAsync();
 
             var barbearias = await _context.Barbearias
@@ -81,6 +71,33 @@ namespace BarbeariaSaaS.Controllers
                 })
                 .ToListAsync();
 
+            // Ajuste de fuso horário (UTC para BRT -3)
+            var agendamentosRecentes = agendamentosRecentesDb.Select(a => {
+                var dataLocal = a.DataHora.AddHours(-3);
+                return new {
+                    Id = a.Id,
+                    Data = dataLocal.ToString("dd/MM/yyyy"),
+                    Hora = dataLocal.ToString("HH:mm"),
+                    Barbeiro = a.Barbeiro.Nome,
+                    Barbearia = a.Barbearia.Nome,
+                    Status = a.Status.ToString(),
+                    Preco = a.PrecoServico
+                };
+            }).ToList();
+
+            object proximoAgendamentoObj = null;
+            if (proximoAgendamento != null)
+            {
+                var dataLocal = proximoAgendamento.DataHora.AddHours(-3);
+                proximoAgendamentoObj = new {
+                    Id = proximoAgendamento.Id,
+                    Data = dataLocal.ToString("dd/MM/yyyy"),
+                    Hora = dataLocal.ToString("HH:mm"),
+                    Barbeiro = proximoAgendamento.Barbeiro?.Nome,
+                    Barbearia = proximoAgendamento.Barbearia?.Nome
+                };
+            }
+
             var response = new {
                 Cliente = new {
                     Id = cliente.Id,
@@ -88,13 +105,7 @@ namespace BarbeariaSaaS.Controllers
                     Email = cliente.Email
                 },
                 TotalAgendamentos = agendamentosCount,
-                ProximoAgendamento = proximoAgendamento != null ? new {
-                    Id = proximoAgendamento.Id,
-                    Data = proximoAgendamento.DataHora.ToString("dd/MM/yyyy"),
-                    Hora = proximoAgendamento.DataHora.ToString("HH:mm"),
-                    Barbeiro = proximoAgendamento.Barbeiro?.Nome,
-                    Barbearia = proximoAgendamento.Barbearia?.Nome
-                } : null,
+                ProximoAgendamento = proximoAgendamentoObj,
                 AgendamentosRecentes = agendamentosRecentes,
                 Barbearias = barbearias
             };
