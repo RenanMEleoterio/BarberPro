@@ -54,30 +54,33 @@ namespace BarbeariaSaaS.Controllers
         }
 
         /// <summary>
-        /// Retorna uma lista de barbeiros disponíveis. Clientes podem ver todos os barbeiros de todas as barbearias,
-        /// enquanto outros tipos de usuário veem apenas os barbeiros de sua barbearia.
+        /// Retorna uma lista de barbeiros disponíveis. Clientes podem ver barbeiros de todas as barbearias
+        /// ou filtrar por uma barbearia específica informando o parâmetro barbeariaId.
+        /// Outros tipos de usuário veem apenas os barbeiros de sua barbearia.
         /// </summary>
+        /// <param name="barbeariaId">Opcional: ID da barbearia para filtrar os barbeiros.</param>
         /// <returns>ActionResult<List<BarbeiroDto>> contendo uma lista de objetos BarbeiroDto com informações dos barbeiros e seus horários disponíveis.</returns>
         [HttpGet("barbeiros")]
-        public async Task<ActionResult<List<BarbeiroDto>>> GetBarbeiros()
+        public async Task<ActionResult<List<BarbeiroDto>>> GetBarbeiros([FromQuery] int? barbeariaId = null)
         {
             var tipoUsuario = GetTipoUsuario();
             IQueryable<Usuario> query = _context.Usuarios.Where(u => u.TipoUsuario == TipoUsuario.Barbeiro);
 
             if (tipoUsuario == "Cliente")
             {
-                // Clientes podem ver todos os barbeiros de todas as barbearias
-                // ou podemos adicionar um filtro por barbeariaId se for passado na query string
-                // Por enquanto, retorna todos os barbeiros.
+                if (barbeariaId.HasValue)
+                {
+                    query = query.Where(u => u.BarbeariaId == barbeariaId);
+                }
             }
             else
             {
-                var barbeariaId = GetBarbeariaId();
-                if (!barbeariaId.HasValue)
+                var usuarioBarbeariaId = GetBarbeariaId();
+                if (!usuarioBarbeariaId.HasValue)
                 {
                     return BadRequest(new { message = "Usuário não está vinculado a uma barbearia" });
                 }
-                query = query.Where(u => u.BarbeariaId == barbeariaId);
+                query = query.Where(u => u.BarbeariaId == usuarioBarbeariaId);
             }
 
             var barbeiros = await query

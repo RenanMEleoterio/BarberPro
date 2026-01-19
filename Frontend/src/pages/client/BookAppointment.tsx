@@ -97,7 +97,7 @@ export default function BookAppointment() {
       setBarbershop(barbershopWithConfig);
 
       console.log('Carregando barbeiros com horários...');
-      const barbeirosData = await apiService.getBarbeirosComHorarios();
+      const barbeirosData = await apiService.getBarbeirosComHorarios(parseInt(barbershopId));
       console.log('Barbeiros recebidos:', barbeirosData);
       setBarbeiros(barbeirosData);
       

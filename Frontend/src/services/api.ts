@@ -421,10 +421,13 @@ class ApiService {
 
   /**
    * Obtém a lista de barbeiros que possuem horários disponíveis.
+   * Pode ser filtrada por barbearia informando o ID.
+   * @param {number} [barbeariaId] - Opcional: ID da barbearia para filtrar os barbeiros.
    * @returns {Promise<any>} - Uma promessa que resolve com a lista de barbeiros e seus horários.
    */
-  async getBarbeirosComHorarios() {
-    return this.request('/agendamento/barbeiros');
+  async getBarbeirosComHorarios(barbeariaId?: number) {
+    const query = barbeariaId ? `?barbeariaId=${barbeariaId}` : '';
+    return this.request(`/agendamento/barbeiros${query}`);
   }
 
   /**
