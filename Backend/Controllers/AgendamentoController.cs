@@ -226,6 +226,7 @@ namespace BarbeariaSaaS.Controllers
         {
             var usuarioId = GetUsuarioId();
             var tipoUsuario = GetTipoUsuario();
+            var agoraUtc = DateTime.UtcNow;
 
             IQueryable<Agendamento> query = _context.Agendamentos
                 .Include(a => a.Cliente)
@@ -248,6 +249,21 @@ namespace BarbeariaSaaS.Controllers
             else
             {
                 return Forbid();
+            }
+
+            var agendamentosPendentesExpirados = await query
+                .Where(a => a.Status == StatusAgendamento.Pendente && a.DataHora <= agoraUtc)
+                .ToListAsync();
+
+            if (agendamentosPendentesExpirados.Count > 0)
+            {
+                foreach (var agendamento in agendamentosPendentesExpirados)
+                {
+                    agendamento.Status = StatusAgendamento.Expirado;
+                    agendamento.DataAtualizacao = agoraUtc;
+                }
+
+                await _context.SaveChangesAsync();
             }
 
             var agendamentos = await query

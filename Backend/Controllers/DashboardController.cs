@@ -42,8 +42,25 @@ namespace BarbeariaSaaS.Controllers
             if (cliente == null)
                 return NotFound();
 
+            var agoraUtc = DateTime.UtcNow;
+
+            var agendamentosPendentesExpirados = await _context.Agendamentos
+                .Where(a => a.ClienteId == id && a.Status == StatusAgendamento.Pendente && a.DataHora <= agoraUtc)
+                .ToListAsync();
+
+            if (agendamentosPendentesExpirados.Count > 0)
+            {
+                foreach (var agendamento in agendamentosPendentesExpirados)
+                {
+                    agendamento.Status = StatusAgendamento.Expirado;
+                    agendamento.DataAtualizacao = agoraUtc;
+                }
+
+                await _context.SaveChangesAsync();
+            }
+
             var agendamentosCount = await _context.Agendamentos
-                .Where(a => a.ClienteId == id)
+                .Where(a => a.ClienteId == id && a.Status == StatusAgendamento.Pendente)
                 .CountAsync();
 
             var proximoAgendamento = await _context.Agendamentos

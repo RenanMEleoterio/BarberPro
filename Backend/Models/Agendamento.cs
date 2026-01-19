@@ -10,22 +10,11 @@ namespace BarbeariaSaaS.Models
     /// </summary>
     public enum StatusAgendamento
     {
-        /// <summary>
-        /// Agendamento criado, aguardando confirmação.
-        /// </summary>
         Pendente = 1,
-        /// <summary>
-        /// Agendamento confirmado.
-        /// </summary>
         Confirmado = 2,
-        /// <summary>
-        /// Agendamento cancelado.
-        /// </summary>
         Cancelado = 3,
-        /// <summary>
-        /// Agendamento concluído.
-        /// </summary>
-        Realizado = 4
+        Realizado = 4,
+        Expirado = 5
     }
 
     /// <summary>

@@ -230,7 +230,7 @@ export default function ClientDashboard() {
         <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs sm:text-sm text-gray-500 font-medium">Total de Agendamentos</p>
+              <p className="text-xs sm:text-sm text-gray-500 font-medium">Agendamentos Pendentes</p>
               <p className="text-xl sm:text-2xl font-bold text-gray-900">{dashboardData.TotalAgendamentos}</p>
             </div>
             <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-500" />
