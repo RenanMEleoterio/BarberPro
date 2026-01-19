@@ -251,13 +251,14 @@ namespace BarbeariaSaaS.Controllers
                 return Forbid();
             }
 
-            var agendamentosPendentesExpirados = await query
-                .Where(a => a.Status == StatusAgendamento.Pendente && a.DataHora <= agoraUtc)
+            var agendamentosExpirados = await query
+                .Where(a => a.DataHora <= agoraUtc
+                            && (a.Status == StatusAgendamento.Pendente || a.Status == StatusAgendamento.Confirmado))
                 .ToListAsync();
 
-            if (agendamentosPendentesExpirados.Count > 0)
+            if (agendamentosExpirados.Count > 0)
             {
-                foreach (var agendamento in agendamentosPendentesExpirados)
+                foreach (var agendamento in agendamentosExpirados)
                 {
                     agendamento.Status = StatusAgendamento.Expirado;
                     agendamento.DataAtualizacao = agoraUtc;
@@ -266,6 +267,8 @@ namespace BarbeariaSaaS.Controllers
                 await _context.SaveChangesAsync();
             }
 
+            // Recarrega a query para garantir que os status atualizados sejam refletidos
+            // Nota: Como os objetos foram atualizados no contexto, a query subsequente deve retornar os dados atualizados
             var agendamentos = await query
                 .OrderByDescending(a => a.DataHora)
                 .Select(a => new AgendamentoDto

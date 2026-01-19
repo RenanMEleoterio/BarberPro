@@ -159,6 +159,8 @@ export default function Appointments() {
    */
   const getStatusIcon = (status: string) => {
     switch (status) {
+      case 'pending':
+        return <Clock className="h-5 w-5 text-yellow-500" />;
       case 'scheduled':
         return <AlertCircle className="h-5 w-5 text-blue-500" />;
       case 'completed':
@@ -179,6 +181,8 @@ export default function Appointments() {
    */
   const getStatusText = (status: string) => {
     switch (status) {
+      case 'pending':
+        return 'Pendente';
       case 'scheduled':
         return 'Agendado';
       case 'completed':
@@ -199,6 +203,8 @@ export default function Appointments() {
    */
   const getStatusColor = (status: string) => {
     switch (status) {
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
       case 'scheduled':
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
       case 'completed':
@@ -230,6 +236,7 @@ export default function Appointments() {
       <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
         {[
           { key: 'all', label: 'Todos' },
+          { key: 'pending', label: 'Pendentes' },
           { key: 'scheduled', label: 'Agendados' },
           { key: 'completed', label: 'Concluídos' },
           { key: 'cancelled', label: 'Cancelados' },
@@ -298,7 +305,7 @@ export default function Appointments() {
               </div>
 
               <div className="flex items-center space-x-2">
-                {appointment.status === 'scheduled' && (
+                {(appointment.status === 'scheduled' || appointment.status === 'pending') && (
                   <>
                     <button 
                       onClick={() => handleCancel(appointment.id)}
@@ -415,7 +422,7 @@ export default function Appointments() {
               >
                 Fechar
               </button>
-              {selectedAppointment.status === 'scheduled' && (
+              {(selectedAppointment.status === 'scheduled' || selectedAppointment.status === 'pending') && (
                 <button 
                   onClick={() => {
                     handleCancel(selectedAppointment.id);

@@ -44,13 +44,15 @@ namespace BarbeariaSaaS.Controllers
 
             var agoraUtc = DateTime.UtcNow;
 
-            var agendamentosPendentesExpirados = await _context.Agendamentos
-                .Where(a => a.ClienteId == id && a.Status == StatusAgendamento.Pendente && a.DataHora <= agoraUtc)
+            var agendamentosExpiradosCliente = await _context.Agendamentos
+                .Where(a => a.ClienteId == id
+                            && a.DataHora <= agoraUtc
+                            && (a.Status == StatusAgendamento.Pendente || a.Status == StatusAgendamento.Confirmado))
                 .ToListAsync();
 
-            if (agendamentosPendentesExpirados.Count > 0)
+            if (agendamentosExpiradosCliente.Count > 0)
             {
-                foreach (var agendamento in agendamentosPendentesExpirados)
+                foreach (var agendamento in agendamentosExpiradosCliente)
                 {
                     agendamento.Status = StatusAgendamento.Expirado;
                     agendamento.DataAtualizacao = agoraUtc;
@@ -59,8 +61,12 @@ namespace BarbeariaSaaS.Controllers
                 await _context.SaveChangesAsync();
             }
 
+            // Conta apenas agendamentos futuros que estão Pendentes (conforme solicitado: "somente os agendamentos pendendes")
+            // Agendamentos Confirmados NÃO entram nesta contagem.
             var agendamentosCount = await _context.Agendamentos
-                .Where(a => a.ClienteId == id && a.Status == StatusAgendamento.Pendente)
+                .Where(a => a.ClienteId == id
+                            && a.DataHora > agoraUtc
+                            && a.Status == StatusAgendamento.Pendente)
                 .CountAsync();
 
             var proximoAgendamento = await _context.Agendamentos

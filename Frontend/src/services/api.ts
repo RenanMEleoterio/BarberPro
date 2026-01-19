@@ -586,6 +586,7 @@ class ApiService {
   private mapStatusToFrontend(status: string): string {
     switch (status.toLowerCase()) {
       case 'pendente':
+        return 'pending';
       case 'confirmado':
         return 'scheduled';
       case 'realizado':

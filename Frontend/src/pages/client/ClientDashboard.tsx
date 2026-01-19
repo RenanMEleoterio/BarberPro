@@ -172,6 +172,8 @@ export default function ClientDashboard() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case 'Pendente':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
       case 'Agendado':
       case 'Confirmado':
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
@@ -180,6 +182,8 @@ export default function ClientDashboard() {
         return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
       case 'Cancelado':
         return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
+      case 'Expirado':
+        return 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
     }
@@ -384,7 +388,7 @@ export default function ClientDashboard() {
                   </div>
 
                   <div className="flex justify-end space-x-3 pt-3 border-t border-gray-200 dark:border-gray-600">
-                    {(appointment.Status === 'Confirmado' || appointment.Status === 'Agendado') && (
+                    {(appointment.Status === 'Confirmado' || appointment.Status === 'Agendado' || appointment.Status === 'Pendente') && (
                       <>
                         <button 
                           onClick={() => handleCancel(appointment.Id)}
