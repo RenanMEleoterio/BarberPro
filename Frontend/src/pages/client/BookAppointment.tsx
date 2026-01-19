@@ -512,7 +512,11 @@ export default function BookAppointment() {
             )}
             {selectedDate && (
               <p className="text-gray-600 dark:text-gray-400">
-                <span className="font-medium">Data:</span> {new Date(selectedDate).toLocaleDateString('pt-BR')}
+                <span className="font-medium">Data:</span>{' '}
+                {(() => {
+                  const [year, month, day] = selectedDate.split('-');
+                  return `${day}/${month}/${year}`;
+                })()}
               </p>
             )}
             {selectedTime && (

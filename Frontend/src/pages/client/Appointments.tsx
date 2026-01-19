@@ -206,6 +206,12 @@ export default function Appointments() {
     }
   };
 
+  const formatDateBr = (dateStr: string) => {
+    if (!dateStr) return '';
+    const [year, month, day] = dateStr.split('-');
+    return `${day}/${month}/${year}`;
+  };
+
   return (
     <div className="space-y-6">
       {/* Cabeçalho da página */}
@@ -256,7 +262,7 @@ export default function Appointments() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
                 <Calendar className="h-4 w-4" />
-                <span className="text-sm">{new Date(appointment.date).toLocaleDateString('pt-BR')}</span>
+                <span className="text-sm">{formatDateBr(appointment.date)}</span>
               </div>
               <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
                 <Clock className="h-4 w-4" />
@@ -363,7 +369,7 @@ export default function Appointments() {
                 <div className="flex items-center space-x-3">
                   <Calendar className="h-5 w-5 text-gray-400" />
                   <span className="text-gray-700 dark:text-gray-300">
-                    {new Date(selectedAppointment.date).toLocaleDateString('pt-BR')}
+                    {formatDateBr(selectedAppointment.date)}
                   </span>
                 </div>
 
