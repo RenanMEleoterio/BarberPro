@@ -585,12 +585,15 @@ class ApiService {
    */
   private mapStatusToFrontend(status: string): string {
     switch (status.toLowerCase()) {
+      case 'pendente':
       case 'confirmado':
         return 'scheduled';
       case 'realizado':
         return 'completed';
       case 'cancelado':
         return 'cancelled';
+      case 'expirado':
+        return 'expired';
       default:
         return 'scheduled';
     }

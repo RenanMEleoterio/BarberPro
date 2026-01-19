@@ -165,6 +165,8 @@ export default function Appointments() {
         return <CheckCircle className="h-5 w-5 text-green-500" />;
       case 'cancelled':
         return <XCircle className="h-5 w-5 text-red-500" />;
+      case 'expired':
+        return <AlertCircle className="h-5 w-5 text-gray-400" />;
       default:
         return null;
     }
@@ -183,6 +185,8 @@ export default function Appointments() {
         return 'Concluído';
       case 'cancelled':
         return 'Cancelado';
+      case 'expired':
+        return 'Expirado';
       default:
         return status;
     }
@@ -201,6 +205,8 @@ export default function Appointments() {
         return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
       case 'cancelled':
         return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
+      case 'expired':
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
     }
@@ -226,7 +232,8 @@ export default function Appointments() {
           { key: 'all', label: 'Todos' },
           { key: 'scheduled', label: 'Agendados' },
           { key: 'completed', label: 'Concluídos' },
-          { key: 'cancelled', label: 'Cancelados' }
+          { key: 'cancelled', label: 'Cancelados' },
+          { key: 'expired', label: 'Expirados' }
         ].map((tab) => (
           <button
             key={tab.key}
