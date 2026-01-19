@@ -26,13 +26,13 @@ namespace BarbeariaSaaS.DTOs
         /// <summary>
         /// Observações adicionais sobre o agendamento, como preferências ou detalhes específicos.
         /// </summary>
-        public string Observacoes { get; set; }
+        public string? Observacoes { get; set; }
 
         /// <summary>
         /// O tipo de serviço a ser agendado (ex: "Corte de Cabelo", "Barba").
         /// </summary>
         [Required]
-        public string TipoServico { get; set; }
+        public string TipoServico { get; set; } = string.Empty;
     }
 
     /// <summary>

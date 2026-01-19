@@ -17,8 +17,11 @@ WORKDIR /app
 COPY --from=build /app/out .
 COPY --from=build /app/start.sh .
 
-# Exponha a porta que a aplicação ASP.NET Core irá escutar
-EXPOSE 5000
+# Garantir permissões de execução para o script
+RUN chmod +x start.sh
+
+# Exponha a porta que a aplicação ASP.NET Core irá escutar (Render usa a variável PORT)
+EXPOSE 8080
 
 # Defina o ponto de entrada da aplicação
 ENTRYPOINT ["bash", "start.sh"]
