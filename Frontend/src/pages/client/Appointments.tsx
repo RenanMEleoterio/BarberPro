@@ -152,67 +152,46 @@ export default function Appointments() {
     );
   }
 
-  /**
-   * Retorna o ícone correspondente ao status do agendamento.
-   * @param {string} status - O status do agendamento.
-   * @returns {JSX.Element | null} - O ícone Lucide React ou null se não houver correspondência.
-   */
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'pending':
         return <Clock className="h-5 w-5 text-yellow-500" />;
-      case 'scheduled':
-        return <AlertCircle className="h-5 w-5 text-blue-500" />;
-      case 'completed':
+      case 'attended':
         return <CheckCircle className="h-5 w-5 text-green-500" />;
       case 'cancelled':
         return <XCircle className="h-5 w-5 text-red-500" />;
       case 'expired':
-        return <AlertCircle className="h-5 w-5 text-gray-400" />;
+        return <AlertCircle className="h-5 w-5 text-gray-500" />;
       default:
-        return null;
+        return <Clock className="h-5 w-5 text-gray-400" />;
     }
   };
 
-  /**
-   * Retorna o texto formatado para o status do agendamento.
-   * @param {string} status - O status do agendamento.
-   * @returns {string} - O texto do status em português.
-   */
   const getStatusText = (status: string) => {
     switch (status) {
       case 'pending':
         return 'Pendente';
-      case 'scheduled':
-        return 'Agendado';
-      case 'completed':
-        return 'Concluído';
+      case 'attended':
+        return 'Atendido';
       case 'cancelled':
         return 'Cancelado';
       case 'expired':
         return 'Expirado';
       default:
-        return status;
+        return 'Pendente';
     }
   };
 
-  /**
-   * Retorna a classe CSS para a cor de fundo do status do agendamento.
-   * @param {string} status - O status do agendamento.
-   * @returns {string} - A string de classes CSS Tailwind para a cor correspondente.
-   */
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending':
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
-      case 'scheduled':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
-      case 'completed':
+      case 'attended':
         return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
       case 'cancelled':
         return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
       case 'expired':
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
+        return 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
     }
@@ -237,8 +216,7 @@ export default function Appointments() {
         {[
           { key: 'all', label: 'Todos' },
           { key: 'pending', label: 'Pendentes' },
-          { key: 'scheduled', label: 'Agendados' },
-          { key: 'completed', label: 'Concluídos' },
+          { key: 'attended', label: 'Atendidos' },
           { key: 'cancelled', label: 'Cancelados' },
           { key: 'expired', label: 'Expirados' }
         ].map((tab) => (
@@ -305,7 +283,7 @@ export default function Appointments() {
               </div>
 
               <div className="flex items-center space-x-2">
-                {(appointment.status === 'scheduled' || appointment.status === 'pending') && (
+                {(appointment.status === 'pending') && (
                   <>
                     <button 
                       onClick={() => handleCancel(appointment.id)}
@@ -422,7 +400,7 @@ export default function Appointments() {
               >
                 Fechar
               </button>
-              {(selectedAppointment.status === 'scheduled' || selectedAppointment.status === 'pending') && (
+              {(selectedAppointment.status === 'pending') && (
                 <button 
                   onClick={() => {
                     handleCancel(selectedAppointment.id);

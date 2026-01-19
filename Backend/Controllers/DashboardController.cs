@@ -47,7 +47,7 @@ namespace BarbeariaSaaS.Controllers
             var agendamentosExpiradosCliente = await _context.Agendamentos
                 .Where(a => a.ClienteId == id
                             && a.DataHora <= agoraUtc
-                            && (a.Status == StatusAgendamento.Pendente || a.Status == StatusAgendamento.Confirmado))
+                            && a.Status == StatusAgendamento.Pendente)
                 .ToListAsync();
 
             if (agendamentosExpiradosCliente.Count > 0)

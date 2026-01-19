@@ -139,22 +139,22 @@ namespace BarbeariaSaaS.Controllers
                 return BadRequest(new { message = "Barbeiro não encontrado" });
             }
 
-            // Verificar se o cliente já tem um agendamento confirmado para o mesmo horário (com qualquer barbeiro)
+            // Verificar se o cliente já tem um agendamento atendido/confirmado para o mesmo horário (com qualquer barbeiro)
             var clienteTemAgendamento = await _context.Agendamentos
                 .AnyAsync(a => a.ClienteId == clienteId && 
                               a.DataHora == dataHoraUtc && 
-                              a.Status == StatusAgendamento.Confirmado);
+                              a.Status == StatusAgendamento.Atendido);
 
             if (clienteTemAgendamento)
             {
-                return BadRequest(new { message = "Você já possui um agendamento confirmado para este horário" });
+                return BadRequest(new { message = "Você já possui um agendamento para este horário" });
             }
 
-            // Verificar se já existe agendamento confirmado para este barbeiro neste horário
+            // Verificar se já existe agendamento atendido/confirmado para este barbeiro neste horário
             var barbeiroTemAgendamento = await _context.Agendamentos
                 .AnyAsync(a => a.BarbeiroId == criarDto.BarbeiroId && 
                               a.DataHora == dataHoraUtc && 
-                              a.Status == StatusAgendamento.Confirmado);
+                              a.Status == StatusAgendamento.Atendido);
 
             if (barbeiroTemAgendamento)
             {
@@ -179,7 +179,7 @@ namespace BarbeariaSaaS.Controllers
                 DataHora = dataHoraUtc,
                 Observacoes = criarDto.Observacoes,
                 BarbeariaId = barbeiro.BarbeariaId.Value,
-                Status = StatusAgendamento.Confirmado,
+                Status = StatusAgendamento.Pendente,
                 TipoServico = criarDto.TipoServico,
                 HorarioDisponivelId = horarioDisponivel.Id
             };
@@ -253,7 +253,7 @@ namespace BarbeariaSaaS.Controllers
 
             var agendamentosExpirados = await query
                 .Where(a => a.DataHora <= agoraUtc
-                            && (a.Status == StatusAgendamento.Pendente || a.Status == StatusAgendamento.Confirmado))
+                            && a.Status == StatusAgendamento.Pendente)
                 .ToListAsync();
 
             if (agendamentosExpirados.Count > 0)

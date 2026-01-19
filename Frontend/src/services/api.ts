@@ -587,16 +587,16 @@ class ApiService {
     switch (status.toLowerCase()) {
       case 'pendente':
         return 'pending';
-      case 'confirmado':
-        return 'scheduled';
-      case 'realizado':
-        return 'completed';
+      case 'atendido':
+      case 'confirmado': // Mapear legado
+      case 'realizado': // Mapear legado
+        return 'attended';
       case 'cancelado':
         return 'cancelled';
       case 'expirado':
         return 'expired';
       default:
-        return 'scheduled';
+        return 'pending';
     }
   }
 }

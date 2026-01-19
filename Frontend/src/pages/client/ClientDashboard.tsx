@@ -174,10 +174,8 @@ export default function ClientDashboard() {
     switch (status) {
       case 'Pendente':
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
-      case 'Agendado':
+      case 'Atendido':
       case 'Confirmado':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
-      case 'Concluído':
       case 'Realizado':
         return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
       case 'Cancelado':
@@ -388,7 +386,7 @@ export default function ClientDashboard() {
                   </div>
 
                   <div className="flex justify-end space-x-3 pt-3 border-t border-gray-200 dark:border-gray-600">
-                    {(appointment.Status === 'Confirmado' || appointment.Status === 'Agendado' || appointment.Status === 'Pendente') && (
+                    {(appointment.Status === 'Pendente') && (
                       <>
                         <button 
                           onClick={() => handleCancel(appointment.Id)}
