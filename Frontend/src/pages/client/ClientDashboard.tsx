@@ -40,6 +40,47 @@ interface DashboardData {
   }>;
 }
 
+function normalizeClientDashboardData(data: any): DashboardData {
+  const rawCliente = data?.cliente || data?.Cliente || {};
+  const rawProximo = data?.proximoAgendamento ?? data?.ProximoAgendamento ?? null;
+  const rawAgendamentosRecentes = data?.agendamentosRecentes || data?.AgendamentosRecentes || [];
+  const rawBarbearias = data?.barbearias || data?.Barbearias || [];
+
+  return {
+    Cliente: {
+      Id: rawCliente.id ?? rawCliente.Id ?? 0,
+      Nome: rawCliente.nome ?? rawCliente.Nome ?? "",
+      Email: rawCliente.email ?? rawCliente.Email ?? "",
+    },
+    TotalAgendamentos: data?.totalAgendamentos ?? data?.TotalAgendamentos ?? 0,
+    ProximoAgendamento: rawProximo
+      ? {
+          Id: rawProximo.id ?? rawProximo.Id ?? 0,
+          Data: rawProximo.data ?? rawProximo.Data ?? "",
+          Hora: rawProximo.hora ?? rawProximo.Hora ?? "",
+          Barbeiro: rawProximo.barbeiro ?? rawProximo.Barbeiro ?? "",
+          Barbearia: rawProximo.barbearia ?? rawProximo.Barbearia ?? "",
+        }
+      : undefined,
+    AgendamentosRecentes: (rawAgendamentosRecentes as any[]).map((a) => ({
+      Id: a.id ?? a.Id ?? 0,
+      Data: a.data ?? a.Data ?? "",
+      Hora: a.hora ?? a.Hora ?? "",
+      Barbeiro: a.barbeiro ?? a.Barbeiro ?? "",
+      Barbearia: a.barbearia ?? a.Barbearia ?? "",
+      Status: a.status ?? a.Status ?? "",
+      Preco: a.preco ?? a.Preco ?? 0,
+    })),
+    Barbearias: (rawBarbearias as any[]).map((b) => ({
+      Id: b.id ?? b.Id ?? 0,
+      Nome: b.nome ?? b.Nome ?? "",
+      Endereco: b.endereco ?? b.Endereco ?? "",
+      Telefone: b.telefone ?? b.Telefone ?? "",
+      Email: b.email ?? b.Email ?? "",
+    })),
+  };
+}
+
 /**
  * Componente do Dashboard do Cliente.
  * Exibe um resumo das informações do cliente, total de agendamentos, próximo agendamento,
@@ -73,7 +114,8 @@ export default function ClientDashboard() {
         setLoading(true);
         const data = await apiService.getClientDashboard(parseInt(user.id));
         console.log("Dados do dashboard recebidos:", data);
-        setDashboardData(data);
+        const normalized = normalizeClientDashboardData(data);
+        setDashboardData(normalized);
       } catch (err: any) {
         console.error("Erro ao carregar dashboard:", err);
         const message =
@@ -100,7 +142,8 @@ export default function ClientDashboard() {
       
       if (user) {
         const data = await apiService.getClientDashboard(parseInt(user.id));
-        setDashboardData(data);
+        const normalized = normalizeClientDashboardData(data);
+        setDashboardData(normalized);
       }
     } catch (error) {
       console.error('Erro ao cancelar:', error);
