@@ -120,7 +120,7 @@ namespace BarbeariaSaaS.Controllers
                     name = u.Nome,
                     rating = 4.8, // Valor padrão por enquanto, pode ser calculado posteriormente
                     agendamentos = _context.Agendamentos
-                                    .Where(a => a.BarbeiroId == u.Id && a.Status == StatusAgendamento.Confirmado)
+                                    .Where(a => a.BarbeiroId == u.Id && a.Status == StatusAgendamento.Atendido)
                                     .Select(a => new { a.DataHora })
                                     .ToList()
                 })

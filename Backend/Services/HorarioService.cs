@@ -127,7 +127,7 @@ namespace BarbeariaSaaS.Services
 
             var horariosParaRemover = horariosExistentes
                 .Where(h => !horariosIdeais.Contains(h.DataHora) &&
-                            !h.Agendamentos.Any(a => a.Status == StatusAgendamento.Confirmado))
+                            !h.Agendamentos.Any(a => a.Status == StatusAgendamento.Atendido))
                 .ToList();
 
             if (horariosParaRemover.Any())
@@ -219,7 +219,7 @@ namespace BarbeariaSaaS.Services
                 .Where(h => _context.Agendamentos.Any(a => 
                     a.BarbeiroId == h.BarbeiroId && 
                     a.DataHora == h.DataHora && 
-                    a.Status == StatusAgendamento.Confirmado))
+                    a.Status == StatusAgendamento.Atendido))
                 .ToListAsync();
 
             // Para cada horário encontrado, marca-o como indisponível.

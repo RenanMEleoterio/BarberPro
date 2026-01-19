@@ -220,7 +220,7 @@ namespace BarbeariaSaaS.Controllers
             var temAgendamento = await _context.Agendamentos
                 .AnyAsync(a => a.BarbeiroId == horario.BarbeiroId && 
                               a.DataHora == horario.DataHora && 
-                              a.Status == StatusAgendamento.Confirmado);
+                              a.Status == StatusAgendamento.Atendido);
 
             if (temAgendamento)
             {
