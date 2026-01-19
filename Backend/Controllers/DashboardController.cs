@@ -72,7 +72,7 @@ namespace BarbeariaSaaS.Controllers
             var proximoAgendamento = await _context.Agendamentos
                 .Include(a => a.Barbeiro)
                 .Include(a => a.Barbearia)
-                .Where(a => a.ClienteId == id && a.DataHora > DateTime.UtcNow && a.Status == StatusAgendamento.Atendido)
+                .Where(a => a.ClienteId == id && a.DataHora > DateTime.UtcNow && a.Status == StatusAgendamento.Pendente)
                 .OrderBy(a => a.DataHora)
                 .FirstOrDefaultAsync();
 
