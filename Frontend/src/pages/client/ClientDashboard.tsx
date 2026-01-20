@@ -376,7 +376,7 @@ export default function ClientDashboard() {
                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.Status)}`}>
                           {appointment.Status}
                         </span>
-                        {appointment.Preco && (
+                        {!!appointment.Preco && (
                           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                             R$ {appointment.Preco.toFixed(2)}
                           </p>
