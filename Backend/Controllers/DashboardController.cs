@@ -94,9 +94,9 @@ namespace BarbeariaSaaS.Controllers
                 })
                 .ToListAsync();
 
-            // Ajuste de fuso horário (UTC para BRT -3)
+            // Ajuste de fuso horário (UTC para BRT -3) - REMOVIDO: O frontend/banco já tratam o horário corretamente
             var agendamentosRecentes = agendamentosRecentesDb.Select(a => {
-                var dataLocal = a.DataHora.AddHours(-3);
+                var dataLocal = a.DataHora;
                 return new {
                     Id = a.Id,
                     Data = dataLocal.ToString("dd/MM/yyyy"),
@@ -111,7 +111,7 @@ namespace BarbeariaSaaS.Controllers
             object proximoAgendamentoObj = null;
             if (proximoAgendamento != null)
             {
-                var dataLocal = proximoAgendamento.DataHora.AddHours(-3);
+                var dataLocal = proximoAgendamento.DataHora;
                 proximoAgendamentoObj = new {
                     Id = proximoAgendamento.Id,
                     Data = dataLocal.ToString("dd/MM/yyyy"),
