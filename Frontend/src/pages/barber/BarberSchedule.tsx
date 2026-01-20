@@ -24,6 +24,8 @@ interface Appointment {
 export default function BarberSchedule() {
   // Estado para a data selecionada, inicializado com a data atual.
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  // Estado para controlar se deve filtrar por data
+  const [filterByDate, setFilterByDate] = useState(false);
   // Estado para armazenar a lista de agendamentos.
   const [appointments, setAppointments] = useState<any[]>([]);
   // Estado para controlar o status de carregamento.
@@ -192,6 +194,10 @@ export default function BarberSchedule() {
                       
                       <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex items-center space-x-1">
+                          <Calendar className="h-4 w-4" />
+                          <span>{new Date(appointment.dataHora).toLocaleDateString('pt-BR')}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
                           <Clock className="h-4 w-4" />
                           <span>{new Date(appointment.dataHora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
@@ -245,7 +251,7 @@ export default function BarberSchedule() {
       {filteredAppointments.length > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Resumo do Dia
+            {filterByDate ? 'Resumo do Dia' : 'Resumo Geral'}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center">
