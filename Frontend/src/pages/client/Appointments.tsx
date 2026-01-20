@@ -270,8 +270,8 @@ export default function Appointments() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-4">
+              <div className="flex items-center justify-between md:justify-start w-full md:w-auto space-x-4">
                 <div>
                   <p className="text-sm font-medium text-gray-900 dark:text-white">{appointment.service}</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">R$ {appointment.price}</p>
@@ -282,32 +282,32 @@ export default function Appointments() {
                 </div>
               </div>
 
-              <div className="flex items-center space-x-2">
+              <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
                 {(appointment.status === 'pending') && (
                   <>
                     <button 
                       onClick={() => handleCancel(appointment.id)}
                       disabled={processingId === appointment.id}
-                      className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full sm:w-auto bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
                     >
                       {processingId === appointment.id ? 'Cancelando...' : 'Cancelar'}
                     </button>
                     <button 
                       onClick={() => handleReschedule(appointment)}
-                      className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                      className="w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex justify-center items-center"
                     >
                       Reagendar
                     </button>
                   </>
                 )}
                 {appointment.status === 'completed' && (
-                  <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                  <button className="w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex justify-center items-center">
                     Avaliar
                   </button>
                 )}
                 <button 
                   onClick={() => handleViewDetails(appointment)}
-                  className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  className="w-full sm:w-auto bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex justify-center items-center"
                 >
                   Detalhes
                 </button>
