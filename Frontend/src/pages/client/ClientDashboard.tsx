@@ -292,7 +292,7 @@ export default function ClientDashboard() {
       )}
 
       {/* Seção: Ações Rápidas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Link para Encontrar Barbearias */}
         <Link
           to="/client/barbershops"
@@ -324,19 +324,6 @@ export default function ClientDashboard() {
             </div>
           </div>
         </Link>
-
-        {/* Card para Avaliações (funcionalidade futura ou placeholder) */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center space-x-4">
-            <div className="bg-green-100 dark:bg-green-900/20 p-3 rounded-lg">
-              <Star className="h-6 w-6 text-green-600 dark:text-green-400" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">Avaliações</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Avalie seus cortes</p>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Seção: Agendamentos Recentes */}

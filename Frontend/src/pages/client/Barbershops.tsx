@@ -112,11 +112,6 @@ export default function Barbershops() {
                 alt={barbershop.nome}
                 className="w-full h-full object-cover"
               />
-              {/* Avaliação da Barbearia */}
-              <div className="absolute top-4 right-4 bg-white dark:bg-gray-800 px-2 py-1 rounded-lg flex items-center space-x-1">
-                <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                <span className="text-sm font-medium text-gray-900 dark:text-white">{barbershop.rating}</span>
-              </div>
             </div>
             
             {/* Detalhes da Barbearia */}
@@ -149,10 +144,6 @@ export default function Barbershops() {
                     barbershop.barbers.map((barber: any) => (
                       <div key={barber.id} className="flex items-center justify-between text-sm">
                         <span className="text-gray-600 dark:text-gray-400">{barber.name}</span>
-                        <div className="flex items-center space-x-1">
-                          <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                          <span className="text-gray-600 dark:text-gray-400">{barber.rating}</span>
-                        </div>
                       </div>
                     ))
                   ) : (
