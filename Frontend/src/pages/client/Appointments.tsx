@@ -212,7 +212,7 @@ export default function Appointments() {
       </div>
 
       {/* Abas de Filtro */}
-      <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+      <div className="flex overflow-x-auto space-x-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
         {[
           { key: 'all', label: 'Todos' },
           { key: 'pending', label: 'Pendentes' },
@@ -223,7 +223,7 @@ export default function Appointments() {
           <button
             key={tab.key}
             onClick={() => setFilter(tab.key)}
-            className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${
+            className={`whitespace-nowrap py-2 px-4 text-sm font-medium rounded-md transition-colors ${
               filter === tab.key
                 ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
