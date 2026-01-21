@@ -164,7 +164,7 @@ export default function BarberSchedule() {
         </div>
 
         <div className="divide-y divide-gray-200 dark:divide-gray-700">
-          {filteredAppointments.length === 0 ? (
+          {!Array.isArray(filteredAppointments) || filteredAppointments.length === 0 ? (
             <div className="p-8 text-center">
               <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500 dark:text-gray-400">
