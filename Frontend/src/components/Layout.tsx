@@ -91,6 +91,20 @@ export default function Layout() {
 
   const navItems = getNavItems();
 
+  // DEBUG: Diagnóstico para erro "m.map is not a function"
+  // Verifica se navItems é realmente um array antes de renderizar
+  if (!Array.isArray(navItems)) {
+    console.error('CRITICAL ERROR: navItems is not an array!', {
+      navItems,
+      type: typeof navItems,
+      user,
+      role: user?.role
+    });
+  }
+
+  // Garante que safeNavItems seja sempre um array para evitar quebra na renderização
+  const safeNavItems = Array.isArray(navItems) ? navItems : [];
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       {/* Cabeçalho Mobile: Visível apenas em telas pequenas */}
@@ -139,7 +153,7 @@ export default function Layout() {
 
               {/* Navegação Mobile: Links específicos para o tipo de usuário */}
               <nav className="flex-1 space-y-1 px-4 py-6">
-                {navItems.map((item) => {
+                {safeNavItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.path;
                   
@@ -223,7 +237,7 @@ export default function Layout() {
 
           {/* Navegação Desktop: Links específicos para o tipo de usuário */}
           <nav className="flex-1 space-y-1 px-4 py-6">
-            {navItems.map((item) => {
+            {safeNavItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
               

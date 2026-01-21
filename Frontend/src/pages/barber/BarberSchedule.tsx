@@ -49,7 +49,15 @@ export default function BarberSchedule() {
       setLoading(true);
       // Chama o serviço de API para obter os agendamentos do barbeiro.
       const data = await apiService.getMyAppointments();
-      setAppointments(data);
+      
+      console.log('BarberSchedule: loadAppointments response', {
+        data,
+        isArray: Array.isArray(data),
+        type: typeof data
+      });
+
+      // Proteção defensiva: Garante que appointments seja sempre um array
+      setAppointments(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Erro ao carregar agendamentos:', error);
       const message =
@@ -86,6 +94,14 @@ export default function BarberSchedule() {
   const filteredAppointments = appointments.filter(apt => {
     const aptDate = new Date(apt.dataHora).toISOString().split('T')[0];
     return aptDate === selectedDate;
+  });
+
+  // DEBUG: Diagnóstico de renderização
+  console.log('BarberSchedule: Render State', {
+    appointments,
+    isAppointmentsArray: Array.isArray(appointments),
+    filteredAppointments,
+    isFilteredArray: Array.isArray(filteredAppointments)
   });
 
   // Exibe um spinner de carregamento enquanto os dados estão sendo buscados.
