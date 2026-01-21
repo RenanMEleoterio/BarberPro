@@ -89,10 +89,13 @@ export default function BarberDashboard() {
     const fimSemana = endOfWeek(hoje, { weekStartsOn: 0 });
 
     // 1. Agendamentos de Hoje
+    const hojeStr = format(hoje, 'yyyy-MM-dd');
     const agendamentosHoje = appointments.filter(apt => {
       try {
-        const dataApt = parseISO(apt.dataHora);
-        return isSameDay(dataApt, hoje);
+        if (!apt.dataHora) return false;
+        // Usa split para pegar a data "crua" da string ISO/API, ignorando timezone
+        const aptDate = apt.dataHora.split('T')[0];
+        return aptDate === hojeStr;
       } catch (e) {
         return false;
       }
@@ -300,7 +303,7 @@ export default function BarberDashboard() {
                       <div>
                         <h3 className="font-medium text-gray-900 dark:text-white">{appointment.nomeCliente}</h3>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {new Date(appointment.dataHora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                          {appointment.dataHora.split('T')[1].substring(0, 5)}
                         </p>
                       </div>
                     </div>
