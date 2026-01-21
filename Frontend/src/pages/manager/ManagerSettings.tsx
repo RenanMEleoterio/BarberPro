@@ -380,7 +380,7 @@ export default function ManagerSettings() {
               </div>
             </div>
           </div>
-        ))}
+        )) : []}
       </div>
 
       {/* Modal de Adicionar Serviço */}

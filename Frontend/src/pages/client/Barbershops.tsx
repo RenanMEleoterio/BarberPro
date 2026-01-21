@@ -161,7 +161,7 @@ export default function Barbershops() {
               </Link>
             </div>
           </div>
-        ))}
+        )) : []}
       </div>
 
       {/* Mensagem de nenhuma barbearia encontrada */}
