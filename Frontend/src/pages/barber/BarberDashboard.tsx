@@ -107,10 +107,10 @@ export default function BarberDashboard() {
     // 2. Estatísticas de Hoje
     const totalAgendamentosHoje = agendamentosHoje.length;
     const agendamentosConcluidos = agendamentosHoje.filter(apt => 
-      apt.status === 'Realizado' || apt.status === 'Concluído'
+      ['Realizado', 'Concluído', 'Atendido'].includes(apt.status)
     ).length;
     const agendamentosPendentes = agendamentosHoje.filter(apt => 
-      apt.status === 'Pendente' || apt.status === 'Confirmado'
+      ['Pendente', 'Confirmado', 'Agendado'].includes(apt.status)
     ).length;
 
     // 3. Agendamentos da Semana
@@ -125,13 +125,13 @@ export default function BarberDashboard() {
 
     // 4. Ganhos da Semana
     const ganhosSemana = agendamentosSemana
-      .filter(apt => apt.status === 'Realizado' || apt.status === 'Concluído')
+      .filter(apt => ['Realizado', 'Concluído', 'Atendido'].includes(apt.status))
       .reduce((total, apt) => total + (Number(apt.preco) || 0), 0);
 
     // 5. Porcentagem de Conclusão da Semana (Mantido cálculo mas não exibido no card principal)
     const totalSemana = agendamentosSemana.length;
     const concluidosSemana = agendamentosSemana.filter(apt => 
-      apt.status === 'Realizado' || apt.status === 'Concluído'
+      ['Realizado', 'Concluído', 'Atendido'].includes(apt.status)
     ).length;
     const porcentagem = totalSemana > 0 ? Math.round((concluidosSemana / totalSemana) * 100) : 0;
 
@@ -139,7 +139,7 @@ export default function BarberDashboard() {
     const performanceMap = new Array(7).fill(0).map(() => ({ cortes: 0, ganhos: 0 }));
     
     agendamentosSemana.forEach(apt => {
-      if (apt.status === 'Realizado' || apt.status === 'Concluído') {
+      if (['Realizado', 'Concluído', 'Atendido'].includes(apt.status)) {
         try {
           const diaSemana = getDay(parseISO(apt.dataHora)); // 0 (Dom) a 6 (Sab)
           performanceMap[diaSemana].cortes += 1;
@@ -311,7 +311,7 @@ export default function BarberDashboard() {
                       <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                         appointment.status === 'Confirmado' 
                           ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
-                          : appointment.status === 'Realizado'
+                          : ['Realizado', 'Concluído', 'Atendido'].includes(appointment.status)
                           ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
                           : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
                       }`}>
