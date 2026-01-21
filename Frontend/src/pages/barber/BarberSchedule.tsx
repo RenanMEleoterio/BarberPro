@@ -113,7 +113,9 @@ export default function BarberSchedule() {
 
   // Filtra os agendamentos pela data selecionada para exibição.
   const filteredAppointments = appointments.filter(apt => {
-    const aptDate = new Date(apt.dataHora).toISOString().split('T')[0];
+    if (!apt.dataHora) return false;
+    // Usa split para pegar a data "crua" da string ISO/API, ignorando timezone
+    const aptDate = apt.dataHora.split('T')[0];
     return aptDate === selectedDate;
   });
 
@@ -224,11 +226,11 @@ export default function BarberSchedule() {
                       <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex items-center space-x-1">
                           <Calendar className="h-4 w-4" />
-                          <span>{new Date(appointment.dataHora).toLocaleDateString()}</span>
+                          <span>{appointment.dataHora.split('T')[0].split('-').reverse().join('/')}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <Clock className="h-4 w-4" />
-                          <span>{new Date(appointment.dataHora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                          <span>{appointment.dataHora.split('T')[1].substring(0, 5)}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <Phone className="h-4 w-4" />
@@ -256,17 +258,15 @@ export default function BarberSchedule() {
                         <>
                           <button
                             onClick={() => handleUpdateStatus(appointment.id, 2)}
-                            className="p-2 bg-green-100 text-green-600 rounded-full hover:bg-green-200 transition-colors"
-                            title="Confirmar Agendamento"
+                            className="text-green-600 hover:text-green-700 text-sm font-medium transition-colors"
                           >
-                            <CheckCircle className="h-5 w-5" />
+                            Confirmar
                           </button>
                           <button
                             onClick={() => handleUpdateStatus(appointment.id, 3)}
-                            className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
-                            title="Cancelar Agendamento"
+                            className="text-red-600 hover:text-red-700 text-sm font-medium transition-colors"
                           >
-                            <XCircle className="h-5 w-5" />
+                            Cancelar
                           </button>
                         </>
                       )}
@@ -274,10 +274,9 @@ export default function BarberSchedule() {
                       {appointment.status === 'Atendido' && (
                         <button
                           onClick={() => handleUpdateStatus(appointment.id, 4)}
-                          className="p-2 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition-colors"
-                          title="Concluir Serviço"
+                          className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
                         >
-                          <PlayCircle className="h-5 w-5" />
+                          Concluir
                         </button>
                       )}
                     </div>
