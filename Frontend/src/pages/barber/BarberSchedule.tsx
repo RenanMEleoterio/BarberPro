@@ -188,10 +188,17 @@ export default function BarberSchedule() {
               </p>
             </div>
           ) : (
-            filteredAppointments.map((appointment) => (
-              <div key={appointment.id} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
+            (() => {
+              console.log('DEBUG MAP', {
+                file: 'src/pages/barber/BarberSchedule.tsx',
+                variable: 'filteredAppointments',
+                isArray: Array.isArray(filteredAppointments),
+                value: filteredAppointments
+              });
+              return filteredAppointments.map((appointment) => (
+                <div key={appointment.id} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
                     <div className="flex-shrink-0">
                       <div className="h-10 w-10 rounded-full bg-yellow-500 flex items-center justify-center">
                         <User className="h-5 w-5 text-white" />

@@ -490,13 +490,32 @@ class ApiService {
    * @returns {Promise<any[]>} - Uma promessa que resolve com a lista de barbearias detalhadas.
    */
   async getBarbershopsWithDetails() {
-    const barbearias = await this.request('/barbearia');
+    const response = await this.request('/barbearia');
+    // Garante que barbearias seja um array
+    const barbearias = Array.isArray(response) ? response : [];
     
+    console.log('DEBUG MAP', {
+      file: 'src/services/api.ts',
+      variable: 'barbearias',
+      isArray: Array.isArray(barbearias),
+      originalValue: response
+    });
+
     // Para cada barbearia, busca os barbeiros associados.
     const barbershopsWithBarbers = await Promise.all(
       barbearias.map(async (barbearia: any) => {
         try {
-          const barbeiros = await this.getBarbers(barbearia.id);
+          const responseBarbeiros = await this.getBarbers(barbearia.id);
+          // Garante que barbeiros seja um array
+          const barbeiros = Array.isArray(responseBarbeiros) ? responseBarbeiros : [];
+          
+          console.log('DEBUG MAP', {
+            file: 'src/services/api.ts',
+            variable: 'barbeiros',
+            isArray: Array.isArray(barbeiros),
+            originalValue: responseBarbeiros
+          });
+
           return {
             ...barbearia,
             barbers: barbeiros.map((barbeiro: any) => ({
@@ -535,8 +554,17 @@ class ApiService {
    * @returns {Promise<any[]>} - Uma promessa que resolve com a lista de agendamentos detalhados.
    */
   async getMyAppointmentsWithDetails() {
-    const agendamentos = await this.getMyAppointments();
+    const response = await this.getMyAppointments();
+    // Garante que agendamentos seja um array
+    const agendamentos = Array.isArray(response) ? response : [];
     
+    console.log('DEBUG MAP', {
+      file: 'src/services/api.ts',
+      variable: 'agendamentos',
+      isArray: Array.isArray(agendamentos),
+      originalValue: response
+    });
+
     return agendamentos.map((agendamento: any) => ({
       id: agendamento.id.toString(),
       barbershopId: agendamento.barbeariaId,
