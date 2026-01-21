@@ -3,6 +3,8 @@ import { Calendar, Clock, DollarSign, Users, TrendingUp, CheckCircle } from 'luc
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { apiService } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { startOfDay, endOfDay, isSameDay, startOfWeek, endOfWeek, isWithinInterval, parseISO, format, getDay } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 /**
  * Componente de Dashboard para Barbeiros.
@@ -24,41 +26,45 @@ export default function BarberDashboard() {
   // Efeito que carrega os dados do dashboard quando o componente é montado.
   useEffect(() => {
     loadDashboardData();
+
+    // Atualiza os dados a cada 30 segundos (polling)
+    const intervalId = setInterval(() => {
+      loadDashboardData(true); // true para indicar atualização silenciosa (sem loading spinner)
+    }, 30000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   /**
    * Carrega os dados do dashboard do barbeiro a partir da API.
    * Lida com estados de carregamento, erro e exibe um toast se não houver dados.
+   * @param {boolean} silent - Se true, não exibe o spinner de carregamento.
    */
-  const loadDashboardData = async () => {
+  const loadDashboardData = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       setError(null);
-      if (user?.id) {
-        const data = await apiService.getBarberDashboard(user.id);
-        setDashboardData(data);
-        // Se os dados estiverem vazios, exibe o toast
-        if (data && data.totalAgendamentosHoje === 0 && data.ganhosSemana === 0) {
-          setToastMessage("Não há dados cadastrados para este barbeiro. Comece a agendar para ver suas estatísticas!");
-          setShowToast(true);
-          const timer = setTimeout(() => {
-            setShowToast(false);
-            setToastMessage("");
-          }, 5000); // Esconde o toast após 5 segundos
-          return () => clearTimeout(timer);
-        }
-      }
+      
+      // Busca todos os agendamentos do barbeiro
+      const appointments = await apiService.getMyAppointments();
+      const appointmentsList = Array.isArray(appointments) ? appointments : [];
+
+      processDashboardData(appointmentsList);
+
     } catch (err: any) {
       console.error("Erro ao carregar dados do dashboard:", err);
       
       // Tratamento de erros específicos da API ou de conexão.
-      if (err.response) {
-        setError(`Erro do servidor: ${err.response.status} - ${err.response.data.message || 'Ocorreu um erro.'}`);
-      } else if (err.request) {
-        setError("Erro de conexão: Não foi possível conectar ao servidor. Verifique sua internet ou tente novamente mais tarde.");
-      } else {
-        setError("Ocorreu um erro inesperado ao carregar os dados.");
+      if (!silent) {
+        if (err.response) {
+          setError(`Erro do servidor: ${err.response.status} - ${err.response.data.message || 'Ocorreu um erro.'}`);
+        } else if (err.request) {
+          setError("Erro de conexão: Não foi possível conectar ao servidor. Verifique sua internet ou tente novamente mais tarde.");
+        } else {
+          setError("Ocorreu um erro inesperado ao carregar os dados.");
+        }
       }
+      
       // Define dados vazios para que o dashboard seja renderizado sem dados em caso de erro.
       setDashboardData({
         totalAgendamentosHoje: 0,
@@ -69,7 +75,102 @@ export default function BarberDashboard() {
         performanceSemanal: []
       });
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
+    }
+  };
+
+  /**
+   * Processa os agendamentos brutos para calcular as estatísticas do dashboard.
+   * @param {any[]} appointments - Lista de agendamentos.
+   */
+  const processDashboardData = (appointments: any[]) => {
+    const hoje = new Date();
+    const inicioSemana = startOfWeek(hoje, { weekStartsOn: 0 }); // Domingo
+    const fimSemana = endOfWeek(hoje, { weekStartsOn: 0 });
+
+    // 1. Agendamentos de Hoje
+    const agendamentosHoje = appointments.filter(apt => {
+      try {
+        const dataApt = parseISO(apt.dataHora);
+        return isSameDay(dataApt, hoje);
+      } catch (e) {
+        return false;
+      }
+    });
+
+    // Ordenar por horário
+    agendamentosHoje.sort((a, b) => new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime());
+
+    // 2. Estatísticas de Hoje
+    const totalAgendamentosHoje = agendamentosHoje.length;
+    const agendamentosConcluidos = agendamentosHoje.filter(apt => 
+      apt.status === 'Realizado' || apt.status === 'Concluído'
+    ).length;
+    const agendamentosPendentes = agendamentosHoje.filter(apt => 
+      apt.status === 'Pendente' || apt.status === 'Confirmado'
+    ).length;
+
+    // 3. Agendamentos da Semana
+    const agendamentosSemana = appointments.filter(apt => {
+      try {
+        const dataApt = parseISO(apt.dataHora);
+        return isWithinInterval(dataApt, { start: inicioSemana, end: fimSemana });
+      } catch (e) {
+        return false;
+      }
+    });
+
+    // 4. Ganhos da Semana
+    const ganhosSemana = agendamentosSemana
+      .filter(apt => apt.status === 'Realizado' || apt.status === 'Concluído')
+      .reduce((total, apt) => total + (Number(apt.preco) || 0), 0);
+
+    // 5. Porcentagem de Conclusão da Semana (Mantido cálculo mas não exibido no card principal)
+    const totalSemana = agendamentosSemana.length;
+    const concluidosSemana = agendamentosSemana.filter(apt => 
+      apt.status === 'Realizado' || apt.status === 'Concluído'
+    ).length;
+    const porcentagem = totalSemana > 0 ? Math.round((concluidosSemana / totalSemana) * 100) : 0;
+
+    // 6. Performance Semanal (Gráfico)
+    const performanceMap = new Array(7).fill(0).map(() => ({ cortes: 0, ganhos: 0 }));
+    
+    agendamentosSemana.forEach(apt => {
+      if (apt.status === 'Realizado' || apt.status === 'Concluído') {
+        try {
+          const diaSemana = getDay(parseISO(apt.dataHora)); // 0 (Dom) a 6 (Sab)
+          performanceMap[diaSemana].cortes += 1;
+          performanceMap[diaSemana].ganhos += (Number(apt.preco) || 0);
+        } catch (e) {
+          console.error("Erro ao processar data para gráfico:", e);
+        }
+      }
+    });
+
+    const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const performanceSemanal = performanceMap.map((data, index) => ({
+      dia: diasSemana[index],
+      cortes: data.cortes,
+      ganhos: data.ganhos
+    }));
+
+    const data = {
+      totalAgendamentosHoje,
+      agendamentosConcluidos,
+      agendamentosPendentes,
+      ganhosSemana,
+      porcentagem,
+      agendamentosHoje,
+      performanceSemanal
+    };
+
+    setDashboardData(data);
+
+    // Toast se não houver dados (opcional, mantendo lógica original mas ajustada)
+    if (appointments.length === 0 && !toastMessage) {
+      // setToastMessage("Não há agendamentos cadastrados. Comece a agendar!");
+      // setShowToast(true);
+      // setTimeout(() => setShowToast(false), 5000);
     }
   };
 
@@ -80,6 +181,7 @@ export default function BarberDashboard() {
   const stats = {
     todayAppointments: dashboardData?.totalAgendamentosHoje || 0,
     completedToday: dashboardData?.agendamentosConcluidos || 0,
+    pendingToday: dashboardData?.agendamentosPendentes || 0,
     weeklyEarnings: dashboardData?.ganhosSemana || 0,
     weeklyPercentage: dashboardData?.porcentagem || 0
   };
@@ -146,31 +248,31 @@ export default function BarberDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {renderStatCard(
           "Agendamentos Hoje",
-          stats.todayAppointments === 0 ? "N/A" : stats.todayAppointments,
+          stats.todayAppointments === 0 ? "0" : stats.todayAppointments,
           <Calendar />,
           "bg-blue-100 dark:bg-blue-900/20",
           "text-blue-600 dark:text-blue-400"
         )}
         {renderStatCard(
           "Concluídos Hoje",
-          stats.completedToday === 0 ? "N/A" : stats.completedToday,
+          stats.completedToday === 0 ? "0" : stats.completedToday,
           <CheckCircle />,
           "bg-green-100 dark:bg-green-900/20",
           "text-green-600 dark:text-green-400"
         )}
         {renderStatCard(
+          "Pendentes Hoje",
+          stats.pendingToday === 0 ? "0" : stats.pendingToday,
+          <Clock />,
+          "bg-orange-100 dark:bg-orange-900/20",
+          "text-orange-600 dark:text-orange-400"
+        )}
+        {renderStatCard(
           "Ganhos da Semana",
-          stats.weeklyEarnings === 0 ? "N/A" : `R$ ${stats.weeklyEarnings}`,
+          stats.weeklyEarnings === 0 ? "R$ 0,00" : `R$ ${stats.weeklyEarnings.toFixed(2)}`,
           <DollarSign />,
           "bg-yellow-100 dark:bg-yellow-900/20",
           "text-yellow-600 dark:text-yellow-400"
-        )}
-        {renderStatCard(
-          "Sua Porcentagem",
-          stats.weeklyPercentage === 0 ? "N/A" : `${stats.weeklyPercentage}%`,
-          <TrendingUp />,
-          "bg-purple-100 dark:bg-purple-900/20",
-          "text-purple-600 dark:text-purple-400"
         )}
       </div>
 
