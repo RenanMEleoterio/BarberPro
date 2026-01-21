@@ -1,10 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Calendar, Clock, User, ArrowLeft } from 'lucide-react';
+import { Calendar, Clock, User, ArrowLeft, Scissors, Filter } from 'lucide-react';
 import { format, addDays, startOfWeek, addWeeks } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import toast from 'react-hot-toast';
 import { apiService } from '../../services/api';
+
+/**
+ * Interface que define a estrutura de um serviço.
+ */
+interface Servico {
+  id: number;
+  nome: string;
+  preco: number;
+  duracaoMinutos: number;
+  barbeariaId: number;
+}
 
 /**
  * Interface que define a estrutura de um objeto de horário disponível.
@@ -48,8 +59,13 @@ export default function BookAppointment() {
   const [selectedBarber, setSelectedBarber] = useState<number | null>(initialBarberId || null);
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
+  const [selectedServices, setSelectedServices] = useState<Servico[]>([]);
   const [barbeiros, setBarbeiros] = useState<Barbeiro[]>([]);
+  const [servicos, setServicos] = useState<Servico[]>([]);
+  const [filteredServicos, setFilteredServicos] = useState<Servico[]>([]);
   const [barbershop, setBarbershop] = useState<any>(null);
+  const [sortOption, setSortOption] = useState<'price' | 'duration' | null>(null);
+
   // Estados para controlar o carregamento e erros.
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -100,6 +116,14 @@ export default function BookAppointment() {
       const barbeirosData = await apiService.getBarbeirosComHorarios(parseInt(barbershopId));
       console.log('Barbeiros recebidos:', barbeirosData);
       setBarbeiros(barbeirosData);
+
+      console.log('Carregando serviços...');
+      const servicosData = await apiService.getServicosByBarbeariaId(parseInt(barbershopId));
+      console.log('Serviços recebidos:', servicosData);
+      // Ensure servicosData is an array
+      const servicesArray = Array.isArray(servicosData) ? servicosData : [];
+      setServicos(servicesArray);
+      setFilteredServicos(servicesArray);
       
     } catch (error: any) {
       console.error('Erro ao carregar dados:', error);
@@ -213,6 +237,36 @@ export default function BookAppointment() {
     setSelectedTime('');
   };
 
+  const toggleService = (service: Servico) => {
+    if (isRescheduling) {
+      toast('Não é possível alterar serviços durante o reagendamento.', { icon: 'ℹ️' });
+      return;
+    }
+    setSelectedServices(prev => {
+      const isSelected = prev.some(s => s.id === service.id);
+      if (isSelected) {
+        return prev.filter(s => s.id !== service.id);
+      } else {
+        return [...prev, service];
+      }
+    });
+  };
+
+  const handleSort = (option: 'price' | 'duration') => {
+    setSortOption(option);
+    const sorted = [...filteredServicos].sort((a, b) => {
+      if (option === 'price') {
+        return a.preco - b.preco;
+      } else {
+        return a.duracaoMinutos - b.duracaoMinutos;
+      }
+    });
+    setFilteredServicos(sorted);
+  };
+
+  const totalPrice = selectedServices.reduce((acc, s) => acc + Number(s.preco), 0);
+  const totalDuration = selectedServices.reduce((acc, s) => acc + s.duracaoMinutos, 0);
+
   /**
    * Lida com a submissão do agendamento.
    * Valida as seleções do usuário e envia os dados para a API para criar ou atualizar o agendamento.
@@ -220,10 +274,16 @@ export default function BookAppointment() {
   const handleBooking = async () => {
     console.log("=== INICIANDO AGENDAMENTO ===");
     console.log("Estado atual:");
+    console.log("selectedServices:", selectedServices);
     console.log("selectedBarber:", selectedBarber);
     console.log("selectedDate:", selectedDate);
     console.log("selectedTime:", selectedTime);
     
+    if (selectedServices.length === 0) {
+      toast.error("Por favor, selecione pelo menos um serviço");
+      return;
+    }
+
     if (!selectedBarber || !selectedDate || !selectedTime) {
       toast.error("Por favor, selecione todas as opções");
       return;
@@ -242,13 +302,16 @@ export default function BookAppointment() {
         navigate("/client/appointments");
       } else {
         // Lógica de Criação (Novo Agendamento)
+        const serviceNames = selectedServices.map(s => s.nome).join(' + ');
         const agendamentoData = {
           barbeiroId: selectedBarber,
           dataHora: `${selectedDate}T${selectedTime}:00`,
-          observacoes: "",
-          tipoServico: "Corte de Cabelo"
+          observacoes: `Duração estimada: ${totalDuration} min`,
+          tipoServico: serviceNames,
+          precoServico: totalPrice,
+          servicoIds: selectedServices.map(s => s.id)
         };
-        console.log("Dados de criação:", agendamentoData);
+        console.log("Dados do agendamento:", agendamentoData);
 
         await apiService.createAgendamento(agendamentoData);
         toast.success("Agendamento realizado com sucesso!");
@@ -338,7 +401,82 @@ export default function BookAppointment() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Seção de Seleção de Serviços */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-2">
+              <Scissors className="h-5 w-5 text-yellow-500" />
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Serviços</h2>
+            </div>
+            <div className="relative group">
+              <button className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
+                <Filter className="h-4 w-4 text-gray-500" />
+              </button>
+              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-10 hidden group-hover:block border border-gray-200 dark:border-gray-700">
+                <button
+                  onClick={() => handleSort('price')}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  Ordenar por Preço
+                </button>
+                <button
+                  onClick={() => handleSort('duration')}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  Ordenar por Duração
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3 max-h-[500px] overflow-y-auto">
+            {filteredServicos.length > 0 ? (
+              filteredServicos.map((service) => (
+                <button
+                  key={service.id}
+                  data-testid={`service-${service.id}`}
+                  onClick={() => toggleService(service)}
+                  className={`w-full p-3 rounded-lg border-2 transition-colors text-left ${
+                    selectedServices.some(s => s.id === service.id)
+                      ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20'
+                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                  }`}
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="font-medium text-gray-900 dark:text-white">{service.nome}</div>
+                    <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                      R$ {Number(service.preco).toFixed(2)}
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    {service.duracaoMinutos} min
+                  </div>
+                </button>
+              ))
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-gray-500 dark:text-gray-400">Nenhum serviço disponível</p>
+              </div>
+            )}
+          </div>
+          
+          {selectedServices.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex justify-between text-sm mb-1">
+                <span className="text-gray-600 dark:text-gray-400">Total:</span>
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  R$ {totalPrice.toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                <span>Duração estimada:</span>
+                <span>{totalDuration} min</span>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Seção de Seleção de Barbeiro */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center space-x-2 mb-4">
@@ -500,7 +638,7 @@ export default function BookAppointment() {
       </div>
 
       {/* Resumo do Agendamento */}
-      {(selectedBarber || selectedDate || selectedTime) && (
+      {(selectedBarber || selectedDate || selectedTime || selectedServices.length > 0) && (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             {isRescheduling ? 'Resumo do Reagendamento' : 'Resumo do Agendamento'}
@@ -526,12 +664,30 @@ export default function BookAppointment() {
                 <span className="font-medium">Hora:</span> {selectedTime}
               </p>
             )}
-            <p className="text-gray-600 dark:text-gray-400">
-              <span className="font-medium">Serviço:</span> Corte de Cabelo (Padrão)
-            </p>
-            <p className="text-gray-600 dark:text-gray-400">
-              <span className="font-medium">Preço Estimado:</span> R$ 45,00 (Padrão)
-            </p>
+            
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
+              <p className="text-gray-600 dark:text-gray-400 mb-1">
+                <span className="font-medium">Serviços Selecionados:</span>
+              </p>
+              {selectedServices.length > 0 ? (
+                <ul className="list-disc list-inside pl-2 text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  {selectedServices.map(service => (
+                    <li key={service.id}>{service.nome}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-gray-500 italic mb-2">Nenhum serviço selecionado</p>
+              )}
+              
+              <div className="flex justify-between items-center mt-2 font-medium">
+                <span className="text-gray-900 dark:text-white">Total Estimado:</span>
+                <span data-testid="total-price" className="text-yellow-600 dark:text-yellow-400">R$ {totalPrice.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+                <span>Duração Total:</span>
+                <span data-testid="total-duration">{totalDuration} min</span>
+              </div>
+            </div>
           </div>
 
           {/* Botão de Confirmação de Agendamento */}

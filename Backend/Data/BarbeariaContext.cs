@@ -38,6 +38,8 @@ namespace BarbeariaSaaS.Data
         /// </summary>
         public DbSet<Servico> Servicos { get; set; }
 
+        public DbSet<AgendamentoServico> AgendamentoServicos { get; set; }
+
         /// <summary>
         /// Configura o modelo de dados que o Entity Framework Core usará para mapear as classes para o banco de dados.
         /// </summary>
@@ -108,6 +110,19 @@ namespace BarbeariaSaaS.Data
                 // Índices para otimização de consultas por data e barbeiro/barbearia.
                 entity.HasIndex(e => new { e.BarbeiroId, e.DataHora });
                 entity.HasIndex(e => new { e.BarbeariaId, e.DataHora });
+            });
+
+            modelBuilder.Entity<AgendamentoServico>(entity =>
+            {
+                entity.HasKey(e => new { e.AgendamentoId, e.ServicoId });
+
+                entity.HasOne(e => e.Agendamento)
+                      .WithMany(a => a.AgendamentoServicos)
+                      .HasForeignKey(e => e.AgendamentoId);
+
+                entity.HasOne(e => e.Servico)
+                      .WithMany(s => s.AgendamentoServicos)
+                      .HasForeignKey(e => e.ServicoId);
             });
 
             // Configurações para armazenar enums como inteiros no banco de dados.

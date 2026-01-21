@@ -181,8 +181,18 @@ namespace BarbeariaSaaS.Controllers
                 BarbeariaId = barbeiro.BarbeariaId.Value,
                 Status = StatusAgendamento.Pendente,
                 TipoServico = criarDto.TipoServico,
-                HorarioDisponivelId = horarioDisponivel.Id
+                PrecoServico = criarDto.PrecoServico,
+                HorarioDisponivelId = horarioDisponivel.Id,
+                AgendamentoServicos = new List<AgendamentoServico>()
             };
+
+            if (criarDto.ServicoIds != null && criarDto.ServicoIds.Any())
+            {
+                foreach (var servicoId in criarDto.ServicoIds)
+                {
+                    agendamento.AgendamentoServicos.Add(new AgendamentoServico { ServicoId = servicoId });
+                }
+            }
 
             _context.Agendamentos.Add(agendamento);
 

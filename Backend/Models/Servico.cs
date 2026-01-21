@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -44,6 +45,8 @@ namespace BarbeariaSaaS.Models
         /// </summary>
         [ForeignKey("BarbeariaId")]
         public virtual Barbearia Barbearia { get; set; }
+
+        public virtual ICollection<AgendamentoServico> AgendamentoServicos { get; set; }
     }
 }
 

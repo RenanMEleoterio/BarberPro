@@ -97,6 +97,8 @@ namespace BarbeariaSaaS.Models
         [StringLength(50)]
         public string? MetodoPagamento { get; set; }
 
+        public virtual ICollection<AgendamentoServico> AgendamentoServicos { get; set; }
+
         /// <summary>
         /// A data e hora de criação do agendamento. Definida automaticamente como UTC no momento da criação.
         /// </summary>

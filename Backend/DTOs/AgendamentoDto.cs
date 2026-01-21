@@ -33,6 +33,13 @@ namespace BarbeariaSaaS.DTOs
         /// </summary>
         [Required]
         public string TipoServico { get; set; } = string.Empty;
+
+        /// <summary>
+        /// O preço total do serviço agendado.
+        /// </summary>
+        public decimal? PrecoServico { get; set; }
+
+        public List<int>? ServicoIds { get; set; }
     }
 
     /// <summary>
