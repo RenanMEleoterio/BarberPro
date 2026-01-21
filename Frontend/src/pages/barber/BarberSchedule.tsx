@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, User, Phone, MapPin } from 'lucide-react';
+import { Calendar, Clock, User, Phone, MapPin, CheckCircle, XCircle, PlayCircle } from 'lucide-react';
 import { apiService } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import toast from 'react-hot-toast';
 
 /**
  * Interface que define a estrutura de um objeto de agendamento.
@@ -13,8 +14,14 @@ interface Appointment {
   service: string;
   date: string;
   time: string;
-  status: 'confirmed' | 'pending' | 'completed' | 'cancelled';
+  status: string;
   price: number;
+  dataHora: string;
+  nomeCliente: string;
+  telefoneCliente: string;
+  servico?: string;
+  preco?: number;
+}
 }
 
 /**
@@ -22,23 +29,22 @@ interface Appointment {
  * Permite ao barbeiro visualizar e gerenciar seus agendamentos por data.
  */
 export default function BarberSchedule() {
-  // Estado para a data selecionada, inicializado com a data atual.
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  // Estado para controlar se deve filtrar por data
-  const [filterByDate, setFilterByDate] = useState(false);
-  // Estado para armazenar a lista de agendamentos.
-  const [appointments, setAppointments] = useState<any[]>([]);
-  // Estado para controlar o status de carregamento.
-  const [loading, setLoading] = useState(true);
-  // Estado para armazenar mensagens de erro.
-  const [error, setError] = useState<string | null>(null);
-  // Hook para acessar as informações do usuário logado.
   const { user } = useAuth();
-  
-  // Efeito que carrega os agendamentos quando o componente é montado ou a data selecionada muda.
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  });
+  const [filterByDate, setFilterByDate] = useState(false);
+
   useEffect(() => {
     loadAppointments();
-  }, []); // Dependência vazia para carregar apenas uma vez na montagem
+  }, []);
 
   /**
    * Carrega os agendamentos do barbeiro a partir da API.
@@ -67,6 +73,22 @@ export default function BarberSchedule() {
       setError(message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  /**
+   * Atualiza o status de um agendamento.
+   * @param {string} id - O ID do agendamento.
+   * @param {string} newStatus - O novo status.
+   */
+  const handleUpdateStatus = async (id: string, newStatus: string) => {
+    try {
+      await apiService.updateAppointmentStatus(Number(id), newStatus);
+      // Recarrega a lista para refletir a mudança
+      await loadAppointments();
+    } catch (error) {
+      console.error('Erro ao atualizar status:', error);
+      alert('Erro ao atualizar o status do agendamento.');
     }
   };
 
@@ -203,11 +225,11 @@ export default function BarberSchedule() {
                       <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex items-center space-x-1">
                           <Calendar className="h-4 w-4" />
-                          <span>{new Date(appointment.dataHora).toLocaleDateString('pt-BR')}</span>
+                          <span>{new Date(appointment.dataHora).toLocaleDateString()}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <Clock className="h-4 w-4" />
-                          <span>{new Date(appointment.dataHora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+                          <span>{new Date(appointment.dataHora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <Phone className="h-4 w-4" />
@@ -233,18 +255,31 @@ export default function BarberSchedule() {
                     <div className="flex space-x-2">
                       {appointment.status === 'Pendente' && (
                         <>
-                          <button className="px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
-                            Confirmar
+                          <button
+                            onClick={() => handleUpdateStatus(appointment.id, 2)}
+                            className="p-2 bg-green-100 text-green-600 rounded-full hover:bg-green-200 transition-colors"
+                            title="Confirmar Agendamento"
+                          >
+                            <CheckCircle className="h-5 w-5" />
                           </button>
-                          <button className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
-                            Cancelar
+                          <button
+                            onClick={() => handleUpdateStatus(appointment.id, 3)}
+                            className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
+                            title="Cancelar Agendamento"
+                          >
+                            <XCircle className="h-5 w-5" />
                           </button>
                         </>
                       )}
-                      {appointment.status === 'Confirmado' && (
-                        <button className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-                            Concluir
-                          </button>
+                      
+                      {appointment.status === 'Atendido' && (
+                        <button
+                          onClick={() => handleUpdateStatus(appointment.id, 4)}
+                          className="p-2 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition-colors"
+                          title="Concluir Serviço"
+                        >
+                          <PlayCircle className="h-5 w-5" />
+                        </button>
                       )}
                     </div>
                   </div>
