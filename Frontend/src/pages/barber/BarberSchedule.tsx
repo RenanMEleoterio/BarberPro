@@ -22,7 +22,6 @@ interface Appointment {
   servico?: string;
   preco?: number;
 }
-}
 
 /**
  * Componente de agenda para barbeiros.
