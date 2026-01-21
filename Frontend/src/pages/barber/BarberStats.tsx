@@ -245,7 +245,7 @@ export default function BarberStats() {
             </div>
           ) : (
             <div className="space-y-4">
-              {stats.weeklyData.map((day: any, index: number) => (
+              {Array.isArray(stats.weeklyData) && stats.weeklyData.map((day: any, index: number) => (
                 <div key={index} className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <span className="text-sm font-medium text-gray-600 dark:text-gray-400 w-8">
@@ -287,7 +287,7 @@ export default function BarberStats() {
             </div>
           ) : (
             <div className="space-y-4">
-              {stats.popularServices.map((service: any, index: number) => (
+              {Array.isArray(stats.popularServices) ? stats.popularServices.map((service: any, index: number) => (
                 <div key={index} className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="h-8 w-8 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg flex items-center justify-center">
@@ -316,7 +316,7 @@ export default function BarberStats() {
                     </div>
                   </div>
                 </div>
-              ))}
+              )) : []}
             </div>
           )}
         </div>

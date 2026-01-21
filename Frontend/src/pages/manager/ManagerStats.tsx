@@ -98,18 +98,18 @@ export default function ManagerStats() {
           monthlyGrowth: 0, // Não retornado pelo backend, valor mockado ou a ser implementado.
           barbersCount: 0, // Não retornado pelo backend, valor mockado ou a ser implementado.
           activeBarbers: 0, // Não retornado pelo backend, valor mockado ou a ser implementado.
-          topBarbers: (data.RankingBarbeiros || []).map((b: any) => ({
+          topBarbers: (Array.isArray(data.RankingBarbeiros) ? data.RankingBarbeiros : []).map((b: any) => ({
             name: b.Nome || 'Barbeiro',
             revenue: b.Receita || 0,
             clients: b.Clientes || 0,
             rating: b.Avaliacao || 0
           })),
-          monthlyData: (data.PerformanceMensal || []).map((m: any) => ({
+          monthlyData: (Array.isArray(data.PerformanceMensal) ? data.PerformanceMensal : []).map((m: any) => ({
             month: m.Mes || 'Mês',
             revenue: m.Receita || 0,
             appointments: m.Agendamentos || 0
           })),
-          serviceStats: (data.ServicosPopulares || []).map((s: any) => ({
+          serviceStats: (Array.isArray(data.ServicosPopulares) ? data.ServicosPopulares : []).map((s: any) => ({
             service: s.Servico || 'Serviço',
             count: s.Quantidade || 0,
             revenue: s.Receita || 0,

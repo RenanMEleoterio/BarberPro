@@ -96,14 +96,6 @@ export default function BarberSchedule() {
     return aptDate === selectedDate;
   });
 
-  // DEBUG: Diagnóstico de renderização
-  console.log('BarberSchedule: Render State', {
-    appointments,
-    isAppointmentsArray: Array.isArray(appointments),
-    filteredAppointments,
-    isFilteredArray: Array.isArray(filteredAppointments)
-  });
-
   // Exibe um spinner de carregamento enquanto os dados estão sendo buscados.
   if (loading) {
     return (

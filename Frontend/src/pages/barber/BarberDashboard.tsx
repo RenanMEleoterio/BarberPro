@@ -189,7 +189,7 @@ export default function BarberDashboard() {
               </div>
             ) : (
               <div className="space-y-4">
-                {todayAppointments.map((appointment: any) => (
+                {Array.isArray(todayAppointments) ? todayAppointments.map((appointment: any) => (
                   <div key={appointment.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                     <div className="flex items-center space-x-4">
                       <div className="bg-yellow-100 dark:bg-yellow-900/20 p-2 rounded-lg">
@@ -219,7 +219,7 @@ export default function BarberDashboard() {
                       )}
                     </div>
                   </div>
-                ))}
+                )) : []}
               </div>
             )}
           </div>

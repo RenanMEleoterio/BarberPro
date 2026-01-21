@@ -78,7 +78,7 @@ export default function ManagerDashboard() {
       appointments: dashboardData.performanceSemanal[index] || 0
     })) : [];
   // Prepara os dados dos barbeiros para a tabela.
-  const barbers = dashboardData?.barbeiros ? dashboardData.barbeiros.map((barbeiro: any) => ({
+  const barbers = Array.isArray(dashboardData?.barbeiros) ? dashboardData.barbeiros.map((barbeiro: any) => ({
     id: barbeiro.id,
     name: barbeiro.nome,
     percentage: barbeiro.porcentagem,

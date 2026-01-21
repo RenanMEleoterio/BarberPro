@@ -29,7 +29,7 @@ export default function Barbershops() {
     try {
       setLoading(true);
       const data = await apiService.getBarbershopsWithDetails();
-      setBarbershops(data);
+      setBarbershops(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Erro ao carregar barbearias:', error);
       const message =
@@ -103,7 +103,7 @@ export default function Barbershops() {
 
       {/* Grid de Barbearias */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {filteredBarbershops.map((barbershop) => (
+        {Array.isArray(filteredBarbershops) ? filteredBarbershops.map((barbershop) => (
           <div key={barbershop.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow">
             {/* Imagem da Barbearia */}
             <div className="relative h-48">
@@ -140,7 +140,7 @@ export default function Barbershops() {
               <div className="mb-4">
                 <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Barbeiros:</h4>
                 <div className="space-y-1">
-                  {barbershop.barbers && barbershop.barbers.length > 0 ? (
+                  {Array.isArray(barbershop.barbers) && barbershop.barbers.length > 0 ? (
                     barbershop.barbers.map((barber: any) => (
                       <div key={barber.id} className="flex items-center justify-between text-sm">
                         <span className="text-gray-600 dark:text-gray-400">{barber.name}</span>

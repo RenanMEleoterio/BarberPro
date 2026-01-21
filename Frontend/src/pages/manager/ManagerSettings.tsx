@@ -341,7 +341,7 @@ export default function ManagerSettings() {
       
       <div className="space-y-4">
         {/* Renderiza os serviços existentes */}
-        {barbershopData.services && barbershopData.services.map((service: any) => (
+        {Array.isArray(barbershopData.services) ? barbershopData.services.map((service: any) => (
           <div key={service.id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>

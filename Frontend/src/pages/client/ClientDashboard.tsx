@@ -62,22 +62,26 @@ function normalizeClientDashboardData(data: any): DashboardData {
           Barbearia: rawProximo.barbearia ?? rawProximo.Barbearia ?? "",
         }
       : undefined,
-    AgendamentosRecentes: (rawAgendamentosRecentes as any[]).map((a) => ({
-      Id: a.id ?? a.Id ?? 0,
-      Data: a.data ?? a.Data ?? "",
-      Hora: a.hora ?? a.Hora ?? "",
-      Barbeiro: a.barbeiro ?? a.Barbeiro ?? "",
-      Barbearia: a.barbearia ?? a.Barbearia ?? "",
-      Status: a.status ?? a.Status ?? "",
-      Preco: a.preco ?? a.Preco ?? 0,
-    })),
-    Barbearias: (rawBarbearias as any[]).map((b) => ({
-      Id: b.id ?? b.Id ?? 0,
-      Nome: b.nome ?? b.Nome ?? "",
-      Endereco: b.endereco ?? b.Endereco ?? "",
-      Telefone: b.telefone ?? b.Telefone ?? "",
-      Email: b.email ?? b.Email ?? "",
-    })),
+    AgendamentosRecentes: Array.isArray(rawAgendamentosRecentes) 
+      ? rawAgendamentosRecentes.map((a: any) => ({
+          Id: a.id ?? a.Id ?? 0,
+          Data: a.data ?? a.Data ?? "",
+          Hora: a.hora ?? a.Hora ?? "",
+          Barbeiro: a.barbeiro ?? a.Barbeiro ?? "",
+          Barbearia: a.barbearia ?? a.Barbearia ?? "",
+          Status: a.status ?? a.Status ?? "",
+          Preco: a.preco ?? a.Preco ?? 0,
+        }))
+      : [],
+    Barbearias: Array.isArray(rawBarbearias)
+      ? rawBarbearias.map((b: any) => ({
+          Id: b.id ?? b.Id ?? 0,
+          Nome: b.nome ?? b.Nome ?? "",
+          Endereco: b.endereco ?? b.Endereco ?? "",
+          Telefone: b.telefone ?? b.Telefone ?? "",
+          Email: b.email ?? b.Email ?? "",
+        }))
+      : [],
   };
 }
 
@@ -332,7 +336,7 @@ export default function ClientDashboard() {
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Agendamentos Recentes</h2>
         </div>
         <div className="p-6">
-          {dashboardData?.AgendamentosRecentes?.length > 0 ? (
+          {Array.isArray(dashboardData?.AgendamentosRecentes) && dashboardData.AgendamentosRecentes.length > 0 ? (
             <div className="space-y-4">
               {dashboardData.AgendamentosRecentes.map((appointment) => (
                 <div key={appointment.Id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
@@ -422,7 +426,7 @@ export default function ClientDashboard() {
         </div>
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {dashboardData?.Barbearias?.slice(0, 4).map((barbearia) => (
+            {Array.isArray(dashboardData?.Barbearias) ? dashboardData.Barbearias.slice(0, 4).map((barbearia) => (
               <div key={barbearia.Id} className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                 <div className="bg-yellow-100 dark:bg-yellow-900/20 p-3 rounded-lg">
                   <Scissors className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
@@ -442,7 +446,7 @@ export default function ClientDashboard() {
                   Ver Detalhes
                 </Link>
               </div>
-            ))}
+            )) : []}
           </div>
           {/* Link para ver todas as barbearias se houver mais de 4 */}
           {dashboardData?.Barbearias?.length > 4 && (

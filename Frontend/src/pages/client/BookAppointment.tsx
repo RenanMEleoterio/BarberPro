@@ -127,7 +127,9 @@ export default function BookAppointment() {
     console.log(`Barbeiro ID: ${barbeiroId}, Data selecionada: ${date}`);
     console.log(`Horários disponíveis do barbeiro:`, barbeiro.horariosDisponiveis);
 
-    return barbeiro.horariosDisponiveis
+    const horarios = Array.isArray(barbeiro.horariosDisponiveis) ? barbeiro.horariosDisponiveis : [];
+
+    return horarios
       .filter(h => {
         const [datePart] = h.dataHora.split('T');
         const matchesDate = datePart === date;
@@ -347,7 +349,7 @@ export default function BookAppointment() {
           </div>
           
           <div className="space-y-3">
-            {barbeiros && barbeiros.length > 0 ? (
+            {Array.isArray(barbeiros) && barbeiros.length > 0 ? (
               barbeiros.map((barbeiro) => (
                 <button
                   key={barbeiro.id}

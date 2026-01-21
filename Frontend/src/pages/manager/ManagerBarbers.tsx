@@ -69,18 +69,18 @@ export default function ManagerBarbers() {
         // Busca os barbeiros e estatísticas associadas à barbearia do gerente.
         const data = await apiService.getManagerBarbers(user.barbeariaId);
         setBarbersData({
-          barbeiros: (data.Barbeiros || []).map((b: any) => ({
+          barbeiros: Array.isArray(data.Barbeiros) ? data.Barbeiros.map((b: any) => ({
             id: b.Id?.toString() || '',
             name: b.Name || 'Barbeiro',
             email: b.Email || '',
             phone: b.Phone || '',
-            specialties: b.Specialties || [],
+            specialties: Array.isArray(b.Specialties) ? b.Specialties : [],
             rating: b.Rating || 0,
             totalClients: b.TotalClients || 0,
             monthlyRevenue: b.MonthlyRevenue || 0,
             status: b.Status || 'inactive',
             joinDate: b.JoinDate || new Date().toISOString()
-          })),
+          })) : [],
           estatisticas: {
             totalBarbeiros: data.Estatisticas?.TotalBarbeiros || 0,
             barbeirosAtivos: data.Estatisticas?.BarbeirosAtivos || 0,

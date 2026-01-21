@@ -37,7 +37,7 @@ export default function Appointments() {
     try {
       setLoading(true);
       const data = await apiService.getMyAppointmentsWithDetails();
-      setAppointments(data);
+      setAppointments(Array.isArray(data) ? data : []);
     } catch (error: any) {
       console.error('Erro ao carregar agendamentos:', error);
       const message =
@@ -236,7 +236,7 @@ export default function Appointments() {
 
       {/* Lista de Agendamentos */}
       <div className="space-y-4">
-        {filteredAppointments.map((appointment) => (
+        {Array.isArray(filteredAppointments) && filteredAppointments.map((appointment) => (
           <div key={appointment.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-3">
