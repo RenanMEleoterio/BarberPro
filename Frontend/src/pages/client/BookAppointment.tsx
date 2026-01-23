@@ -203,13 +203,13 @@ export default function BookAppointment() {
       .filter(h => {
         const [datePart] = h.dataHora.split('T');
         const matchesDate = datePart === date;
-        return matchesDate && h.estaDisponivel;
+        return matchesDate;
       })
       .map(h => {
         const parts = h.dataHora.split('T');
         const timeRaw = parts.length > 1 ? parts[1] : '';
         const time = timeRaw.replace('Z', '').slice(0, 5);
-        return { time, horarioId: h.id };
+        return { time, horarioId: h.id, estaDisponivel: h.estaDisponivel };
       })
       .sort((a, b) => a.time.localeCompare(b.time));
   };
@@ -660,17 +660,20 @@ export default function BookAppointment() {
           ) : (
             <div className="flex-1">
               <div className="grid grid-cols-2 gap-3">
-                {getAvailableTimesForDate(selectedBarber, selectedDate).map(({ time, horarioId }) => (
+                {getAvailableTimesForDate(selectedBarber, selectedDate).map(({ time, horarioId, estaDisponivel }) => (
                   <button
                     key={horarioId}
+                    disabled={!estaDisponivel}
                     onClick={() => {
                       console.log("Selecionando horário:", time);
                       setSelectedTime(time);
                     }}
                     className={`w-full p-3 rounded-lg border-2 text-sm font-medium text-center transition-all duration-200 ${
-                      selectedTime === time
-                        ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 text-gray-900 dark:text-white shadow-sm transform scale-[1.02]'
-                        : 'border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white hover:border-yellow-500 hover:shadow-sm'
+                      !estaDisponivel 
+                        ? 'border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed opacity-70 decoration-slice line-through'
+                        : selectedTime === time
+                          ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 text-gray-900 dark:text-white shadow-sm transform scale-[1.02]'
+                          : 'border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white hover:border-yellow-500 hover:shadow-sm'
                     }`}
                   >
                     {time}

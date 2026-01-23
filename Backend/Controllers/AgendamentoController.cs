@@ -84,7 +84,7 @@ namespace BarbeariaSaaS.Controllers
             }
 
             var barbeiros = await query
-                .Include(u => u.HorariosDisponiveis.Where(h => h.EstaDisponivel && h.DataHora > DateTime.UtcNow))
+                .Include(u => u.HorariosDisponiveis.Where(h => h.DataHora > DateTime.UtcNow))
                 .Select(u => new BarbeiroDto
                 {
                     Id = u.Id,
