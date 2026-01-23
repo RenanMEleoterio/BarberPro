@@ -71,6 +71,24 @@ export default function BookAppointment() {
   const [error, setError] = useState<string | null>(null);
   const [weekOffset, setWeekOffset] = useState(0);
 
+  // Estados e Refs para o controle de hover do filtro
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const filterTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleFilterEnter = () => {
+    if (filterTimeoutRef.current) {
+      clearTimeout(filterTimeoutRef.current);
+      filterTimeoutRef.current = null;
+    }
+    setIsFilterOpen(true);
+  };
+
+  const handleFilterLeave = () => {
+    filterTimeoutRef.current = setTimeout(() => {
+      setIsFilterOpen(false);
+    }, 300); // Delay de 300ms antes de fechar
+  };
+
   // Efeito que carrega os dados da barbearia e dos barbeiros ao montar o componente ou mudar o ID da barbearia.
   useEffect(() => {
     loadData();
