@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Calendar, Clock, User, ArrowLeft, Scissors, Filter } from 'lucide-react';
+import { Calendar, Clock, User, ArrowLeft, Scissors, Filter, Star } from 'lucide-react';
 import { format, addDays, startOfWeek, addWeeks } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import toast from 'react-hot-toast';
@@ -82,6 +82,34 @@ export default function BookAppointment() {
       setSelectedBarber(initialBarberId);
     }
   }, [initialBarberId]);
+
+  // Efeito para filtrar serviços quando um barbeiro é selecionado
+  useEffect(() => {
+    if (selectedBarber) {
+      const barber = barbeiros.find(b => b.id === selectedBarber);
+      if (barber && barber.especialidades) {
+        const specialties = barber.especialidades.toLowerCase();
+        // Filtra serviços que correspondem às especialidades do barbeiro
+        // Se a especialidade for genérica (ex: "Corte"), tenta corresponder
+        const filtered = servicos.filter(s => 
+          specialties.includes(s.nome.toLowerCase()) || 
+          s.nome.toLowerCase().includes(specialties)
+        );
+        
+        if (filtered.length > 0) {
+          setFilteredServicos(filtered);
+        } else {
+          // Se não encontrar correspondência direta, mantém todos (fallback)
+          setFilteredServicos(servicos);
+        }
+      } else {
+        // Se não tiver especialidades definidas, assume que faz tudo
+        setFilteredServicos(servicos);
+      }
+    } else {
+      setFilteredServicos(servicos);
+    }
+  }, [selectedBarber, servicos]);
 
   /**
    * Carrega os dados da barbearia e dos barbeiros com seus horários disponíveis.
@@ -401,13 +429,70 @@ export default function BookAppointment() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Seção de Seleção de Serviços */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        {/* 1. Seção de Seleção de Barbeiro (Movido para o topo esquerdo) */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="flex items-center space-x-2 mb-4">
+            <User className="h-5 w-5 text-yellow-500" />
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              {isRescheduling ? 'Barbeiro (Fixo)' : '1. Escolha o Barbeiro'}
+            </h2>
+          </div>
+          
+          <div className="space-y-3">
+            {Array.isArray(barbeiros) && barbeiros.length > 0 ? (
+              barbeiros.map((barbeiro) => (
+                <button
+                  key={barbeiro.id}
+                  onClick={() => {
+                    if (!isRescheduling) {
+                      console.log("Selecionando barbeiro:", barbeiro.id, barbeiro.nome);
+                      setSelectedBarber(barbeiro.id);
+                      setSelectedTime(''); // Limpa o horário selecionado ao trocar de barbeiro.
+                    }
+                  }}
+                  disabled={isRescheduling && selectedBarber !== barbeiro.id}
+                  className={`w-full p-4 rounded-lg border-2 transition-all duration-200 text-left relative group ${
+                    selectedBarber === barbeiro.id
+                      ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 shadow-md transform scale-[1.02]'
+                      : isRescheduling 
+                        ? 'border-gray-200 dark:border-gray-600 opacity-50 cursor-not-allowed'
+                        : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:shadow-sm'
+                  } ${barbeiro.especialidades ? 'ring-1 ring-yellow-400/50' : ''}`}
+                >
+                  {/* Badge de Especialista */}
+                  {barbeiro.especialidades && (
+                    <div className="absolute top-3 right-3 flex items-center bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200 text-xs px-2 py-1 rounded-full font-medium">
+                      <Star className="w-3 h-3 mr-1 fill-yellow-500 text-yellow-500" />
+                      Especialista
+                    </div>
+                  )}
+
+                  <div className="font-medium text-gray-900 dark:text-white text-lg pr-24">{barbeiro.nome}</div>
+                  {barbeiro.especialidades && (
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{barbeiro.especialidades}</div>
+                  )}
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-center">
+                    <span className={`w-2 h-2 rounded-full mr-2 ${barbeiro.horariosDisponiveis.length > 0 ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                    {barbeiro.horariosDisponiveis.length} horários disponíveis
+                  </div>
+                </button>
+              ))
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-gray-500 dark:text-gray-400">Nenhum barbeiro disponível</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 2. Seção de Seleção de Serviços (Movido para o topo direito) */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-2">
               <Scissors className="h-5 w-5 text-yellow-500" />
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Serviços</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">2. Serviços</h2>
             </div>
             <div className="relative group">
               <button className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
@@ -437,9 +522,9 @@ export default function BookAppointment() {
                   key={service.id}
                   data-testid={`service-${service.id}`}
                   onClick={() => toggleService(service)}
-                  className={`w-full p-3 rounded-lg border-2 transition-colors text-left ${
+                  className={`w-full p-3 rounded-lg border-2 transition-all duration-200 text-left ${
                     selectedServices.some(s => s.id === service.id)
-                      ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20'
+                      ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 shadow-sm'
                       : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
                   }`}
                 >
@@ -477,79 +562,31 @@ export default function BookAppointment() {
           )}
         </div>
 
-        {/* Seção de Seleção de Barbeiro */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center space-x-2 mb-4">
-            <User className="h-5 w-5 text-yellow-500" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {isRescheduling ? 'Barbeiro (Fixo)' : 'Escolha o Barbeiro'}
-            </h2>
-          </div>
-          
-          <div className="space-y-3">
-            {Array.isArray(barbeiros) && barbeiros.length > 0 ? (
-              barbeiros.map((barbeiro) => (
-                <button
-                  key={barbeiro.id}
-                  onClick={() => {
-                    // Se estiver reagendando, não permite trocar o barbeiro (conforme regra de negócio)
-                    // A menos que queira permitir, mas o requisito diz "já abri na barbearia escolhida e o barbeiro selecionado"
-                    if (!isRescheduling) {
-                      console.log("Selecionando barbeiro:", barbeiro.id, barbeiro.nome);
-                      setSelectedBarber(barbeiro.id);
-                      setSelectedTime(''); // Limpa o horário selecionado ao trocar de barbeiro.
-                    }
-                  }}
-                  disabled={isRescheduling && selectedBarber !== barbeiro.id} // Desabilita outros barbeiros no reagendamento
-                  className={`w-full p-4 rounded-lg border-2 transition-colors text-left ${
-                    selectedBarber === barbeiro.id
-                      ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20'
-                      : isRescheduling 
-                        ? 'border-gray-200 dark:border-gray-600 opacity-50 cursor-not-allowed'
-                        : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
-                  }`}
-                >
-                  <div className="font-medium text-gray-900 dark:text-white">{barbeiro.nome}</div>
-                  {barbeiro.especialidades && (
-                    <div className="text-sm text-gray-600 dark:text-gray-400">{barbeiro.especialidades}</div>
-                  )}
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    {barbeiro.horariosDisponiveis.length} horários disponíveis
-                  </div>
-                </button>
-              ))
-            ) : (
-              <div className="text-center py-4">
-                <p className="text-gray-500 dark:text-gray-400">Nenhum barbeiro disponível</p>
-              </div>
-            )}
-          </div>
-        </div>
-
+        {/* 3. Seção de Seleção de Dia (Mantido na esquerda, mas agora na segunda linha) */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-2">
               <Calendar className="h-5 w-5 text-yellow-500" />
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Escolha o Dia</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">3. Escolha o Dia</h2>
             </div>
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => changeWeek(-1)}
                 disabled={weekOffset === 0}
-                className="px-2 py-1 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-2 py-1 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 Semana anterior
               </button>
               <button
                 onClick={() => changeWeek(1)}
-                className="px-2 py-1 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200"
+                className="px-2 py-1 text-xs rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 Próxima semana
               </button>
             </div>
           </div>
           {weekLabel && (
-            <div className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+            <div className="text-xs text-gray-600 dark:text-gray-400 mb-3 font-medium">
               Semana: {weekLabel}
             </div>
           )}
@@ -558,13 +595,13 @@ export default function BookAppointment() {
               const dateStr = format(day, 'yyyy-MM-dd');
               const isToday = dateStr === todayStr;
               const isPastDay = day < today;
-              let buttonClasses = 'w-full p-3 rounded-lg border-2 transition-colors text-left ';
+              let buttonClasses = 'w-full p-3 rounded-lg border-2 transition-all duration-200 text-left ';
               if (isPastDay) {
                 buttonClasses += 'border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 opacity-60 cursor-not-allowed';
               } else if (selectedDate === dateStr) {
-                buttonClasses += 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20';
+                buttonClasses += 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 shadow-sm transform scale-[1.01]';
               } else {
-                buttonClasses += 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500';
+                buttonClasses += 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800';
               }
               return (
                 <button
@@ -579,11 +616,11 @@ export default function BookAppointment() {
                   disabled={isPastDay}
                   className={buttonClasses}
                 >
-                  <div className="font-medium text-gray-900 dark:text-white">
-                    {format(day, 'EEEE', { locale: ptBR })}
-                    {isToday && <span className="text-yellow-500 ml-2">(Hoje)</span>}
+                  <div className="font-medium text-gray-900 dark:text-white flex justify-between items-center">
+                    <span>{format(day, 'EEEE', { locale: ptBR })}</span>
+                    {isToday && <span className="text-xs text-yellow-600 bg-yellow-100 px-2 py-0.5 rounded-full dark:bg-yellow-900/50 dark:text-yellow-200">Hoje</span>}
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                     {format(day, 'dd/MM', { locale: ptBR })}
                   </div>
                 </button>
@@ -592,22 +629,22 @@ export default function BookAppointment() {
           </div>
         </div>
 
-        {/* Seção de Seleção de Horário */}
+        {/* 4. Seção de Seleção de Horário (Mantido na direita, mas agora na segunda linha) */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 flex flex-col">
           <div className="flex items-center space-x-2 mb-4">
             <Clock className="h-5 w-5 text-yellow-500" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Escolha o Horário</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">4. Escolha o Horário</h2>
           </div>
           
           {!selectedBarber || !selectedDate ? (
-            <div className="flex-1 flex items-center justify-center">
-              <p className="text-gray-500 dark:text-gray-400 text-center">
-                Selecione um barbeiro e uma data primeiro
+            <div className="flex-1 flex items-center justify-center min-h-[200px] border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
+              <p className="text-gray-500 dark:text-gray-400 text-center px-4">
+                Selecione um barbeiro e uma data para ver os horários disponíveis
               </p>
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto">
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 {getAvailableTimesForDate(selectedBarber, selectedDate).map(({ time, horarioId }) => (
                   <button
                     key={horarioId}
@@ -615,18 +652,18 @@ export default function BookAppointment() {
                       console.log("Selecionando horário:", time);
                       setSelectedTime(time);
                     }}
-                    className={`w-full p-3 rounded-lg border-2 text-sm font-medium text-center transition-colors ${
+                    className={`w-full p-3 rounded-lg border-2 text-sm font-medium text-center transition-all duration-200 ${
                       selectedTime === time
-                        ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 text-gray-900 dark:text-white'
-                        : 'border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white hover:border-yellow-500'
+                        ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 text-gray-900 dark:text-white shadow-sm transform scale-105'
+                        : 'border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white hover:border-yellow-500 hover:shadow-sm'
                     }`}
                   >
                     {time}
                   </button>
                 ))}
                 {getAvailableTimesForDate(selectedBarber, selectedDate).length === 0 && (
-                  <div className="col-span-2 text-center py-4">
-                    <p className="text-gray-500 dark:text-gray-400">
+                  <div className="col-span-2 text-center py-8">
+                    <p className="text-gray-500 dark:text-gray-400 font-medium">
                       Nenhum horário disponível para esta data
                     </p>
                   </div>
@@ -694,7 +731,7 @@ export default function BookAppointment() {
           <button
             onClick={handleBooking}
             disabled={!selectedBarber || !selectedDate || !selectedTime}
-            className="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-3 px-4 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-3 px-4 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg transform active:scale-95 duration-200"
           >
             {isRescheduling ? 'Confirmar Reagendamento' : 'Confirmar Agendamento'}
           </button>
@@ -703,5 +740,3 @@ export default function BookAppointment() {
     </div>
   );
 }
-
-
