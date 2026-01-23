@@ -421,6 +421,15 @@ namespace BarbeariaSaaS.Controllers
                 });
             }
         }
+        [HttpGet("fix-slots/{barbeiroId}")]
+        [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+        public async Task<IActionResult> FixSlots(int barbeiroId)
+        {
+            var inicio = DateTime.Today;
+            var fim = DateTime.Today.AddDays(30);
+            var result = await _horarioService.GerarHorariosParaBarbeiro(barbeiroId, inicio, fim);
+            return Ok(new { message = "Horários corrigidos", count = result.Count });
+        }
     }
 }
 
