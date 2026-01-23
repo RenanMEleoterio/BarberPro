@@ -158,7 +158,7 @@ namespace BarbeariaSaaS.Controllers
             // Verificar se o cliente já tem um agendamento atendido/confirmado para o mesmo horário (com qualquer barbeiro)
             var clienteTemAgendamento = await _context.Agendamentos
                 .AnyAsync(a => a.ClienteId == clienteId && 
-                              a.DataHora == dataHoraUtc && 
+                              a.DataHora == dataHoraInput && 
                               a.Status == StatusAgendamento.Atendido);
 
             if (clienteTemAgendamento)
@@ -169,7 +169,7 @@ namespace BarbeariaSaaS.Controllers
             // Verificar se já existe agendamento atendido/confirmado para este barbeiro neste horário
             var barbeiroTemAgendamento = await _context.Agendamentos
                 .AnyAsync(a => a.BarbeiroId == criarDto.BarbeiroId && 
-                              a.DataHora == dataHoraUtc && 
+                              a.DataHora == dataHoraInput && 
                               a.Status == StatusAgendamento.Atendido);
 
             if (barbeiroTemAgendamento)
@@ -180,7 +180,7 @@ namespace BarbeariaSaaS.Controllers
             // Verificar se existe um horário disponível para este barbeiro nesta data/hora
             var horarioDisponivel = await _context.HorariosDisponiveis
                 .FirstOrDefaultAsync(h => h.BarbeiroId == criarDto.BarbeiroId && 
-                                         h.DataHora == dataHoraUtc && 
+                                         h.DataHora == dataHoraInput && 
                                          h.EstaDisponivel);
 
             if (horarioDisponivel == null)
@@ -221,7 +221,7 @@ namespace BarbeariaSaaS.Controllers
             {
                 ClienteId = clienteId,
                 BarbeiroId = criarDto.BarbeiroId,
-                DataHora = dataHoraUtc,
+                DataHora = dataHoraInput,
                 Observacoes = criarDto.Observacoes,
                 BarbeariaId = barbeiro.BarbeariaId.Value,
                 Status = StatusAgendamento.Pendente,
