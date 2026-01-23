@@ -169,8 +169,13 @@ namespace BarbeariaSaaS.Controllers
                 .Where(a => a.BarbeiroId == id && 
                            a.DataHora >= inicioSemana && 
                            a.DataHora < fimSemana && 
-                           a.Status == StatusAgendamento.Realizado)
-                .SumAsync(a => a.PrecoServico ?? 0);
+                           (a.Status == StatusAgendamento.Realizado || a.Status == StatusAgendamento.Atendido))
+                .SumAsync(a => (a.PrecoServico.HasValue && a.PrecoServico.Value > 0) ? a.PrecoServico.Value : 0);
+
+            // Logs de depuração
+            Console.WriteLine($"[Dashboard] Calculando ganhos semanais para Barbeiro ID: {id}");
+            Console.WriteLine($"[Dashboard] Período: {inicioSemana} a {fimSemana}");
+            Console.WriteLine($"[Dashboard] Ganhos calculados: {ganhosSemana}");
 
             var agendamentosHojeDetalhes = await _context.Agendamentos
                 .Include(a => a.Cliente)
