@@ -124,8 +124,24 @@ namespace BarbeariaSaaS.Controllers
             }
 
             // Validar se a data/hora não é no passado
-            var dataHoraUtc = DateTime.SpecifyKind(criarDto.DataHora, DateTimeKind.Utc);
-            if (dataHoraUtc <= DateTime.UtcNow)
+            // Assume que a data recebida está no horário de Brasília (UTC-3) se não tiver timezone definido
+            var dataHoraInput = criarDto.DataHora;
+            DateTime dataHoraUtc;
+
+            if (dataHoraInput.Kind == DateTimeKind.Utc)
+            {
+                dataHoraUtc = dataHoraInput;
+            }
+            else
+            {
+                // Considera UTC-3 (Horário de Brasília) para inputs sem timezone
+                var offsetBrasil = TimeSpan.FromHours(-3);
+                var dataHoraBrasil = new DateTimeOffset(dataHoraInput, offsetBrasil);
+                dataHoraUtc = dataHoraBrasil.UtcDateTime;
+            }
+
+            // Tolerância de 5 minutos para diferenças de relógio/rede
+            if (dataHoraUtc < DateTime.UtcNow.AddMinutes(-5))
             {
                 return BadRequest(new { message = "Não é possível agendar para uma data/hora no passado" });
             }
