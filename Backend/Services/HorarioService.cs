@@ -101,8 +101,14 @@ namespace BarbeariaSaaS.Services
                 }
 
                 var currentTime = openTime;
-                while (currentTime < closeTime)
+                // Alterado para <= para permitir que o último horário seja exatamente o horário de fechamento
+                // (ex: se fecha 17:30, permite agendar 17:30).
+                while (currentTime <= closeTime)
                 {
+                    // Verifica se o horário de término (início + intervalo) ultrapassa o fechamento + tolerância
+                    // Se quisermos ser estritos: if (currentTime + TimeSpan.FromMinutes(intervaloMinutos) > closeTime) break;
+                    // Mas para atender a solicitação de exibir até o limite:
+                    
                     var dataHora = data.Add(currentTime);
                     var dataHoraUtc = DateTime.SpecifyKind(dataHora, DateTimeKind.Utc);
 

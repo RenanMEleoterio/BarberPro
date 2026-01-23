@@ -658,7 +658,7 @@ export default function BookAppointment() {
               </p>
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1">
               <div className="grid grid-cols-2 gap-3">
                 {getAvailableTimesForDate(selectedBarber, selectedDate).map(({ time, horarioId }) => (
                   <button
