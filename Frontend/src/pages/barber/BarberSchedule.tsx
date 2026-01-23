@@ -313,7 +313,7 @@ export default function BarberSchedule() {
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-yellow-600">
-                R$ {filteredAppointments.reduce((total, apt) => total + (apt.preco || 45), 0).toFixed(2)}
+                R$ {filteredAppointments.reduce((total, apt) => total + (apt.precoServico || apt.preco || apt.price || 0), 0).toFixed(2)}
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Receita Estimada

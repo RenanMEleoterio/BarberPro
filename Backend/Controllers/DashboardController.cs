@@ -193,6 +193,9 @@ namespace BarbeariaSaaS.Controllers
                     Hora = a.DataHora.ToString("HH:mm"),
                     Status = a.Status.ToString(),
                     Preco = a.PrecoServico,
+                    TipoServico = a.AgendamentoServicos != null && a.AgendamentoServicos.Any() 
+                        ? string.Join(" + ", a.AgendamentoServicos.Select(s => s.Servico.Nome)) 
+                        : a.TipoServico,
                     Telefone = a.Cliente.Telefone
                 })
                 .ToListAsync();
