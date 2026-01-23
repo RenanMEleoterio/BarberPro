@@ -112,6 +112,8 @@ namespace BarbeariaSaaS.Controllers
             var agendamentos = await _context.Agendamentos
                 .Include(a => a.Cliente)
                 .Include(a => a.Barbeiro)
+                .Include(a => a.AgendamentoServicos)
+                    .ThenInclude(asv => asv.Servico)
                 .Where(a => a.Barbeiro.BarbeariaId == barbeariaId)
                 .Select(a => new
                 {
@@ -119,7 +121,11 @@ namespace BarbeariaSaaS.Controllers
                     clienteNome = a.Cliente.Nome,
                     barbeiroNome = a.Barbeiro.Nome,
                     dataHora = a.DataHora,
-                    status = a.Status.ToString()
+                    status = a.Status.ToString(),
+                    tipoServico = a.AgendamentoServicos != null && a.AgendamentoServicos.Any()
+                        ? string.Join(" + ", a.AgendamentoServicos.Select(s => s.Servico.Nome))
+                        : a.TipoServico,
+                    precoServico = a.PrecoServico
                 })
                 .ToListAsync();
 

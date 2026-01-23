@@ -166,11 +166,15 @@ namespace BarbeariaSaaS.Controllers
                 .CountAsync();
 
             var ganhosSemana = await _context.Agendamentos
+                .Include(a => a.AgendamentoServicos)
+                .ThenInclude(asv => asv.Servico)
                 .Where(a => a.BarbeiroId == id && 
                            a.DataHora >= inicioSemana && 
                            a.DataHora < fimSemana && 
                            (a.Status == StatusAgendamento.Realizado || a.Status == StatusAgendamento.Atendido))
-                .SumAsync(a => (a.PrecoServico.HasValue && a.PrecoServico.Value > 0) ? a.PrecoServico.Value : 0);
+                .SumAsync(a => (a.PrecoServico.HasValue && a.PrecoServico.Value > 0) 
+                    ? a.PrecoServico.Value 
+                    : (a.AgendamentoServicos != null ? a.AgendamentoServicos.Sum(s => s.Servico.Preco) : 0));
 
             // Logs de depuração
             Console.WriteLine($"[Dashboard] Calculando ganhos semanais para Barbeiro ID: {id}");
@@ -179,6 +183,8 @@ namespace BarbeariaSaaS.Controllers
 
             var agendamentosHojeDetalhes = await _context.Agendamentos
                 .Include(a => a.Cliente)
+                .Include(a => a.AgendamentoServicos)
+                    .ThenInclude(asv => asv.Servico)
                 .Where(a => a.BarbeiroId == id && a.DataHora.Date == DateTime.UtcNow.Date)
                 .OrderBy(a => a.DataHora)
                 .Select(a => new {

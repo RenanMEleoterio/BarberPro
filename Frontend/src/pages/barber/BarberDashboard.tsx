@@ -143,7 +143,7 @@ export default function BarberDashboard() {
         try {
           const diaSemana = getDay(parseISO(apt.dataHora)); // 0 (Dom) a 6 (Sab)
           performanceMap[diaSemana].cortes += 1;
-          performanceMap[diaSemana].ganhos += (Number(apt.preco) || 0);
+          performanceMap[diaSemana].ganhos += (Number(apt.precoServico || apt.preco) || 0);
         } catch (e) {
           console.error("Erro ao processar data para gráfico:", e);
         }

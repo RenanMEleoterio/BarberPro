@@ -95,6 +95,16 @@ namespace BarbeariaSaaS.DTOs
         /// A data de criação do agendamento.
         /// </summary>
         public DateTime DataCriacao { get; set; }
+
+        /// <summary>
+        /// O tipo de serviço agendado (descrição).
+        /// </summary>
+        public string TipoServico { get; set; }
+
+        /// <summary>
+        /// O preço do serviço.
+        /// </summary>
+        public decimal? PrecoServico { get; set; }
     }
 
     /// <summary>

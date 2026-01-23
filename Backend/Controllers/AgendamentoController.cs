@@ -172,6 +172,35 @@ namespace BarbeariaSaaS.Controllers
                 return BadRequest(new { message = "Horário não disponível para este barbeiro" });
             }
 
+            // Recalcular preço e descrição dos serviços para garantir integridade e persistência correta
+            decimal precoTotal = 0;
+            var nomesServicos = new List<string>();
+            var agendamentoServicos = new List<AgendamentoServico>();
+
+            if (criarDto.ServicoIds != null && criarDto.ServicoIds.Any())
+            {
+                var servicosDb = await _context.Servicos
+                    .Where(s => criarDto.ServicoIds.Contains(s.Id))
+                    .ToListAsync();
+
+                foreach (var servico in servicosDb)
+                {
+                    precoTotal += servico.Preco;
+                    nomesServicos.Add(servico.Nome);
+                    agendamentoServicos.Add(new AgendamentoServico { ServicoId = servico.Id });
+                }
+            }
+
+            // Define TipoServico e PrecoServico baseados nos dados do banco (prioridade) ou no DTO (fallback)
+            string tipoServicoFinal = nomesServicos.Any() ? string.Join(" + ", nomesServicos) : criarDto.TipoServico;
+            decimal? precoFinal = nomesServicos.Any() ? precoTotal : criarDto.PrecoServico;
+
+            // Validar tamanho da string para evitar erro no banco (limite de 100 caracteres)
+            if (tipoServicoFinal.Length > 100)
+            {
+                tipoServicoFinal = tipoServicoFinal.Substring(0, 97) + "...";
+            }
+
             var agendamento = new Agendamento
             {
                 ClienteId = clienteId,
@@ -180,19 +209,11 @@ namespace BarbeariaSaaS.Controllers
                 Observacoes = criarDto.Observacoes,
                 BarbeariaId = barbeiro.BarbeariaId.Value,
                 Status = StatusAgendamento.Pendente,
-                TipoServico = criarDto.TipoServico,
-                PrecoServico = criarDto.PrecoServico,
+                TipoServico = tipoServicoFinal,
+                PrecoServico = precoFinal,
                 HorarioDisponivelId = horarioDisponivel.Id,
-                AgendamentoServicos = new List<AgendamentoServico>()
+                AgendamentoServicos = agendamentoServicos
             };
-
-            if (criarDto.ServicoIds != null && criarDto.ServicoIds.Any())
-            {
-                foreach (var servicoId in criarDto.ServicoIds)
-                {
-                    agendamento.AgendamentoServicos.Add(new AgendamentoServico { ServicoId = servicoId });
-                }
-            }
 
             _context.Agendamentos.Add(agendamento);
 
@@ -219,6 +240,8 @@ namespace BarbeariaSaaS.Controllers
                     DataHora = a.DataHora,
                     Observacoes = a.Observacoes,
                     Status = a.Status.ToString(),
+                    TipoServico = a.TipoServico,
+                    PrecoServico = a.PrecoServico,
                     DataCriacao = a.DataCriacao
                 })
                 .FirstAsync();
@@ -241,7 +264,9 @@ namespace BarbeariaSaaS.Controllers
             IQueryable<Agendamento> query = _context.Agendamentos
                 .Include(a => a.Cliente)
                 .Include(a => a.Barbeiro)
-                .Include(a => a.Barbearia);
+                .Include(a => a.Barbearia)
+                .Include(a => a.AgendamentoServicos)
+                    .ThenInclude(asv => asv.Servico);
 
             if (tipoUsuario == "Cliente")
             {
@@ -294,6 +319,10 @@ namespace BarbeariaSaaS.Controllers
                     DataHora = a.DataHora,
                     Observacoes = a.Observacoes,
                     Status = a.Status.ToString(),
+                    TipoServico = a.AgendamentoServicos != null && a.AgendamentoServicos.Any() 
+                        ? string.Join(" + ", a.AgendamentoServicos.Select(s => s.Servico.Nome)) 
+                        : a.TipoServico,
+                    PrecoServico = a.PrecoServico,
                     DataCriacao = a.DataCriacao
                 })
                 .ToListAsync();
@@ -318,6 +347,8 @@ namespace BarbeariaSaaS.Controllers
                 .Include(a => a.Cliente)
                 .Include(a => a.Barbeiro)
                 .Include(a => a.Barbearia)
+                .Include(a => a.AgendamentoServicos)
+                    .ThenInclude(asv => asv.Servico)
                 .FirstOrDefaultAsync(a => a.Id == id);
 
             if (agendamento == null)
@@ -426,6 +457,10 @@ namespace BarbeariaSaaS.Controllers
                 DataHora = agendamento.DataHora,
                 Observacoes = agendamento.Observacoes,
                 Status = agendamento.Status.ToString(),
+                TipoServico = agendamento.AgendamentoServicos != null && agendamento.AgendamentoServicos.Any()
+                    ? string.Join(" + ", agendamento.AgendamentoServicos.Select(s => s.Servico.Nome))
+                    : agendamento.TipoServico,
+                PrecoServico = agendamento.PrecoServico,
                 DataCriacao = agendamento.DataCriacao
             };
 

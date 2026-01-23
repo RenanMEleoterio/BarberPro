@@ -574,8 +574,8 @@ class ApiService {
       date: agendamento.dataHora.split('T')[0],
       time: agendamento.dataHora.split('T')[1].substring(0, 5),
       status: this.mapStatusToFrontend(agendamento.status),
-      service: 'Corte + Barba', // Serviço padrão - pode ser implementado no futuro com dados reais.
-      price: 45, // Preço padrão - pode ser implementado no futuro com dados reais.
+      service: agendamento.tipoServico || 'Serviço não informado', // Serviço real do banco
+      price: agendamento.precoServico || 0, // Preço real do banco
       address: 'Endereço da barbearia', // Pode ser implementado no futuro com dados reais.
       phone: '(11) 99999-9999', // Telefone padrão.
       rating: 4.8 // Rating padrão.
