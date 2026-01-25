@@ -125,6 +125,11 @@ namespace BarbeariaSaaS.DTOs
         /// Novo status para o agendamento (opcional).
         /// </summary>
         public StatusAgendamento? Status { get; set; }
+        
+        /// <summary>
+        /// Lista de IDs dos serviços selecionados para atualização (opcional).
+        /// </summary>
+        public List<int>? ServicoIds { get; set; }
     }
 
     /// <summary>

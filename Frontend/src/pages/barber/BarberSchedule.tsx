@@ -190,7 +190,7 @@ export default function BarberSchedule() {
             Agendamentos do Dia
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
-            {filteredAppointments.length} agendamento(s) para {new Date(selectedDate).toLocaleDateString('pt-BR')}
+            {filteredAppointments.length} agendamento(s) para {selectedDate.split('-').reverse().join('/')}
           </p>
         </div>
 
