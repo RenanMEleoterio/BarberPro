@@ -105,6 +105,11 @@ namespace BarbeariaSaaS.DTOs
         /// O preço do serviço.
         /// </summary>
         public decimal? PrecoServico { get; set; }
+
+        /// <summary>
+        /// IDs dos serviços incluídos neste agendamento.
+        /// </summary>
+        public List<int> ServicoIds { get; set; } = new List<int>();
     }
 
     /// <summary>

@@ -258,7 +258,8 @@ namespace BarbeariaSaaS.Controllers
                     Status = a.Status.ToString(),
                     TipoServico = a.TipoServico,
                     PrecoServico = a.PrecoServico,
-                    DataCriacao = a.DataCriacao
+                    DataCriacao = a.DataCriacao,
+                    ServicoIds = a.AgendamentoServicos != null ? a.AgendamentoServicos.Select(s => s.ServicoId).ToList() : new List<int>()
                 })
                 .FirstAsync();
 
@@ -339,7 +340,8 @@ namespace BarbeariaSaaS.Controllers
                         ? string.Join(" + ", a.AgendamentoServicos.Select(s => s.Servico.Nome)) 
                         : a.TipoServico,
                     PrecoServico = a.PrecoServico,
-                    DataCriacao = a.DataCriacao
+                    DataCriacao = a.DataCriacao,
+                    ServicoIds = a.AgendamentoServicos != null ? a.AgendamentoServicos.Select(s => s.ServicoId).ToList() : new List<int>()
                 })
                 .ToListAsync();
 
@@ -456,6 +458,45 @@ namespace BarbeariaSaaS.Controllers
                 agendamento.Status = atualizarDto.Status.Value;
             }
 
+            if (atualizarDto.ServicoIds != null)
+            {
+                // Remover serviços antigos
+                if (agendamento.AgendamentoServicos != null && agendamento.AgendamentoServicos.Any())
+                {
+                    _context.AgendamentoServicos.RemoveRange(agendamento.AgendamentoServicos);
+                }
+
+                // Buscar novos serviços
+                var novosServicos = await _context.Servicos
+                    .Where(s => atualizarDto.ServicoIds.Contains(s.Id))
+                    .ToListAsync();
+
+                var novosAgendamentoServicos = new List<AgendamentoServico>();
+                decimal precoTotal = 0;
+                var nomesServicos = new List<string>();
+
+                foreach (var servico in novosServicos)
+                {
+                    novosAgendamentoServicos.Add(new AgendamentoServico 
+                    { 
+                        AgendamentoId = agendamento.Id, 
+                        ServicoId = servico.Id 
+                    });
+                    precoTotal += servico.Preco;
+                    nomesServicos.Add(servico.Nome);
+                }
+
+                await _context.AgendamentoServicos.AddRangeAsync(novosAgendamentoServicos);
+                
+                agendamento.PrecoServico = precoTotal;
+                string tipoServicoFinal = nomesServicos.Any() ? string.Join(" + ", nomesServicos) : "Serviço Personalizado";
+                 if (tipoServicoFinal.Length > 100)
+                {
+                    tipoServicoFinal = tipoServicoFinal.Substring(0, 97) + "...";
+                }
+                agendamento.TipoServico = tipoServicoFinal;
+            }
+
             agendamento.DataAtualizacao = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
@@ -477,7 +518,8 @@ namespace BarbeariaSaaS.Controllers
                     ? string.Join(" + ", agendamento.AgendamentoServicos.Select(s => s.Servico.Nome))
                     : agendamento.TipoServico,
                 PrecoServico = agendamento.PrecoServico,
-                DataCriacao = agendamento.DataCriacao
+                DataCriacao = agendamento.DataCriacao,
+                ServicoIds = agendamento.AgendamentoServicos != null ? agendamento.AgendamentoServicos.Select(s => s.ServicoId).ToList() : new List<int>()
             };
 
             return Ok(agendamentoDto);

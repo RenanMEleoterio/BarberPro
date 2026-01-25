@@ -79,6 +79,7 @@ namespace BarbeariaSaaS.Controllers
             var agendamentosRecentesDb = await _context.Agendamentos
                 .Include(a => a.Barbeiro)
                 .Include(a => a.Barbearia)
+                .Include(a => a.AgendamentoServicos)
                 .Where(a => a.ClienteId == id)
                 .OrderByDescending(a => a.DataHora)
                 .Take(5)
@@ -102,9 +103,12 @@ namespace BarbeariaSaaS.Controllers
                     Data = dataLocal.ToString("dd/MM/yyyy"),
                     Hora = dataLocal.ToString("HH:mm"),
                     Barbeiro = a.Barbeiro.Nome,
+                    BarbeiroId = a.BarbeiroId,
                     Barbearia = a.Barbearia.Nome,
+                    BarbeariaId = a.BarbeariaId,
                     Status = a.Status.ToString(),
-                    Preco = a.PrecoServico
+                    Preco = a.PrecoServico,
+                    ServicoIds = a.AgendamentoServicos != null ? a.AgendamentoServicos.Select(s => s.ServicoId).ToList() : new List<int>()
                 };
             }).ToList();
 
@@ -117,7 +121,9 @@ namespace BarbeariaSaaS.Controllers
                     Data = dataLocal.ToString("dd/MM/yyyy"),
                     Hora = dataLocal.ToString("HH:mm"),
                     Barbeiro = proximoAgendamento.Barbeiro?.Nome,
-                    Barbearia = proximoAgendamento.Barbearia?.Nome
+                    BarbeiroId = proximoAgendamento.BarbeiroId,
+                    Barbearia = proximoAgendamento.Barbearia?.Nome,
+                    BarbeariaId = proximoAgendamento.BarbeariaId
                 };
             }
 

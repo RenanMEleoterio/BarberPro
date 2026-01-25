@@ -52,7 +52,7 @@ export default function BookAppointment() {
   const location = useLocation();
   
   // Dados de reagendamento vindos da navegação anterior
-  const { reschedulingAppointmentId, initialBarberId } = location.state || {};
+  const { reschedulingAppointmentId, initialBarberId, initialServiceIds } = location.state || {};
   const isRescheduling = !!reschedulingAppointmentId;
 
   // Estados para armazenar as seleções do usuário e os dados carregados.
@@ -60,6 +60,8 @@ export default function BookAppointment() {
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [selectedServices, setSelectedServices] = useState<Servico[]>([]);
+  // Flag para controlar se os serviços iniciais já foram carregados
+  const [initialServicesLoaded, setInitialServicesLoaded] = useState(false);
   const [barbeiros, setBarbeiros] = useState<Barbeiro[]>([]);
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [filteredServicos, setFilteredServicos] = useState<Servico[]>([]);
@@ -100,6 +102,17 @@ export default function BookAppointment() {
       setSelectedBarber(initialBarberId);
     }
   }, [initialBarberId]);
+
+  // Efeito para pré-selecionar serviços no reagendamento
+  useEffect(() => {
+    if (isRescheduling && servicos.length > 0 && initialServiceIds && !initialServicesLoaded) {
+      const servicesToSelect = servicos.filter(s => initialServiceIds.includes(s.id));
+      if (servicesToSelect.length > 0) {
+        setSelectedServices(servicesToSelect);
+      }
+      setInitialServicesLoaded(true);
+    }
+  }, [isRescheduling, servicos, initialServiceIds, initialServicesLoaded]);
 
   // Efeito para filtrar serviços quando um barbeiro é selecionado
   useEffect(() => {
@@ -284,10 +297,6 @@ export default function BookAppointment() {
   };
 
   const toggleService = (service: Servico) => {
-    if (isRescheduling) {
-      toast('Não é possível alterar serviços durante o reagendamento.', { icon: 'ℹ️' });
-      return;
-    }
     setSelectedServices(prev => {
       const isSelected = prev.some(s => s.id === service.id);
       if (isSelected) {
@@ -339,7 +348,8 @@ export default function BookAppointment() {
       if (isRescheduling) {
         // Lógica de Atualização (Reagendamento)
         const updateData = {
-          novaDataHora: `${selectedDate}T${selectedTime}:00`
+          novaDataHora: `${selectedDate}T${selectedTime}:00`,
+          servicoIds: selectedServices.map(s => s.id)
         };
         console.log("Dados de atualização:", updateData);
         

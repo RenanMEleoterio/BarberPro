@@ -27,9 +27,12 @@ interface DashboardData {
     Data: string;
     Hora: string;
     Barbeiro: string;
+    BarbeiroId?: number;
     Barbearia: string;
+    BarbeariaId?: number;
     Status: string;
     Preco: number;
+    ServicoIds?: number[];
   }>;
   Barbearias: Array<{
     Id: number;
@@ -68,9 +71,12 @@ function normalizeClientDashboardData(data: any): DashboardData {
           Data: a.data ?? a.Data ?? "",
           Hora: a.hora ?? a.Hora ?? "",
           Barbeiro: a.barbeiro ?? a.Barbeiro ?? "",
+          BarbeiroId: a.barbeiroId ?? a.BarbeiroId ?? 0,
           Barbearia: a.barbearia ?? a.Barbearia ?? "",
+          BarbeariaId: a.barbeariaId ?? a.BarbeariaId ?? 0,
           Status: a.status ?? a.Status ?? "",
           Preco: a.preco ?? a.Preco ?? 0,
+          ServicoIds: a.servicoIds ?? a.ServicoIds ?? [],
         }))
       : [],
     Barbearias: Array.isArray(rawBarbearias)
@@ -161,9 +167,23 @@ export default function ClientDashboard() {
     }
   };
 
-  const handleReschedule = () => {
-    navigate('/client/barbershops');
-    toast.success('Escolha um novo horário para seu agendamento.');
+  const handleReschedule = (appointment?: any) => {
+    if (appointment) {
+      // Usa os IDs se disponíveis, senão tenta usar o objeto direto (caso venha de outra fonte que não o dashboard normalizado)
+      const barbeariaId = appointment.BarbeariaId || appointment.Barbearia;
+      const barbeiroId = appointment.BarbeiroId || appointment.Barbeiro;
+      
+      navigate(`/client/book/${barbeariaId}`, {
+        state: {
+          reschedulingAppointmentId: appointment.Id,
+          initialBarberId: barbeiroId,
+          initialServiceIds: appointment.ServicoIds
+        }
+      });
+    } else {
+      navigate('/client/barbershops');
+      toast.success('Escolha um novo horário para seu agendamento.');
+    }
   };
 
   const handleViewDetails = (appointment: any) => {
@@ -387,7 +407,7 @@ export default function ClientDashboard() {
                           {processingId === appointment.Id ? 'Cancelando...' : 'Cancelar'}
                         </button>
                         <button 
-                          onClick={() => handleReschedule()}
+                          onClick={() => handleReschedule(appointment)}
                           className="text-yellow-600 hover:text-yellow-700 text-sm font-medium transition-colors"
                         >
                           Reagendar
@@ -539,7 +559,7 @@ export default function ClientDashboard() {
                       </button>
                       <button 
                         onClick={() => {
-                          handleReschedule();
+                          handleReschedule(selectedAppointment);
                           closeModal();
                         }}
                         className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
