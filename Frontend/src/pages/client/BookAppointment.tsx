@@ -555,11 +555,6 @@ export default function BookAppointment() {
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex items-center space-x-2">
-                      {selectedServices.some(s => s.id === service.id) && (
-                        <div className="bg-yellow-500 rounded-full p-0.5">
-                          <Check className="h-3 w-3 text-white" />
-                        </div>
-                      )}
                       <div className="font-medium text-gray-900 dark:text-white">{service.nome}</div>
                     </div>
                     <div className="text-sm font-semibold text-gray-900 dark:text-white">

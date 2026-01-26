@@ -576,6 +576,7 @@ class ApiService {
       status: this.mapStatusToFrontend(agendamento.status),
       service: agendamento.tipoServico || 'Serviço não informado', // Serviço real do banco
       price: agendamento.precoServico || 0, // Preço real do banco
+      serviceIds: agendamento.servicoIds || [], // IDs dos serviços para reagendamento
       address: 'Endereço da barbearia', // Pode ser implementado no futuro com dados reais.
       phone: '(11) 99999-9999', // Telefone padrão.
       rating: 4.8 // Rating padrão.
