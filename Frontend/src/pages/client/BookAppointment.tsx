@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Calendar, Clock, User, ArrowLeft, Scissors, Filter, Star } from 'lucide-react';
+import { Calendar, Clock, User, ArrowLeft, Scissors, Filter, Star, Check } from 'lucide-react';
 import { format, addDays, startOfWeek, addWeeks } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import toast from 'react-hot-toast';
@@ -52,13 +52,13 @@ export default function BookAppointment() {
   const location = useLocation();
   
   // Dados de reagendamento vindos da navegação anterior
-  const { reschedulingAppointmentId, initialBarberId, initialServiceIds } = location.state || {};
+  const { reschedulingAppointmentId, initialBarberId, initialServiceIds, initialDate, initialTime } = location.state || {};
   const isRescheduling = !!reschedulingAppointmentId;
 
   // Estados para armazenar as seleções do usuário e os dados carregados.
   const [selectedBarber, setSelectedBarber] = useState<number | null>(initialBarberId || null);
-  const [selectedDate, setSelectedDate] = useState('');
-  const [selectedTime, setSelectedTime] = useState('');
+  const [selectedDate, setSelectedDate] = useState(initialDate || '');
+  const [selectedTime, setSelectedTime] = useState(initialTime || '');
   const [selectedServices, setSelectedServices] = useState<Servico[]>([]);
   // Flag para controlar se os serviços iniciais já foram carregados
   const [initialServicesLoaded, setInitialServicesLoaded] = useState(false);
@@ -554,12 +554,19 @@ export default function BookAppointment() {
                   }`}
                 >
                   <div className="flex justify-between items-start">
-                    <div className="font-medium text-gray-900 dark:text-white">{service.nome}</div>
+                    <div className="flex items-center space-x-2">
+                      {selectedServices.some(s => s.id === service.id) && (
+                        <div className="bg-yellow-500 rounded-full p-0.5">
+                          <Check className="h-3 w-3 text-white" />
+                        </div>
+                      )}
+                      <div className="font-medium text-gray-900 dark:text-white">{service.nome}</div>
+                    </div>
                     <div className="text-sm font-semibold text-gray-900 dark:text-white">
                       R$ {Number(service.preco).toFixed(2)}
                     </div>
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 pl-6">
                     {service.duracaoMinutos} min
                   </div>
                 </button>

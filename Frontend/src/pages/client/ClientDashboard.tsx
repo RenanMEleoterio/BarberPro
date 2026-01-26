@@ -169,15 +169,46 @@ export default function ClientDashboard() {
 
   const handleReschedule = (appointment?: any) => {
     if (appointment) {
-      // Usa os IDs se disponíveis, senão tenta usar o objeto direto (caso venha de outra fonte que não o dashboard normalizado)
-      const barbeariaId = appointment.BarbeariaId || appointment.Barbearia;
-      const barbeiroId = appointment.BarbeiroId || appointment.Barbeiro;
+      // Tenta obter o ID da barbearia
+      let targetBarbeariaId = appointment.BarbeariaId;
+      let targetBarbeiroId = appointment.BarbeiroId;
+
+      // Fallback para Barbearia: Tentar encontrar pelo nome na lista de barbearias disponíveis se o ID não estiver presente
+      if ((!targetBarbeariaId || targetBarbeariaId === 0) && appointment.Barbearia && dashboardData?.Barbearias) {
+        const found = dashboardData.Barbearias.find(b => b.Nome === appointment.Barbearia);
+        if (found) targetBarbeariaId = found.Id;
+      }
       
-      navigate(`/client/book/${barbeariaId}`, {
+      // Se ainda assim não tiver ID numérico válido, usa a propriedade antiga (compatibilidade)
+      if (!targetBarbeariaId) targetBarbeariaId = appointment.Barbearia;
+      if (!targetBarbeiroId) targetBarbeiroId = appointment.Barbeiro;
+
+      // Converter data dd/MM/yyyy para yyyy-MM-dd para o input de data
+      let initialDate = '';
+      if (appointment.Data && appointment.Data.includes('/')) {
+         const parts = appointment.Data.split('/');
+         if (parts.length === 3) {
+            // Assume dd/MM/yyyy
+            initialDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+         }
+      }
+
+      console.log("Iniciando reagendamento:", {
+        id: appointment.Id,
+        barbeariaId: targetBarbeariaId,
+        barbeiroId: targetBarbeiroId,
+        servicoIds: appointment.ServicoIds,
+        data: initialDate,
+        hora: appointment.Hora
+      });
+      
+      navigate(`/client/book/${targetBarbeariaId}`, {
         state: {
           reschedulingAppointmentId: appointment.Id,
-          initialBarberId: barbeiroId,
-          initialServiceIds: appointment.ServicoIds
+          initialBarberId: targetBarbeiroId,
+          initialServiceIds: appointment.ServicoIds,
+          initialDate: initialDate,
+          initialTime: appointment.Hora
         }
       });
     } else {

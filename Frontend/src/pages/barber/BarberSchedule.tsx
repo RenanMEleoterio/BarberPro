@@ -19,8 +19,8 @@ interface Appointment {
   dataHora: string;
   nomeCliente: string;
   telefoneCliente: string;
-  servico?: string;
-  preco?: number;
+  tipoServico: string;
+  precoServico: number;
 }
 
 /**
@@ -240,7 +240,7 @@ export default function BarberSchedule() {
                       
                       <div className="mt-2">
                         <p className="text-sm text-gray-900 dark:text-white font-medium">
-                          {appointment.servico || 'Corte + Barba'}
+                          {appointment.tipoServico || 'Serviço não informado'}
                         </p>
                       </div>
                     </div>
@@ -249,7 +249,7 @@ export default function BarberSchedule() {
                   <div className="flex items-center space-x-4">
                     <div className="text-right">
                       <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                        R$ {appointment.preco?.toFixed(2) || '45.00'}
+                        R$ {appointment.precoServico?.toFixed(2) || '0.00'}
                       </p>
                     </div>
                     
@@ -313,7 +313,7 @@ export default function BarberSchedule() {
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-yellow-600">
-                R$ {filteredAppointments.reduce((total, apt) => total + (apt.precoServico || apt.preco || apt.price || 0), 0).toFixed(2)}
+                R$ {filteredAppointments.reduce((total, apt) => total + (apt.precoServico || 0), 0).toFixed(2)}
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Receita Estimada
