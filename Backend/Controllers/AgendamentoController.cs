@@ -86,27 +86,38 @@ namespace BarbeariaSaaS.Controllers
                 query = query.Where(u => u.BarbeariaId == usuarioBarbeariaId);
             }
 
-            var barbeiros = await query
-                .Include(u => u.HorariosDisponiveis.Where(h => h.DataHora > DateTime.UtcNow))
-                .Select(u => new BarbeiroDto
-                {
-                    Id = u.Id,
-                    Nome = u.Nome,
-                    Foto = u.Foto,
-                    Especialidades = u.Especialidades,
-                    Descricao = u.Descricao,
-                    HorariosDisponiveis = u.HorariosDisponiveis.Select(h => new HorarioDisponivelDto
+            var barbeiros = await query.ToListAsync();
+
+            var barbeiroDtos = new List<BarbeiroDto>();
+            var agoraUtc = DateTime.UtcNow;
+
+            foreach (var barbeiro in barbeiros)
+            {
+                var horariosDisponiveis = await _context.HorariosDisponiveis
+                    .Where(h => h.BarbeiroId == barbeiro.Id && h.DataHora > agoraUtc && h.EstaDisponivel)
+                    .OrderBy(h => h.DataHora)
+                    .Select(h => new HorarioDisponivelDto
                     {
                         Id = h.Id,
                         DataHora = h.DataHora,
                         BarbeiroId = h.BarbeiroId,
-                        NomeBarbeiro = u.Nome,
+                        NomeBarbeiro = barbeiro.Nome,
                         EstaDisponivel = h.EstaDisponivel
-                    }).ToList()
-                })
-                .ToListAsync();
+                    })
+                    .ToListAsync();
 
-            return Ok(barbeiros);
+                barbeiroDtos.Add(new BarbeiroDto
+                {
+                    Id = barbeiro.Id,
+                    Nome = barbeiro.Nome,
+                    Foto = barbeiro.Foto,
+                    Especialidades = barbeiro.Especialidades,
+                    Descricao = barbeiro.Descricao,
+                    HorariosDisponiveis = horariosDisponiveis
+                });
+            }
+
+            return Ok(barbeiroDtos);
         }
 
         /// <summary>
@@ -167,22 +178,24 @@ namespace BarbeariaSaaS.Controllers
                     return StatusCode(500, new { message = "Erro interno: Cadastro do barbeiro inconsistente." });
                 }
 
-                // Verificar se o cliente já tem um agendamento atendido/confirmado para o mesmo horário (com qualquer barbeiro)
+                // Verificar se o cliente já tem um agendamento ativo (não cancelado/expirado) para o mesmo horário
                 var clienteTemAgendamento = await _context.Agendamentos
-                    .AnyAsync(a => a.ClienteId == clienteId && 
-                                  a.DataHora == dataHoraInput && 
-                                  a.Status == StatusAgendamento.Atendido);
+                    .AnyAsync(a => a.ClienteId == clienteId &&
+                                  a.DataHora == dataHoraInput &&
+                                  a.Status != StatusAgendamento.Cancelado &&
+                                  a.Status != StatusAgendamento.Expirado);
 
                 if (clienteTemAgendamento)
                 {
                     return BadRequest(new { message = "Você já possui um agendamento para este horário" });
                 }
 
-                // Verificar se já existe agendamento atendido/confirmado para este barbeiro neste horário
+                // Verificar se já existe um agendamento ativo (não cancelado/expirado) para este barbeiro neste horário
                 var barbeiroTemAgendamento = await _context.Agendamentos
-                    .AnyAsync(a => a.BarbeiroId == criarDto.BarbeiroId && 
-                                  a.DataHora == dataHoraInput && 
-                                  a.Status == StatusAgendamento.Atendido);
+                    .AnyAsync(a => a.BarbeiroId == criarDto.BarbeiroId &&
+                                  a.DataHora == dataHoraInput &&
+                                  a.Status != StatusAgendamento.Cancelado &&
+                                  a.Status != StatusAgendamento.Expirado);
 
                 if (barbeiroTemAgendamento)
                 {
