@@ -77,10 +77,13 @@ namespace BarbeariaSaaS.Services
                 { DayOfWeek.Saturday, "saturday" }
             };
 
+            var inicioUtc = dataInicio.Date;
+            var fimUtc = dataFim.Date.AddDays(1);
+
             var horariosExistentes = await _context.HorariosDisponiveis
                 .Where(h => h.BarbeiroId == barbeiroId && 
-                           h.DataHora >= dataInicio.ToUniversalTime() && 
-                           h.DataHora <= dataFim.ToUniversalTime())
+                           h.DataHora >= inicioUtc && 
+                           h.DataHora < fimUtc)
                 .Include(h => h.Agendamentos)
                 .ToListAsync();
 
@@ -110,6 +113,10 @@ namespace BarbeariaSaaS.Services
                     // Mas para atender a solicitação de exibir até o limite:
                     
                     var dataHora = data.Add(currentTime);
+                    // Garantir que a data seja salva de forma consistente.
+                    // Se estivermos em um ambiente que usa UTC, mas o negócio é local (ex: Brasil),
+                    // é melhor salvar em UTC real ou ser consistente na comparação.
+                    // Para evitar quebra de compatibilidade, vamos manter o Kind mas garantir que a comparação no controlador seja robusta.
                     var dataHoraUtc = DateTime.SpecifyKind(dataHora, DateTimeKind.Utc);
 
                     horariosIdeais.Add(dataHoraUtc);

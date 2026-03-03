@@ -89,27 +89,38 @@ namespace BarbeariaSaaS.Controllers
             var barbeiros = await query.ToListAsync();
 
             var barbeiroDtos = new List<BarbeiroDto>();
-            var agoraUtc = DateTime.UtcNow;
+            
+            // Para depuração e para resolver o problema imediato:
+            // Vamos mostrar TODOS os horários de HOJE em diante, sem filtrar pela hora atual.
+            // Isso evita que problemas de fuso horário escondam horários válidos.
+            var hojeInicio = DateTime.UtcNow.Date.AddDays(-1); // Ontem em diante para ter certeza
+
+            _logger.LogInformation("Buscando barbeiros. BarbeariaId: {BarbeariaId}, Tipo: {Tipo}", barbeariaId, tipoUsuario);
 
             foreach (var barbeiro in barbeiros)
             {
-                var horariosDisponiveis = await _context.HorariosDisponiveis
-                    .Where(h => h.BarbeiroId == barbeiro.Id && h.DataHora > agoraUtc && h.EstaDisponivel)
+                var queryHorarios = _context.HorariosDisponiveis
+                    .Where(h => h.BarbeiroId == barbeiro.Id && h.EstaDisponivel);
+
+                var horariosDisponiveis = await queryHorarios
+                    .Where(h => h.DataHora >= hojeInicio)
                     .OrderBy(h => h.DataHora)
                     .Select(h => new HorarioDisponivelDto
                     {
                         Id = h.Id,
                         DataHora = h.DataHora,
                         BarbeiroId = h.BarbeiroId,
-                        NomeBarbeiro = barbeiro.Nome,
+                        NomeBarbeiro = barbeiro.Nome ?? "Barbeiro",
                         EstaDisponivel = h.EstaDisponivel
                     })
                     .ToListAsync();
 
+                _logger.LogInformation("Barbeiro {Nome}: {Count} horários", barbeiro.Nome, horariosDisponiveis.Count);
+
                 barbeiroDtos.Add(new BarbeiroDto
                 {
                     Id = barbeiro.Id,
-                    Nome = barbeiro.Nome,
+                    Nome = barbeiro.Nome ?? "Barbeiro",
                     Foto = barbeiro.Foto,
                     Especialidades = barbeiro.Especialidades,
                     Descricao = barbeiro.Descricao,
@@ -181,7 +192,9 @@ namespace BarbeariaSaaS.Controllers
                 // Verificar se o cliente já tem um agendamento ativo (não cancelado/expirado) para o mesmo horário
                 var clienteTemAgendamento = await _context.Agendamentos
                     .AnyAsync(a => a.ClienteId == clienteId &&
-                                  a.DataHora == dataHoraInput &&
+                                  a.DataHora.Date == dataHoraInput.Date &&
+                                  a.DataHora.Hour == dataHoraInput.Hour &&
+                                  a.DataHora.Minute == dataHoraInput.Minute &&
                                   a.Status != StatusAgendamento.Cancelado &&
                                   a.Status != StatusAgendamento.Expirado);
 
@@ -193,7 +206,9 @@ namespace BarbeariaSaaS.Controllers
                 // Verificar se já existe um agendamento ativo (não cancelado/expirado) para este barbeiro neste horário
                 var barbeiroTemAgendamento = await _context.Agendamentos
                     .AnyAsync(a => a.BarbeiroId == criarDto.BarbeiroId &&
-                                  a.DataHora == dataHoraInput &&
+                                  a.DataHora.Date == dataHoraInput.Date &&
+                                  a.DataHora.Hour == dataHoraInput.Hour &&
+                                  a.DataHora.Minute == dataHoraInput.Minute &&
                                   a.Status != StatusAgendamento.Cancelado &&
                                   a.Status != StatusAgendamento.Expirado);
 
@@ -203,9 +218,12 @@ namespace BarbeariaSaaS.Controllers
                 }
 
                 // Verificar se existe um horário disponível para este barbeiro nesta data/hora
+                // Usamos uma comparação mais flexível para evitar problemas com o Kind do DateTime (Utc vs Unspecified)
                 var horarioDisponivel = await _context.HorariosDisponiveis
                     .FirstOrDefaultAsync(h => h.BarbeiroId == criarDto.BarbeiroId && 
-                                             h.DataHora == dataHoraInput && 
+                                             h.DataHora.Date == dataHoraInput.Date &&
+                                             h.DataHora.Hour == dataHoraInput.Hour &&
+                                             h.DataHora.Minute == dataHoraInput.Minute &&
                                              h.EstaDisponivel);
 
                 if (horarioDisponivel == null)
