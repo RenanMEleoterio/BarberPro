@@ -55,7 +55,16 @@ namespace BarbeariaSaaS.Services
             var horariosGerados = new List<HorarioDisponivel>();
 
             var workDays = !string.IsNullOrEmpty(barbearia.WorkDays) 
-                ? barbearia.WorkDays.Split(",", StringSplitOptions.RemoveEmptyEntries).Select(d => d.Trim().ToLower()).ToList()
+                ? barbearia.WorkDays.Split(",", StringSplitOptions.RemoveEmptyEntries)
+                    .Select(d => d.Trim().ToLower()
+                        .Replace("segunda-feira", "monday")
+                        .Replace("terça-feira", "tuesday")
+                        .Replace("quarta-feira", "wednesday")
+                        .Replace("quinta-feira", "thursday")
+                        .Replace("sexta-feira", "friday")
+                        .Replace("sábado", "saturday")
+                        .Replace("domingo", "sunday"))
+                    .ToList()
                 : new List<string> { "monday", "tuesday", "wednesday", "thursday", "friday", "saturday" };
 
             var openTime = !string.IsNullOrEmpty(barbearia.OpenTime) 

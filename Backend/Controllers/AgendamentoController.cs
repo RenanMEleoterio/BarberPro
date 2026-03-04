@@ -20,11 +20,13 @@ namespace BarbeariaSaaS.Controllers
     {
         private readonly BarbeariaContext _context;
         private readonly ILogger<AgendamentoController> _logger;
+        private readonly BarbeariaSaaS.Services.HorarioService _horarioService;
 
-        public AgendamentoController(BarbeariaContext context, ILogger<AgendamentoController> logger)
+        public AgendamentoController(BarbeariaContext context, ILogger<AgendamentoController> logger, BarbeariaSaaS.Services.HorarioService horarioService)
         {
             _context = context;
             _logger = logger;
+            _horarioService = horarioService;
         }
 
         /// <summary>
@@ -114,6 +116,32 @@ namespace BarbeariaSaaS.Controllers
                         EstaDisponivel = h.EstaDisponivel
                     })
                     .ToListAsync();
+
+                // AUTO-GERAÇÃO: Se não houver horários, gera para os próximos 7 dias
+                if (horariosDisponiveis.Count == 0)
+                {
+                    _logger.LogInformation("Barbeiro {Nome} sem horários. Gerando automaticamente...", barbeiro.Nome);
+                    try {
+                        var inicioGera = DateTime.UtcNow.Date;
+                        var fimGera = inicioGera.AddDays(7);
+                        await _horarioService.GerarHorariosParaBarbeiro(barbeiro.Id, inicioGera, fimGera);
+                        
+                        // Busca novamente após gerar
+                        horariosDisponiveis = await _context.HorariosDisponiveis
+                            .Where(h => h.BarbeiroId == barbeiro.Id && h.EstaDisponivel && h.DataHora >= hojeInicio)
+                            .OrderBy(h => h.DataHora)
+                            .Select(h => new HorarioDisponivelDto {
+                                Id = h.Id,
+                                DataHora = h.DataHora,
+                                BarbeiroId = h.BarbeiroId,
+                                NomeBarbeiro = barbeiro.Nome ?? "Barbeiro",
+                                EstaDisponivel = h.EstaDisponivel
+                            })
+                            .ToListAsync();
+                    } catch (Exception ex) {
+                        _logger.LogError(ex, "Erro na auto-geração de horários para {Nome}", barbeiro.Nome);
+                    }
+                }
 
                 _logger.LogInformation("Barbeiro {Nome}: {Count} horários", barbeiro.Nome, horariosDisponiveis.Count);
 
