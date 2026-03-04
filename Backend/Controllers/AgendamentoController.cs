@@ -298,16 +298,23 @@ namespace BarbeariaSaaS.Controllers
                     Status = StatusAgendamento.Pendente,
                     TipoServico = tipoServicoFinal,
                     PrecoServico = precoFinal,
-                    HorarioDisponivelId = horarioDisponivel.Id,
-                    AgendamentoServicos = agendamentoServicos
+                    HorarioDisponivelId = horarioDisponivel.Id
                 };
 
                 _context.Agendamentos.Add(agendamento);
-
-                // Marcar o horário como indisponível
                 horarioDisponivel.EstaDisponivel = false;
-
                 await _context.SaveChangesAsync();
+
+                // Passo 2: Associar os serviços ao agendamento recém-criado
+                if (agendamentoServicos.Any())
+                {
+                    foreach (var agendamentoServico in agendamentoServicos)
+                    {
+                        agendamentoServico.AgendamentoId = agendamento.Id;
+                    }
+                    _context.AgendamentoServicos.AddRange(agendamentoServicos);
+                    await _context.SaveChangesAsync();
+                }
 
                 var agendamentoDto = await _context.Agendamentos
                     .Where(a => a.Id == agendamento.Id)
