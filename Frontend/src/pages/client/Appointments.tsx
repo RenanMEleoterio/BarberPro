@@ -93,7 +93,7 @@ export default function Appointments() {
 
     navigate(`/client/barbershops/${appointment.barbershopId}/book`, {
       state: {
-        reschedulingAppointmentId: appointment.id,
+        reschedulingAppointmentId: parseInt(appointment.id),
         initialBarberId: appointment.barberId
       }
     });

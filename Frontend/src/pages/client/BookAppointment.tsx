@@ -55,6 +55,14 @@ export default function BookAppointment() {
   const { reschedulingAppointmentId, initialBarberId, initialServiceIds, initialDate, initialTime } = location.state || {};
   const isRescheduling = !!reschedulingAppointmentId;
 
+  console.log("=== DEBUG: BookAppointment render ===");
+  console.log("Location state:", location.state);
+  console.log("isRescheduling:", isRescheduling);
+  console.log("reschedulingAppointmentId:", reschedulingAppointmentId);
+  console.log("initialBarberId:", initialBarberId);
+  console.log("initialDate:", initialDate);
+  console.log("initialTime:", initialTime);
+
   // Estados para armazenar as seleções do usuário e os dados carregados.
   const [selectedBarber, setSelectedBarber] = useState<number | null>(initialBarberId || null);
   const [selectedDate, setSelectedDate] = useState(initialDate || '');
