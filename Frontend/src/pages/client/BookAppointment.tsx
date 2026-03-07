@@ -55,14 +55,6 @@ export default function BookAppointment() {
   const { reschedulingAppointmentId, initialBarberId, initialServiceIds, initialDate, initialTime } = location.state || {};
   const isRescheduling = !!reschedulingAppointmentId;
 
-  console.log("=== DEBUG: BookAppointment render ===");
-  console.log("Location state:", location.state);
-  console.log("isRescheduling:", isRescheduling);
-  console.log("reschedulingAppointmentId:", reschedulingAppointmentId);
-  console.log("initialBarberId:", initialBarberId);
-  console.log("initialDate:", initialDate);
-  console.log("initialTime:", initialTime);
-
   // Estados para armazenar as seleções do usuário e os dados carregados.
   const [selectedBarber, setSelectedBarber] = useState<number | null>(initialBarberId || null);
   const [selectedDate, setSelectedDate] = useState(initialDate || '');
@@ -102,7 +94,7 @@ export default function BookAppointment() {
   // Efeito que carrega os dados da barbearia e dos barbeiros ao montar o componente ou mudar o ID da barbearia.
   useEffect(() => {
     loadData();
-  }, [barbershopId]);
+  }, [barbershopId, reschedulingAppointmentId]);
 
   // Se vier um initialBarberId, garante que ele está setado (redundância para garantir)
   useEffect(() => {
@@ -163,11 +155,7 @@ export default function BookAppointment() {
         throw new Error('ID da barbearia não encontrado');
       }
 
-      console.log('=== DEBUG: Carregando dados ===');
-      console.log('Barbershop ID:', barbershopId);
-
       const barbeariaData = await apiService.getBarbeariaById(parseInt(barbershopId));
-      console.log('Dados da barbearia recebidos:', barbeariaData);
       
       const barbershopWithConfig = {
         ...barbeariaData,
@@ -176,17 +164,15 @@ export default function BookAppointment() {
         closeTime: barbeariaData.closeTime || '18:00'
       };
       
-      console.log('Dados da barbearia com configurações padrão:', barbershopWithConfig);
       setBarbershop(barbershopWithConfig);
 
-      console.log('Carregando barbeiros com horários...');
-      const barbeirosData = await apiService.getBarbeirosComHorarios(parseInt(barbershopId));
-      console.log('Barbeiros recebidos:', barbeirosData);
+      const barbeirosData = await apiService.getBarbeirosComHorarios(
+        parseInt(barbershopId),
+        reschedulingAppointmentId ? parseInt(reschedulingAppointmentId) : undefined
+      );
       setBarbeiros(barbeirosData);
 
-      console.log('Carregando serviços...');
       const servicosData = await apiService.getServicosByBarbeariaId(parseInt(barbershopId));
-      console.log('Serviços recebidos:', servicosData);
       // Ensure servicosData is an array
       const servicesArray = Array.isArray(servicosData) ? servicosData : [];
       setServicos(servicesArray);

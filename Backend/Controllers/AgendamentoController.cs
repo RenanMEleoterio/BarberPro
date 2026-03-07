@@ -64,9 +64,10 @@ namespace BarbeariaSaaS.Controllers
         /// <param name="barbeariaId">Opcional: ID da barbearia para filtrar os barbeiros.</param>
         /// <returns>ActionResult<List<BarbeiroDto>> contendo uma lista de objetos BarbeiroDto com informações dos barbeiros e seus horários disponíveis.</returns>
         [HttpGet("barbeiros")]
-        public async Task<ActionResult<List<BarbeiroDto>>> GetBarbeiros([FromQuery] int? barbeariaId = null)
+        public async Task<ActionResult<List<BarbeiroDto>>> GetBarbeiros([FromQuery] int? barbeariaId = null, [FromQuery] int? reschedulingId = null)
         {
             var tipoUsuario = GetTipoUsuario();
+            var usuarioId = GetUsuarioId();
             IQueryable<Usuario> query = _context.Usuarios.Where(u => u.TipoUsuario == TipoUsuario.Barbeiro);
 
             if (tipoUsuario == "Cliente")
@@ -86,6 +87,19 @@ namespace BarbeariaSaaS.Controllers
                 query = query.Where(u => u.BarbeariaId == usuarioBarbeariaId);
             }
 
+            // Se for um reagendamento, vamos identificar qual o horário atual para mostrá-lo como disponível
+            int? currentHorarioId = null;
+            if (reschedulingId.HasValue)
+            {
+                var agendamento = await _context.Agendamentos
+                    .FirstOrDefaultAsync(a => a.Id == reschedulingId.Value && (tipoUsuario != "Cliente" || a.ClienteId == usuarioId));
+                
+                if (agendamento != null)
+                {
+                    currentHorarioId = agendamento.HorarioDisponivelId;
+                }
+            }
+
             var barbeiros = await query
                 .Include(u => u.HorariosDisponiveis.Where(h => h.DataHora > DateTime.UtcNow))
                 .Select(u => new BarbeiroDto
@@ -101,7 +115,7 @@ namespace BarbeariaSaaS.Controllers
                         DataHora = h.DataHora,
                         BarbeiroId = h.BarbeiroId,
                         NomeBarbeiro = u.Nome,
-                        EstaDisponivel = h.EstaDisponivel
+                        EstaDisponivel = h.EstaDisponivel || (currentHorarioId.HasValue && h.Id == currentHorarioId.Value)
                     }).ToList()
                 })
                 .ToListAsync();

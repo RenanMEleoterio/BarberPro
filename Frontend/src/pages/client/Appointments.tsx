@@ -94,7 +94,10 @@ export default function Appointments() {
     navigate(`/client/barbershops/${appointment.barbershopId}/book`, {
       state: {
         reschedulingAppointmentId: parseInt(appointment.id),
-        initialBarberId: appointment.barberId
+        initialBarberId: appointment.barberId,
+        initialServiceIds: appointment.servicoIds,
+        initialDate: appointment.date,
+        initialTime: appointment.time
       }
     });
   };

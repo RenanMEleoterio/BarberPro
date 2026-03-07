@@ -423,11 +423,16 @@ class ApiService {
    * Obtém a lista de barbeiros que possuem horários disponíveis.
    * Pode ser filtrada por barbearia informando o ID.
    * @param {number} [barbeariaId] - Opcional: ID da barbearia para filtrar os barbeiros.
+   * @param {number} [reschedulingId] - Opcional: ID do agendamento sendo reagendado para liberar o horário atual.
    * @returns {Promise<any>} - Uma promessa que resolve com a lista de barbeiros e seus horários.
    */
-  async getBarbeirosComHorarios(barbeariaId?: number) {
-    const query = barbeariaId ? `?barbeariaId=${barbeariaId}` : '';
-    return this.request(`/agendamento/barbeiros${query}`);
+  async getBarbeirosComHorarios(barbeariaId?: number, reschedulingId?: number) {
+    const params = new URLSearchParams();
+    if (barbeariaId) params.append('barbeariaId', barbeariaId.toString());
+    if (reschedulingId) params.append('reschedulingId', reschedulingId.toString());
+    
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    return this.request(`/agendamento/barbeiros${queryString}`);
   }
 
   /**
@@ -576,6 +581,7 @@ class ApiService {
       status: this.mapStatusToFrontend(agendamento.status),
       service: agendamento.tipoServico || 'Serviço não informado', // Serviço real do banco
       price: agendamento.precoServico || 0, // Preço real do banco
+      servicoIds: agendamento.servicoIds || [],
       address: 'Endereço da barbearia', // Pode ser implementado no futuro com dados reais.
       phone: '(11) 99999-9999', // Telefone padrão.
       rating: 4.8 // Rating padrão.
