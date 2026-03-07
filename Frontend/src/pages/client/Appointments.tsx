@@ -94,10 +94,7 @@ export default function Appointments() {
     navigate(`/client/barbershops/${appointment.barbershopId}/book`, {
       state: {
         reschedulingAppointmentId: appointment.id,
-        initialBarberId: appointment.barberId,
-        initialServiceIds: appointment.serviceIds,
-        initialDate: appointment.date,
-        initialTime: appointment.time
+        initialBarberId: appointment.barberId
       }
     });
   };

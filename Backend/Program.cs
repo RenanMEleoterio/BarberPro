@@ -1,5 +1,4 @@
 using System;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -85,24 +84,6 @@ builder.Services.AddCors(options =>
 
 // Constrói a aplicação web a partir das configurações e serviços definidos no builder.
 var app = builder.Build();
-
-// Middleware de tratamento de erros global para Produção
-// Garante que erros 500 retornem JSON e headers de CORS, evitando "Network Error" no frontend
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler(errorApp =>
-    {
-        errorApp.Run(async context =>
-        {
-            context.Response.StatusCode = 500;
-            context.Response.ContentType = "application/json";
-            // Adiciona header CORS manualmente caso o middleware padrão falhe
-            context.Response.Headers["Access-Control-Allow-Origin"] = "*";
-            
-            await context.Response.WriteAsync("{\"message\":\"Erro interno no servidor (Global Handler).\"}");
-        });
-    });
-}
 
 // Middleware de CORS: deve ser usado antes de UseRouting para garantir que as políticas de CORS sejam aplicadas corretamente.
 app.UseCors("AllowSpecificOrigin");

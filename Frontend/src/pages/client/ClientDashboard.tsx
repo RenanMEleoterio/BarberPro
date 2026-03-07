@@ -202,7 +202,7 @@ export default function ClientDashboard() {
         hora: appointment.Hora
       });
       
-      navigate(`/client/barbershops/${targetBarbeariaId}/book`, {
+      navigate(`/client/book/${targetBarbeariaId}`, {
         state: {
           reschedulingAppointmentId: appointment.Id,
           initialBarberId: targetBarbeiroId,

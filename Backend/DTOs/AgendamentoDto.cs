@@ -58,11 +58,11 @@ namespace BarbeariaSaaS.DTOs
         /// <summary>
         /// O nome do cliente.
         /// </summary>
-        public string NomeCliente { get; set; } = string.Empty;
+        public string NomeCliente { get; set; }
         /// <summary>
         /// O email do cliente.
         /// </summary>
-        public string EmailCliente { get; set; } = string.Empty;
+        public string EmailCliente { get; set; }
         /// <summary>
         /// O ID do barbeiro que realizará o serviço.
         /// </summary>
@@ -70,7 +70,7 @@ namespace BarbeariaSaaS.DTOs
         /// <summary>
         /// O nome do barbeiro.
         /// </summary>
-        public string NomeBarbeiro { get; set; } = string.Empty;
+        public string NomeBarbeiro { get; set; }
         /// <summary>
         /// O ID da barbearia.
         /// </summary>
@@ -78,7 +78,7 @@ namespace BarbeariaSaaS.DTOs
         /// <summary>
         /// O nome da barbearia.
         /// </summary>
-        public string NomeBarbearia { get; set; } = string.Empty;
+        public string NomeBarbearia { get; set; }
         /// <summary>
         /// A data e hora do agendamento.
         /// </summary>
@@ -86,11 +86,11 @@ namespace BarbeariaSaaS.DTOs
         /// <summary>
         /// Observações sobre o agendamento.
         /// </summary>
-        public string Observacoes { get; set; } = string.Empty;
+        public string Observacoes { get; set; }
         /// <summary>
         /// O status atual do agendamento (ex: "Confirmado", "Cancelado", "Realizado").
         /// </summary>
-        public string Status { get; set; } = string.Empty;
+        public string Status { get; set; }
         /// <summary>
         /// A data de criação do agendamento.
         /// </summary>

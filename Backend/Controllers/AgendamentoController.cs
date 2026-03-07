@@ -9,7 +9,6 @@ using System.Security.Claims;
 using BarbeariaSaaS.Data;
 using BarbeariaSaaS.DTOs;
 using BarbeariaSaaS.Models;
-using Microsoft.Extensions.Logging;
 
 namespace BarbeariaSaaS.Controllers
 {
@@ -20,13 +19,11 @@ namespace BarbeariaSaaS.Controllers
     {
         private readonly BarbeariaContext _context;
         private readonly ILogger<AgendamentoController> _logger;
-        private readonly BarbeariaSaaS.Services.HorarioService _horarioService;
 
-        public AgendamentoController(BarbeariaContext context, ILogger<AgendamentoController> logger, BarbeariaSaaS.Services.HorarioService horarioService)
+        public AgendamentoController(BarbeariaContext context, ILogger<AgendamentoController> logger)
         {
             _context = context;
             _logger = logger;
-            _horarioService = horarioService;
         }
 
         /// <summary>
@@ -88,75 +85,27 @@ namespace BarbeariaSaaS.Controllers
                 query = query.Where(u => u.BarbeariaId == usuarioBarbeariaId);
             }
 
-            var barbeiros = await query.ToListAsync();
-
-            var barbeiroDtos = new List<BarbeiroDto>();
-            
-            // Para depuração e para resolver o problema imediato:
-            // Vamos mostrar TODOS os horários de HOJE em diante, sem filtrar pela hora atual.
-            // Isso evita que problemas de fuso horário escondam horários válidos.
-            var hojeInicio = DateTime.UtcNow.Date.AddDays(-1); // Ontem em diante para ter certeza
-
-            _logger.LogInformation("Buscando barbeiros. BarbeariaId: {BarbeariaId}, Tipo: {Tipo}", barbeariaId, tipoUsuario);
-
-            foreach (var barbeiro in barbeiros)
-            {
-                var queryHorarios = _context.HorariosDisponiveis
-                    .Where(h => h.BarbeiroId == barbeiro.Id && h.EstaDisponivel);
-
-                var horariosDisponiveis = await queryHorarios
-                    .Where(h => h.DataHora >= hojeInicio)
-                    .OrderBy(h => h.DataHora)
-                    .Select(h => new HorarioDisponivelDto
+            var barbeiros = await query
+                .Include(u => u.HorariosDisponiveis.Where(h => h.DataHora > DateTime.UtcNow))
+                .Select(u => new BarbeiroDto
+                {
+                    Id = u.Id,
+                    Nome = u.Nome,
+                    Foto = u.Foto,
+                    Especialidades = u.Especialidades,
+                    Descricao = u.Descricao,
+                    HorariosDisponiveis = u.HorariosDisponiveis.Select(h => new HorarioDisponivelDto
                     {
                         Id = h.Id,
                         DataHora = h.DataHora,
                         BarbeiroId = h.BarbeiroId,
-                        NomeBarbeiro = barbeiro.Nome ?? "Barbeiro",
+                        NomeBarbeiro = u.Nome,
                         EstaDisponivel = h.EstaDisponivel
-                    })
-                    .ToListAsync();
+                    }).ToList()
+                })
+                .ToListAsync();
 
-                // AUTO-GERAÇÃO: Se não houver horários, gera para os próximos 7 dias
-                if (horariosDisponiveis.Count == 0)
-                {
-                    _logger.LogInformation("Barbeiro {Nome} sem horários. Gerando automaticamente...", barbeiro.Nome);
-                    try {
-                        var inicioGera = DateTime.UtcNow.Date;
-                        var fimGera = inicioGera.AddDays(7);
-                        await _horarioService.GerarHorariosParaBarbeiro(barbeiro.Id, inicioGera, fimGera);
-                        
-                        // Busca novamente após gerar
-                        horariosDisponiveis = await _context.HorariosDisponiveis
-                            .Where(h => h.BarbeiroId == barbeiro.Id && h.EstaDisponivel && h.DataHora >= hojeInicio)
-                            .OrderBy(h => h.DataHora)
-                            .Select(h => new HorarioDisponivelDto {
-                                Id = h.Id,
-                                DataHora = h.DataHora,
-                                BarbeiroId = h.BarbeiroId,
-                                NomeBarbeiro = barbeiro.Nome ?? "Barbeiro",
-                                EstaDisponivel = h.EstaDisponivel
-                            })
-                            .ToListAsync();
-                    } catch (Exception ex) {
-                        _logger.LogError(ex, "Erro na auto-geração de horários para {Nome}", barbeiro.Nome);
-                    }
-                }
-
-                _logger.LogInformation("Barbeiro {Nome}: {Count} horários", barbeiro.Nome, horariosDisponiveis.Count);
-
-                barbeiroDtos.Add(new BarbeiroDto
-                {
-                    Id = barbeiro.Id,
-                    Nome = barbeiro.Nome ?? "Barbeiro",
-                    Foto = barbeiro.Foto,
-                    Especialidades = barbeiro.Especialidades,
-                    Descricao = barbeiro.Descricao,
-                    HorariosDisponiveis = horariosDisponiveis
-                });
-            }
-
-            return Ok(barbeiroDtos);
+            return Ok(barbeiros);
         }
 
         /// <summary>
@@ -179,7 +128,6 @@ namespace BarbeariaSaaS.Controllers
                 }
 
                 // Validar se a data/hora não é no passado
-                // Assume que a data recebida está no horário de Brasília (UTC-3) se não tiver timezone definido
                 var dataHoraInput = criarDto.DataHora;
                 DateTime dataHoraUtc;
 
@@ -210,35 +158,28 @@ namespace BarbeariaSaaS.Controllers
                     return BadRequest(new { message = "Barbeiro não encontrado" });
                 }
 
-                // Validação de segurança: Barbeiro deve ter uma barbearia vinculada
                 if (!barbeiro.BarbeariaId.HasValue)
                 {
-                    _logger.LogError("Tentativa de agendamento para barbeiro {BarbeiroId} sem barbearia vinculada.", criarDto.BarbeiroId);
-                    return StatusCode(500, new { message = "Erro interno: Cadastro do barbeiro inconsistente." });
+                    return BadRequest(new { message = "O barbeiro selecionado não está vinculado a nenhuma barbearia" });
                 }
 
-                // Verificar se o cliente já tem um agendamento ativo (não cancelado/expirado) para o mesmo horário
+                // Verificar se o cliente já tem um agendamento atendido/confirmado para o mesmo horário
+                // Usamos dataHoraUtc para a query do banco de dados (mais seguro com Npgsql)
                 var clienteTemAgendamento = await _context.Agendamentos
-                    .AnyAsync(a => a.ClienteId == clienteId &&
-                                  a.DataHora.Date == dataHoraInput.Date &&
-                                  a.DataHora.Hour == dataHoraInput.Hour &&
-                                  a.DataHora.Minute == dataHoraInput.Minute &&
-                                  a.Status != StatusAgendamento.Cancelado &&
-                                  a.Status != StatusAgendamento.Expirado);
+                    .AnyAsync(a => a.ClienteId == clienteId && 
+                                  a.DataHora == dataHoraUtc && 
+                                  (a.Status == StatusAgendamento.Atendido || a.Status == StatusAgendamento.Pendente));
 
                 if (clienteTemAgendamento)
                 {
-                    return BadRequest(new { message = "Você já possui um agendamento para este horário" });
+                    return BadRequest(new { message = "Você já possui um agendamento pendente ou confirmado para este horário" });
                 }
 
-                // Verificar se já existe um agendamento ativo (não cancelado/expirado) para este barbeiro neste horário
+                // Verificar se já existe agendamento para este barbeiro neste horário
                 var barbeiroTemAgendamento = await _context.Agendamentos
-                    .AnyAsync(a => a.BarbeiroId == criarDto.BarbeiroId &&
-                                  a.DataHora.Date == dataHoraInput.Date &&
-                                  a.DataHora.Hour == dataHoraInput.Hour &&
-                                  a.DataHora.Minute == dataHoraInput.Minute &&
-                                  a.Status != StatusAgendamento.Cancelado &&
-                                  a.Status != StatusAgendamento.Expirado);
+                    .AnyAsync(a => a.BarbeiroId == criarDto.BarbeiroId && 
+                                  a.DataHora == dataHoraUtc && 
+                                  (a.Status == StatusAgendamento.Atendido || a.Status == StatusAgendamento.Pendente));
 
                 if (barbeiroTemAgendamento)
                 {
@@ -246,12 +187,9 @@ namespace BarbeariaSaaS.Controllers
                 }
 
                 // Verificar se existe um horário disponível para este barbeiro nesta data/hora
-                // Usamos uma comparação mais flexível para evitar problemas com o Kind do DateTime (Utc vs Unspecified)
                 var horarioDisponivel = await _context.HorariosDisponiveis
                     .FirstOrDefaultAsync(h => h.BarbeiroId == criarDto.BarbeiroId && 
-                                             h.DataHora.Date == dataHoraInput.Date &&
-                                             h.DataHora.Hour == dataHoraInput.Hour &&
-                                             h.DataHora.Minute == dataHoraInput.Minute &&
+                                             h.DataHora == dataHoraUtc && 
                                              h.EstaDisponivel);
 
                 if (horarioDisponivel == null)
@@ -259,7 +197,7 @@ namespace BarbeariaSaaS.Controllers
                     return BadRequest(new { message = "Horário não disponível para este barbeiro" });
                 }
 
-                // Recalcular preço e descrição dos serviços para garantir integridade e persistência correta
+                // Recalcular preço e descrição dos serviços
                 decimal precoTotal = 0;
                 var nomesServicos = new List<string>();
                 var agendamentoServicos = new List<AgendamentoServico>();
@@ -278,11 +216,9 @@ namespace BarbeariaSaaS.Controllers
                     }
                 }
 
-                // Define TipoServico e PrecoServico baseados nos dados do banco (prioridade) ou no DTO (fallback)
                 string tipoServicoFinal = nomesServicos.Any() ? string.Join(" + ", nomesServicos) : criarDto.TipoServico;
                 decimal? precoFinal = nomesServicos.Any() ? precoTotal : criarDto.PrecoServico;
 
-                // Validar tamanho da string para evitar erro no banco (limite de 100 caracteres)
                 if (tipoServicoFinal.Length > 100)
                 {
                     tipoServicoFinal = tipoServicoFinal.Substring(0, 97) + "...";
@@ -292,9 +228,9 @@ namespace BarbeariaSaaS.Controllers
                 {
                     ClienteId = clienteId,
                     BarbeiroId = criarDto.BarbeiroId,
-                    DataHora = dataHoraInput,
+                    DataHora = dataHoraUtc, // Salva como UTC
                     Observacoes = criarDto.Observacoes,
-                    BarbeariaId = barbeiro.BarbeariaId.Value, // Seguro devido à validação anterior
+                    BarbeariaId = barbeiro.BarbeariaId.Value,
                     Status = StatusAgendamento.Pendente,
                     TipoServico = tipoServicoFinal,
                     PrecoServico = precoFinal,
@@ -302,15 +238,19 @@ namespace BarbeariaSaaS.Controllers
                 };
 
                 _context.Agendamentos.Add(agendamento);
+
+                // Marcar o horário como indisponível
                 horarioDisponivel.EstaDisponivel = false;
+
+                // Primeiro salvamento: persiste o agendamento e gera seu ID
                 await _context.SaveChangesAsync();
 
-                // Passo 2: Associar os serviços ao agendamento recém-criado
+                // Segundo salvamento: associa os serviços agora que temos o ID do agendamento
                 if (agendamentoServicos.Any())
                 {
-                    foreach (var agendamentoServico in agendamentoServicos)
+                    foreach (var asv in agendamentoServicos)
                     {
-                        agendamentoServico.AgendamentoId = agendamento.Id;
+                        asv.AgendamentoId = agendamento.Id;
                     }
                     _context.AgendamentoServicos.AddRange(agendamentoServicos);
                     await _context.SaveChangesAsync();
@@ -343,15 +283,10 @@ namespace BarbeariaSaaS.Controllers
 
                 return Ok(agendamentoDto);
             }
-            catch (DbUpdateException dbEx)
-            {
-                _logger.LogError(dbEx, "Erro de banco de dados ao criar agendamento para Cliente {ClienteId}, Barbeiro {BarbeiroId}", GetUsuarioId(), criarDto.BarbeiroId);
-                return StatusCode(500, new { message = "Erro ao processar o agendamento no banco de dados. Verifique os dados e tente novamente." });
-            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro inesperado ao criar agendamento para Cliente {ClienteId}", GetUsuarioId());
-                return StatusCode(500, new { message = "Ocorreu um erro interno no servidor ao processar sua solicitação." });
+                _logger.LogError(ex, "Erro ao criar agendamento para o cliente {UsuarioId}", User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                return StatusCode(500, new { message = "Ocorreu um erro interno no servidor ao processar sua solicitação.", error = ex.Message });
             }
         }
 

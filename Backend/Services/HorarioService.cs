@@ -55,16 +55,7 @@ namespace BarbeariaSaaS.Services
             var horariosGerados = new List<HorarioDisponivel>();
 
             var workDays = !string.IsNullOrEmpty(barbearia.WorkDays) 
-                ? barbearia.WorkDays.Split(",", StringSplitOptions.RemoveEmptyEntries)
-                    .Select(d => d.Trim().ToLower()
-                        .Replace("segunda-feira", "monday")
-                        .Replace("terça-feira", "tuesday")
-                        .Replace("quarta-feira", "wednesday")
-                        .Replace("quinta-feira", "thursday")
-                        .Replace("sexta-feira", "friday")
-                        .Replace("sábado", "saturday")
-                        .Replace("domingo", "sunday"))
-                    .ToList()
+                ? barbearia.WorkDays.Split(",", StringSplitOptions.RemoveEmptyEntries).Select(d => d.Trim().ToLower()).ToList()
                 : new List<string> { "monday", "tuesday", "wednesday", "thursday", "friday", "saturday" };
 
             var openTime = !string.IsNullOrEmpty(barbearia.OpenTime) 
@@ -86,13 +77,10 @@ namespace BarbeariaSaaS.Services
                 { DayOfWeek.Saturday, "saturday" }
             };
 
-            var inicioUtc = dataInicio.Date;
-            var fimUtc = dataFim.Date.AddDays(1);
-
             var horariosExistentes = await _context.HorariosDisponiveis
                 .Where(h => h.BarbeiroId == barbeiroId && 
-                           h.DataHora >= inicioUtc && 
-                           h.DataHora < fimUtc)
+                           h.DataHora >= dataInicio.ToUniversalTime() && 
+                           h.DataHora <= dataFim.ToUniversalTime())
                 .Include(h => h.Agendamentos)
                 .ToListAsync();
 
@@ -122,10 +110,6 @@ namespace BarbeariaSaaS.Services
                     // Mas para atender a solicitação de exibir até o limite:
                     
                     var dataHora = data.Add(currentTime);
-                    // Garantir que a data seja salva de forma consistente.
-                    // Se estivermos em um ambiente que usa UTC, mas o negócio é local (ex: Brasil),
-                    // é melhor salvar em UTC real ou ser consistente na comparação.
-                    // Para evitar quebra de compatibilidade, vamos manter o Kind mas garantir que a comparação no controlador seja robusta.
                     var dataHoraUtc = DateTime.SpecifyKind(dataHora, DateTimeKind.Utc);
 
                     horariosIdeais.Add(dataHoraUtc);
