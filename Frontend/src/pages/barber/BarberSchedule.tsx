@@ -9,18 +9,16 @@ import toast from 'react-hot-toast';
  */
 interface Appointment {
   id: string;
-  clientName: string;
-  clientPhone: string;
-  service: string;
-  date: string;
-  time: string;
-  status: string;
-  price: number;
   dataHora: string;
+  status: string;
+  observacoes?: string;
+  tipoServico: string;
+  precoServico: number;
   nomeCliente: string;
-  telefoneCliente: string;
-  servico?: string;
-  preco?: number;
+  emailCliente: string;
+  telefoneCliente?: string;
+  nomeBarbeiro: string;
+  nomeBarbearia: string;
 }
 
 /**
@@ -62,7 +60,9 @@ export default function BarberSchedule() {
       });
 
       // Proteção defensiva: Garante que appointments seja sempre um array
-      setAppointments(Array.isArray(data) ? data : []);
+      const appointmentsArray = Array.isArray(data) ? data : [];
+      console.log('BarberSchedule: Processed appointments', appointmentsArray);
+      setAppointments(appointmentsArray);
     } catch (error) {
       console.error('Erro ao carregar agendamentos:', error);
       const message =
@@ -240,8 +240,13 @@ export default function BarberSchedule() {
                       
                       <div className="mt-2">
                         <p className="text-sm text-gray-900 dark:text-white font-medium">
-                          {appointment.servico || 'Corte + Barba'}
+                          {appointment.tipoServico || 'Corte + Barba'}
                         </p>
+                        {appointment.observacoes && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 italic mt-1">
+                            Obs: {appointment.observacoes}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -249,7 +254,7 @@ export default function BarberSchedule() {
                   <div className="flex items-center space-x-4">
                     <div className="text-right">
                       <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                        R$ {appointment.preco?.toFixed(2) || '45.00'}
+                        R$ {appointment.precoServico?.toFixed(2) || '45.00'}
                       </p>
                     </div>
                     
