@@ -81,39 +81,43 @@ namespace BarbeariaSaaS.Controllers
             var totalAgendamentos = agendamentos.Count;
             var avaliacaoMedia = 4.8m; // Mock - implementar sistema de avaliação
 
-            // Performance semanal - Sempre mostra os últimos 7 dias a partir de hoje
-            // para manter o card de Desempenho Semanal útil independente do filtro global
+            // Performance por dia da semana
             var performanceSemanal = new object[7];
             string[] diasSemanaPt = { "Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb" };
             
-            // Vamos pegar os agendamentos dos últimos 7 dias (incluindo hoje)
-            var hoje = DateTime.UtcNow.Date;
-            var inicioSemanaAtual = DateTime.SpecifyKind(hoje.AddDays(-(int)hoje.DayOfWeek), DateTimeKind.Utc);
+            bool isWeeklyFilter = periodo.ToLower() == "semana" || periodo.ToLower() == "week";
             
-            // Precisamos buscar agendamentos específicos para a semana se o filtro global for diferente
-            var agendamentosSemana = agendamentos;
-            if (periodo.ToLower() != "semana" && periodo.ToLower() != "week")
+            if (isWeeklyFilter)
             {
-                var fimSemanaAtual = inicioSemanaAtual.AddDays(7);
-                agendamentosSemana = await _context.Agendamentos
-                    .Where(a => a.BarbeiroId == id && a.DataHora >= inicioSemanaAtual && a.DataHora < fimSemanaAtual)
-                    .ToListAsync();
+                // Lógica para Semana: Mostrar os dias específicos da semana atual
+                var hoje = DateTime.UtcNow.Date;
+                var inicioSemanaAtual = DateTime.SpecifyKind(hoje.AddDays(-(int)hoje.DayOfWeek), DateTimeKind.Utc);
+                
+                for (int i = 0; i < 7; i++)
+                {
+                    var dia = inicioSemanaAtual.AddDays(i);
+                    var agendamentosDiaQuery = agendamentos.Where(a => a.DataHora.Date == dia.Date);
+                    
+                    performanceSemanal[i] = new {
+                        Dia = diasSemanaPt[i],
+                        Agendamentos = agendamentosDiaQuery.Count(),
+                        Receita = agendamentosDiaQuery.Where(a => a.Status == StatusAgendamento.Realizado).Sum(a => a.PrecoServico ?? 0)
+                    };
+                }
             }
-
-            for (int i = 0; i < 7; i++)
+            else
             {
-                var dia = inicioSemanaAtual.AddDays(i);
-                var agendamentosDiaQuery = agendamentosSemana.Where(a => a.DataHora.Date == dia.Date);
-                var agendamentosDiaCount = agendamentosDiaQuery.Count();
-                var receitaDia = agendamentosDiaQuery
-                    .Where(a => a.Status == StatusAgendamento.Realizado)
-                    .Sum(a => a.PrecoServico ?? 0);
-
-                performanceSemanal[i] = new {
-                    Dia = diasSemanaPt[i],
-                    Agendamentos = agendamentosDiaCount,
-                    Receita = receitaDia
-                };
+                // Lógica para Mês/Trimestre/Ano: Agregar por dia da semana em todo o período selecionado
+                for (int i = 0; i < 7; i++)
+                {
+                    var agendamentosDiaDaSemanaQuery = agendamentos.Where(a => (int)a.DataHora.DayOfWeek == i);
+                    
+                    performanceSemanal[i] = new {
+                        Dia = diasSemanaPt[i],
+                        Agendamentos = agendamentosDiaDaSemanaQuery.Count(),
+                        Receita = agendamentosDiaDaSemanaQuery.Where(a => a.Status == StatusAgendamento.Realizado).Sum(a => a.PrecoServico ?? 0)
+                    };
+                }
             }
 
             // Serviços mais populares

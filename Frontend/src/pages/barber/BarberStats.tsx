@@ -203,10 +203,10 @@ export default function BarberStats() {
 
       {/* Seção de Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Desempenho Semanal */}
+        {/* Desempenho por Dia */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Desempenho Semanal
+            {selectedPeriod === 'week' ? 'Desempenho Semanal' : 'Desempenho por Dia'}
           </h3>
           {stats.weeklyData.length === 0 ? (
             <div className="text-center py-8">
@@ -216,31 +216,34 @@ export default function BarberStats() {
             </div>
           ) : (
             <div className="space-y-4">
-              {Array.isArray(stats.weeklyData) && stats.weeklyData.map((day: any, index: number) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 w-8">
-                      {day.dia}
-                    </span>
-                    <div className="flex-1">
-                      <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                        <div
-                          className="bg-yellow-500 h-2 rounded-full"
-                          style={{ width: `${(day.agendamentos / 20) * 100}%` }} // Exemplo de cálculo de largura para barra de progresso
-                        ></div>
+              {(() => {
+                const maxAppointments = Math.max(...stats.weeklyData.map((d: any) => d.agendamentos), 1);
+                return Array.isArray(stats.weeklyData) && stats.weeklyData.map((day: any, index: number) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3 flex-1 mr-4">
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400 w-8">
+                        {day.dia}
+                      </span>
+                      <div className="flex-1">
+                        <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                          <div
+                            className="bg-yellow-500 h-2 rounded-full transition-all duration-500"
+                            style={{ width: `${(day.agendamentos / maxAppointments) * 100}%` }}
+                          ></div>
+                        </div>
                       </div>
                     </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {day.agendamentos} agendamentos
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        R$ {day.receita || 0}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      {day.agendamentos} agendamentos
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      R$ {day.receita || 0}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                ));
+              })()}
             </div>
           )}
         </div>
