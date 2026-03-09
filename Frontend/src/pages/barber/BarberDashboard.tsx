@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, DollarSign, Users, TrendingUp, CheckCircle } from 'lucide-react';
+import { Calendar, Clock, DollarSign, Users, TrendingUp, CheckCircle, BarChart3 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { apiService } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
@@ -123,6 +123,8 @@ export default function BarberDashboard() {
       }
     });
 
+    const totalAgendamentosSemana = agendamentosSemana.length;
+
     // 4. Ganhos da Semana
     const ganhosSemana = agendamentosSemana
       .filter(apt => ['Realizado', 'Concluído', 'Atendido'].includes(apt.status))
@@ -160,7 +162,7 @@ export default function BarberDashboard() {
     const data = {
       totalAgendamentosHoje,
       agendamentosConcluidos,
-      agendamentosPendentes,
+      totalAgendamentosSemana,
       ganhosSemana,
       porcentagem,
       agendamentosHoje,
@@ -184,7 +186,7 @@ export default function BarberDashboard() {
   const stats = {
     todayAppointments: dashboardData?.totalAgendamentosHoje || 0,
     completedToday: dashboardData?.agendamentosConcluidos || 0,
-    pendingToday: dashboardData?.agendamentosPendentes || 0,
+    weeklyAppointments: dashboardData?.totalAgendamentosSemana || 0,
     weeklyEarnings: dashboardData?.ganhosSemana || 0,
     weeklyPercentage: dashboardData?.porcentagem || 0
   };
@@ -264,9 +266,9 @@ export default function BarberDashboard() {
           "text-green-600 dark:text-green-400"
         )}
         {renderStatCard(
-          "Pendentes Hoje",
-          stats.pendingToday === 0 ? "0" : stats.pendingToday,
-          <Clock />,
+          "Agendamentos na Semana",
+          stats.weeklyAppointments === 0 ? "0" : stats.weeklyAppointments,
+          <BarChart3 />,
           "bg-orange-100 dark:bg-orange-900/20",
           "text-orange-600 dark:text-orange-400"
         )}
