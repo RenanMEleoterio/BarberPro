@@ -43,7 +43,6 @@ export default function BarberStats() {
         totalClients: 0,
         totalRevenue: 0,
         totalAppointments: 0,
-        averageRating: 0,
         monthlyGrowth: 0,
         popularServices: [],
         weeklyData: []
@@ -58,25 +57,17 @@ export default function BarberStats() {
     totalClients: statsData.totalClientes || 0,
     totalRevenue: statsData.receitaTotal || 0,
     totalAppointments: statsData.totalAgendamentos || 0,
-    averageRating: statsData.avaliacaoMedia || 0,
     monthlyGrowth: 0, // Este campo não parece ser preenchido pela API no momento.
     popularServices: statsData.servicosPopulares || [],
-    weeklyData: statsData.performanceSemanal || [],
-    pontualidade: statsData.insights?.pontualidade || 0,
-    taxaRetorno: statsData.insights?.taxaRetorno || 0,
-    ticketMedio: statsData.insights?.ticketMedio || 0
+    weeklyData: statsData.performanceSemanal || []
   } : {
     // Valores padrão caso não haja dados.
     totalClients: 0,
     totalRevenue: 0,
     totalAppointments: 0,
-    averageRating: 0,
     monthlyGrowth: 0,
     popularServices: [],
-    weeklyData: [],
-    pontualidade: 0,
-    taxaRetorno: 0,
-    ticketMedio: 0
+    weeklyData: []
   };
 
   // Exibe um spinner de carregamento enquanto os dados estão sendo buscados.
@@ -129,7 +120,7 @@ export default function BarberStats() {
       </div>
 
       {/* Seção de Métricas Chave */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Card: Total de Clientes */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
@@ -200,30 +191,6 @@ export default function BarberStats() {
               <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
               <span className="text-sm text-green-600 dark:text-green-400">
                 +8.1% este mês
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Card: Avaliação Média */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Avaliação Média
-              </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {stats.averageRating === 0 ? "N/A" : stats.averageRating}
-              </p>
-            </div>
-            <div className="h-12 w-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
-              <BarChart3 className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-            </div>
-          </div>
-          {stats.averageRating !== 0 && (
-            <div className="mt-4 flex items-center">
-              <span className="text-sm text-yellow-500">
-                ⭐⭐⭐⭐⭐
               </span>
             </div>
           )}
@@ -318,66 +285,6 @@ export default function BarberStats() {
                 </div>
               )) : []}
             </div>
-          )}
-        </div>
-      </div>
-
-      {/* Seção de Insights de Performance */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Insights de Performance
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {stats.totalClients === 0 && stats.totalRevenue === 0 && stats.totalAppointments === 0 ? (
-            <div className="col-span-3 text-center py-8">
-              <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400">Sem insights de performance disponíveis</p>
-              <p className="text-sm text-gray-400 dark:text-gray-500">Seus insights aparecerão aqui conforme você registrar atividades</p>
-            </div>
-          ) : (
-            <>
-              {/* Card: Pontualidade */}
-              <div className="text-center p-4 bg-green-50 dark:bg-green-900/10 rounded-lg">
-                <Clock className="h-8 w-8 text-green-600 dark:text-green-400 mx-auto mb-2" />
-                <p className="text-sm font-medium text-green-800 dark:text-green-400">
-                  Pontualidade
-                </p>
-                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                  {stats.pontualidade === 0 ? "N/A" : `${stats.pontualidade}%`}
-                </p>
-                <p className="text-xs text-green-600 dark:text-green-400">
-                  {stats.pontualidade === 0 ? "" : "Excelente!"}
-                </p>
-              </div>
-              
-              {/* Card: Taxa de Retorno */}
-              <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/10 rounded-lg">
-                <Users className="h-8 w-8 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
-                <p className="text-sm font-medium text-blue-800 dark:text-blue-400">
-                  Taxa de Retorno
-                </p>
-                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  {stats.taxaRetorno === 0 ? "N/A" : `${stats.taxaRetorno}%`}
-                </p>
-                <p className="text-xs text-blue-600 dark:text-blue-400">
-                  {stats.taxaRetorno === 0 ? "" : "Muito bom!"}
-                </p>
-              </div>
-              
-              {/* Card: Ticket Médio */}
-              <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-900/10 rounded-lg">
-                <DollarSign className="h-8 w-8 text-yellow-600 dark:text-yellow-400 mx-auto mb-2" />
-                <p className="text-sm font-medium text-yellow-800 dark:text-yellow-400">
-                  Ticket Médio
-                </p>
-                <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                  {stats.ticketMedio === 0 ? "N/A" : `R$ ${(stats.ticketMedio || 0).toFixed(2)}`}
-                </p>
-                <p className="text-xs text-yellow-600 dark:text-yellow-400">
-                  {stats.ticketMedio === 0 ? "" : "+5% este mês"}
-                </p>
-              </div>
-            </>
           )}
         </div>
       </div>
