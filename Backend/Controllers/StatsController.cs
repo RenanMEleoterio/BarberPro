@@ -45,19 +45,26 @@ namespace BarbeariaSaaS.Controllers
             switch (periodo.ToLower())
             {
                 case "mes":
+                case "month":
                     dataInicio = DateTime.SpecifyKind(new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1), DateTimeKind.Utc);
                     dataFim = dataInicio.AddMonths(1);
                     break;
                 case "trimestre":
+                case "quarter":
                     var trimestre = (DateTime.Now.Month - 1) / 3;
                     dataInicio = DateTime.SpecifyKind(new DateTime(DateTime.Now.Year, trimestre * 3 + 1, 1), DateTimeKind.Utc);
                     dataFim = dataInicio.AddMonths(3);
                     break;
                 case "ano":
+                case "year":
                     dataInicio = DateTime.SpecifyKind(new DateTime(DateTime.Now.Year, 1, 1), DateTimeKind.Utc);
                     dataFim = dataInicio.AddYears(1);
                     break;
-                default: // semana
+                case "semana":
+                case "week":
+                default:
+                    // Ajuste para garantir que a semana comece no domingo (ou segunda, dependendo da regra de negócio)
+                    // Aqui vamos usar Domingo como início da semana (DayOfWeek.Sunday = 0)
                     dataInicio = DateTime.SpecifyKind(DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek), DateTimeKind.Utc);
                     dataFim = dataInicio.AddDays(7);
                     break;
@@ -67,19 +74,36 @@ namespace BarbeariaSaaS.Controllers
                 .Where(a => a.BarbeiroId == id && a.DataHora >= dataInicio && a.DataHora < dataFim)
                 .ToListAsync();
 
+            Console.WriteLine($"Stats for Barber {id}: Period={periodo}, Range={dataInicio} to {dataFim}, Found {agendamentos.Count} appointments.");
+
             var totalClientes = agendamentos.Select(a => a.ClienteId).Distinct().Count();
             var receitaTotal = agendamentos.Where(a => a.Status == StatusAgendamento.Realizado).Sum(a => a.PrecoServico ?? 0);
             var totalAgendamentos = agendamentos.Count;
             var avaliacaoMedia = 4.8m; // Mock - implementar sistema de avaliação
 
-            // Performance semanal
+            // Performance semanal - Sempre mostra os últimos 7 dias a partir de hoje
+            // para manter o card de Desempenho Semanal útil independente do filtro global
             var performanceSemanal = new object[7];
             string[] diasSemanaPt = { "Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb" };
             
+            // Vamos pegar os agendamentos dos últimos 7 dias (incluindo hoje)
+            var hoje = DateTime.UtcNow.Date;
+            var inicioSemanaAtual = DateTime.SpecifyKind(hoje.AddDays(-(int)hoje.DayOfWeek), DateTimeKind.Utc);
+            
+            // Precisamos buscar agendamentos específicos para a semana se o filtro global for diferente
+            var agendamentosSemana = agendamentos;
+            if (periodo.ToLower() != "semana" && periodo.ToLower() != "week")
+            {
+                var fimSemanaAtual = inicioSemanaAtual.AddDays(7);
+                agendamentosSemana = await _context.Agendamentos
+                    .Where(a => a.BarbeiroId == id && a.DataHora >= inicioSemanaAtual && a.DataHora < fimSemanaAtual)
+                    .ToListAsync();
+            }
+
             for (int i = 0; i < 7; i++)
             {
-                var dia = dataInicio.AddDays(i);
-                var agendamentosDiaQuery = agendamentos.Where(a => a.DataHora.Date == dia.Date);
+                var dia = inicioSemanaAtual.AddDays(i);
+                var agendamentosDiaQuery = agendamentosSemana.Where(a => a.DataHora.Date == dia.Date);
                 var agendamentosDiaCount = agendamentosDiaQuery.Count();
                 var receitaDia = agendamentosDiaQuery
                     .Where(a => a.Status == StatusAgendamento.Realizado)
