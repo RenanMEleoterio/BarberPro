@@ -74,13 +74,21 @@ namespace BarbeariaSaaS.Controllers
 
             // Performance semanal
             var performanceSemanal = new object[7];
+            string[] diasSemanaPt = { "Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb" };
+            
             for (int i = 0; i < 7; i++)
             {
                 var dia = dataInicio.AddDays(i);
-                var agendamentosDia = agendamentos.Where(a => a.DataHora.Date == dia).Count();
+                var agendamentosDiaQuery = agendamentos.Where(a => a.DataHora.Date == dia.Date);
+                var agendamentosDiaCount = agendamentosDiaQuery.Count();
+                var receitaDia = agendamentosDiaQuery
+                    .Where(a => a.Status == StatusAgendamento.Realizado)
+                    .Sum(a => a.PrecoServico ?? 0);
+
                 performanceSemanal[i] = new {
-                    Dia = dia.ToString("ddd"),
-                    Agendamentos = agendamentosDia
+                    Dia = diasSemanaPt[i],
+                    Agendamentos = agendamentosDiaCount,
+                    Receita = receitaDia
                 };
             }
 

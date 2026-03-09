@@ -59,7 +59,11 @@ export default function BarberStats() {
     totalAppointments: statsData.totalAgendamentos || 0,
     monthlyGrowth: 0, // Este campo não parece ser preenchido pela API no momento.
     popularServices: statsData.servicosPopulares || [],
-    weeklyData: statsData.performanceSemanal || []
+    weeklyData: statsData.performanceSemanal?.map((day: any) => ({
+      dia: day.dia,
+      agendamentos: day.agendamentos || 0,
+      receita: day.receita || 0
+    })) || []
   } : {
     // Valores padrão caso não haja dados.
     totalClients: 0,
