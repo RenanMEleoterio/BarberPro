@@ -126,7 +126,7 @@ export default function BarberDashboard() {
     // 4. Ganhos da Semana
     const ganhosSemana = agendamentosSemana
       .filter(apt => ['Realizado', 'Concluído', 'Atendido'].includes(apt.status))
-      .reduce((total, apt) => total + (Number(apt.preco) || 0), 0);
+      .reduce((total, apt) => total + (Number(apt.precoServico || apt.preco) || 0), 0);
 
     // 5. Porcentagem de Conclusão da Semana (Mantido cálculo mas não exibido no card principal)
     const totalSemana = agendamentosSemana.length;
