@@ -46,9 +46,10 @@ O arquivo `Program.cs` é o ponto de entrada da aplicação backend. Ele é resp
 
 #### 3.2.2. Controllers
 
-Os controladores são classes que herdam de `ControllerBase` e contêm métodos de ação que respondem a requisições HTTP. Eles são decorados com `[ApiController]` e `[Route]` para definir o comportamento da API. Exemplos de controladores incluem:
+Os controladores são classes que herdam de `ControllerBase` e contêm métodos de ação que respondem a requisições HTTP. Eles são decorados com `[ApiController]` e `[Route]` para definir o comportamento da API. A injeção de dependência é usada para fornecer serviços como o `BarbeariaContext` e o `ILogger`.
 
-*   **`AuthController.cs`**: Gerencia todas as operações relacionadas à autenticação e registro de usuários. Isso inclui login, cadastro de clientes, barbeiros e gerentes, cadastro de barbearias (que também cria um gerente inicial), autenticação via Google, e funcionalidades de recuperação/redefinição de senha. Ele utiliza `IAuthService` e `IGoogleAuthService` para a lógica de autenticação e interage com o `BarbeariaContext` para persistência de dados. As validações de entrada são realizadas diretamente nos métodos do controlador, retornando `BadRequest` em caso de falha.
+*   **`AuthController.cs`**: Gerencia todas as operações relacionadas à autenticação e registro de usuários.
+*   **`DashboardController.cs`**: Fornece os dados para os dashboards dos diferentes tipos de usuários (cliente, barbeiro e gerente). A ação `GetManagerDashboard`, por exemplo, foi refatorada para retornar um objeto de resposta completo com todas as informações necessárias para o frontend, além de implementar logs detalhados para facilitar a depuração. A injeção do `ILogger` permite um monitoramento robusto das requisições e a rápida identificação de erros.
 *   **`AgendamentoController.cs`**: Lida com a criação, leitura, atualização e exclusão de agendamentos.
 *   **`BarbeiroController.cs`**: Gerencia operações relacionadas aos barbeiros, como listagem, detalhes e atualização de perfil.
 *   **`BarbeariaController.cs`**: Permite a gestão de informações da barbearia, como serviços e horários.
