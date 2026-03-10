@@ -114,16 +114,16 @@ namespace BarbeariaSaaS.Controllers
                 .Include(a => a.Barbeiro)
                 .Include(a => a.AgendamentoServicos)
                     .ThenInclude(asv => asv.Servico)
-                .Where(a => a.Barbeiro.BarbeariaId == barbeariaId)
+                .Where(a => a.Barbeiro != null && a.Barbeiro.BarbeariaId == barbeariaId)
                 .Select(a => new
                 {
                     id = a.Id,
-                    clienteNome = a.Cliente.Nome,
-                    barbeiroNome = a.Barbeiro.Nome,
+                    clienteNome = a.Cliente != null ? a.Cliente.Nome : string.Empty,
+                    barbeiroNome = a.Barbeiro != null ? a.Barbeiro.Nome : string.Empty,
                     dataHora = a.DataHora,
                     status = a.Status.ToString(),
                     tipoServico = a.AgendamentoServicos != null && a.AgendamentoServicos.Any()
-                        ? string.Join(" + ", a.AgendamentoServicos.Select(s => s.Servico.Nome))
+                        ? string.Join(" + ", a.AgendamentoServicos.Select(s => s.Servico != null ? s.Servico.Nome : string.Empty))
                         : a.TipoServico,
                     precoServico = a.PrecoServico
                 })
@@ -145,7 +145,7 @@ namespace BarbeariaSaaS.Controllers
 
             var agendamentosHoje = await _context.Agendamentos
                 .Include(a => a.Barbeiro)
-                .Where(a => a.Barbeiro.BarbeariaId == barbeariaId && 
+                .Where(a => a.Barbeiro != null && a.Barbeiro.BarbeariaId == barbeariaId && 
                            a.DataHora >= hoje && 
                            a.DataHora < amanha)
                 .CountAsync();

@@ -7,10 +7,10 @@ namespace BarbeariaSaaS.Models
     {
         public int AgendamentoId { get; set; }
         [ForeignKey("AgendamentoId")]
-        public virtual Agendamento Agendamento { get; set; }
+        public virtual Agendamento? Agendamento { get; set; }
 
         public int ServicoId { get; set; }
         [ForeignKey("ServicoId")]
-        public virtual Servico Servico { get; set; }
+        public virtual Servico? Servico { get; set; }
     }
 }

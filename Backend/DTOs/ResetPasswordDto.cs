@@ -9,11 +9,11 @@ namespace BarbeariaSaaS.DTOs
         /// <summary>
         /// O token de redefinição de senha recebido pelo usuário.
         /// </summary>
-        public string Token { get; set; }
+        public string Token { get; set; } = string.Empty;
         /// <summary>
         /// A nova senha para o usuário.
         /// </summary>
-        public string NewPassword { get; set; }
+        public string NewPassword { get; set; } = string.Empty;
     }
 }
 

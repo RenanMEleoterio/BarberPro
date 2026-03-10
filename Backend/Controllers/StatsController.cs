@@ -251,7 +251,7 @@ namespace BarbeariaSaaS.Controllers
                 .GroupBy(a => a.BarbeiroId)
                 .Select(g => new {
                     BarbeiroId = g.Key,
-                    Nome = g.First().Barbeiro.Nome,
+                    Nome = g.FirstOrDefault()?.Barbeiro?.Nome ?? "N/A",
                     Receita = g.Sum(a => a.PrecoServico ?? 0),
                     Clientes = g.Select(a => a.ClienteId).Distinct().Count(),
                     Avaliacao = 4.8m // Mock

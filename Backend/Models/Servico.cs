@@ -21,7 +21,7 @@ namespace BarbeariaSaaS.Models
         /// </summary>
         [Required]
         [StringLength(100)]
-        public string Nome { get; set; }
+        public string Nome { get; set; } = string.Empty;
 
         /// <summary>
         /// Preço do serviço. Campo obrigatório com precisão decimal (18 dígitos no total, 2 após a vírgula).
@@ -44,9 +44,9 @@ namespace BarbeariaSaaS.Models
         /// Propriedade de navegação para o objeto Barbearia. Define BarbeariaId como chave estrangeira.
         /// </summary>
         [ForeignKey("BarbeariaId")]
-        public virtual Barbearia Barbearia { get; set; }
+        public virtual Barbearia? Barbearia { get; set; }
 
-        public virtual ICollection<AgendamentoServico> AgendamentoServicos { get; set; }
+        public virtual ICollection<AgendamentoServico> AgendamentoServicos { get; set; } = new List<AgendamentoServico>();
     }
 }
 

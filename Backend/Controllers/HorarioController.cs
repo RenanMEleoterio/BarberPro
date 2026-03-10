@@ -123,7 +123,7 @@ namespace BarbeariaSaaS.Controllers
                     Id = h.Id,
                     DataHora = h.DataHora,
                     BarbeiroId = h.BarbeiroId,
-                    NomeBarbeiro = h.Barbeiro.Nome,
+                    NomeBarbeiro = h.Barbeiro != null ? h.Barbeiro.Nome : string.Empty,
                     EstaDisponivel = h.EstaDisponivel
                 })
                 .ToListAsync();

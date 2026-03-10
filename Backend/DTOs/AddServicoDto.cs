@@ -9,7 +9,7 @@ namespace BarbeariaSaaS.DTOs
         /// <summary>
         /// Nome do serviço, por exemplo, "Corte de Cabelo", "Barba", "Coloração".
         /// </summary>
-        public string Nome { get; set; }
+        public string Nome { get; set; } = string.Empty;
         /// <summary>
         /// Preço do serviço.
         /// </summary>

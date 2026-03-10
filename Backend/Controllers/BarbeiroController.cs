@@ -110,7 +110,7 @@ namespace BarbeariaSaaS.Controllers
 
                 return Ok(perfilAtualizado);
             }
-            catch (Exception ex)
+            catch
             {
                 return StatusCode(500, "Erro interno do servidor");
             }

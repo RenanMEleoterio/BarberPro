@@ -33,7 +33,8 @@ namespace BarbeariaSaaS.Controllers
         /// <returns>Um inteiro representando o ID do usuário.</returns>
         private int GetUsuarioId()
         {
-            return int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            return int.TryParse(userIdClaim, out var userId) ? userId : 0;
         }
 
         /// <summary>
@@ -44,7 +45,7 @@ namespace BarbeariaSaaS.Controllers
         private int? GetBarbeariaId()
         {
             var barbeariaIdClaim = User.FindFirst("BarbeariaId")?.Value;
-            return barbeariaIdClaim != null ? int.Parse(barbeariaIdClaim) : null;
+            return !string.IsNullOrEmpty(barbeariaIdClaim) && int.TryParse(barbeariaIdClaim, out var barbeariaId) ? barbeariaId : null;
         }
 
         /// <summary>
@@ -53,7 +54,7 @@ namespace BarbeariaSaaS.Controllers
         /// <returns>Uma string representando o tipo de usuário.</returns>
         private string GetTipoUsuario()
         {
-            return User.FindFirst("TipoUsuario")?.Value ?? "";
+            return User.FindFirst("TipoUsuario")?.Value ?? string.Empty;
         }
 
         /// <summary>
@@ -280,14 +281,14 @@ namespace BarbeariaSaaS.Controllers
                     {
                         Id = a.Id,
                         ClienteId = a.ClienteId,
-                        NomeCliente = a.Cliente.Nome,
-                        EmailCliente = a.Cliente.Email,
+                        NomeCliente = a.Cliente != null ? a.Cliente.Nome : string.Empty,
+                        EmailCliente = a.Cliente != null ? a.Cliente.Email : string.Empty,
                         BarbeiroId = a.BarbeiroId,
-                        NomeBarbeiro = a.Barbeiro.Nome,
+                        NomeBarbeiro = a.Barbeiro != null ? a.Barbeiro.Nome : string.Empty,
                         BarbeariaId = a.BarbeariaId,
-                        NomeBarbearia = a.Barbearia.Nome,
+                        NomeBarbearia = a.Barbearia != null ? a.Barbearia.Nome : string.Empty,
                         DataHora = a.DataHora,
-                        Observacoes = a.Observacoes,
+                        Observacoes = a.Observacoes ?? string.Empty,
                         Status = a.Status.ToString(),
                         TipoServico = a.TipoServico,
                         PrecoServico = a.PrecoServico,
@@ -366,17 +367,17 @@ namespace BarbeariaSaaS.Controllers
                 {
                     Id = a.Id,
                     ClienteId = a.ClienteId,
-                    NomeCliente = a.Cliente.Nome,
-                    EmailCliente = a.Cliente.Email,
+                    NomeCliente = a.Cliente != null ? a.Cliente.Nome : string.Empty,
+                    EmailCliente = a.Cliente != null ? a.Cliente.Email : string.Empty,
                     BarbeiroId = a.BarbeiroId,
-                    NomeBarbeiro = a.Barbeiro.Nome,
+                    NomeBarbeiro = a.Barbeiro != null ? a.Barbeiro.Nome : string.Empty,
                     BarbeariaId = a.BarbeariaId,
-                    NomeBarbearia = a.Barbearia.Nome,
+                    NomeBarbearia = a.Barbearia != null ? a.Barbearia.Nome : string.Empty,
                     DataHora = a.DataHora,
-                    Observacoes = a.Observacoes,
+                    Observacoes = a.Observacoes ?? string.Empty,
                     Status = a.Status.ToString(),
                     TipoServico = a.AgendamentoServicos != null && a.AgendamentoServicos.Any() 
-                        ? string.Join(" + ", a.AgendamentoServicos.Select(s => s.Servico.Nome)) 
+                        ? string.Join(" + ", a.AgendamentoServicos.Select(s => s.Servico != null ? s.Servico.Nome : string.Empty)) 
                         : a.TipoServico,
                     PrecoServico = a.PrecoServico,
                     DataCriacao = a.DataCriacao,
@@ -544,18 +545,16 @@ namespace BarbeariaSaaS.Controllers
             {
                 Id = agendamento.Id,
                 ClienteId = agendamento.ClienteId,
-                NomeCliente = agendamento.Cliente.Nome,
-                EmailCliente = agendamento.Cliente.Email,
+                NomeCliente = agendamento.Cliente != null ? agendamento.Cliente.Nome : string.Empty,
+                EmailCliente = agendamento.Cliente != null ? agendamento.Cliente.Email : string.Empty,
                 BarbeiroId = agendamento.BarbeiroId,
-                NomeBarbeiro = agendamento.Barbeiro.Nome,
+                NomeBarbeiro = agendamento.Barbeiro != null ? agendamento.Barbeiro.Nome : string.Empty,
                 BarbeariaId = agendamento.BarbeariaId,
-                NomeBarbearia = agendamento.Barbearia.Nome,
+                NomeBarbearia = agendamento.Barbearia != null ? agendamento.Barbearia.Nome : string.Empty,
                 DataHora = agendamento.DataHora,
-                Observacoes = agendamento.Observacoes,
+                Observacoes = agendamento.Observacoes ?? string.Empty,
                 Status = agendamento.Status.ToString(),
-                TipoServico = agendamento.AgendamentoServicos != null && agendamento.AgendamentoServicos.Any()
-                    ? string.Join(" + ", agendamento.AgendamentoServicos.Select(s => s.Servico.Nome))
-                    : agendamento.TipoServico,
+                TipoServico = agendamento.TipoServico,
                 PrecoServico = agendamento.PrecoServico,
                 DataCriacao = agendamento.DataCriacao,
                 ServicoIds = agendamento.AgendamentoServicos != null ? agendamento.AgendamentoServicos.Select(s => s.ServicoId).ToList() : new List<int>()

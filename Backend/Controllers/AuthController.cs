@@ -59,7 +59,7 @@ namespace BarbeariaSaaS.Controllers
                 .FirstOrDefaultAsync(u => u.Email == loginDto.Email);
 
             // Verifica se o usuário existe e se a senha fornecida corresponde ao hash armazenado.
-            if (usuario == null || !_authService.VerifyPassword(loginDto.Senha, usuario.SenhaHash))
+            if (usuario == null || string.IsNullOrEmpty(usuario.SenhaHash) || !_authService.VerifyPassword(loginDto.Senha, usuario.SenhaHash))
             {
                 return Unauthorized(new { message = "Email ou senha incorretos", field = "credentials" });
             }
@@ -75,7 +75,7 @@ namespace BarbeariaSaaS.Controllers
                 Email = usuario.Email,
                 TipoUsuario = usuario.TipoUsuario.ToString(),
                 BarbeariaId = usuario.BarbeariaId,
-                NomeBarbearia = usuario.Barbearia?.Nome,
+                NomeBarbearia = usuario.Barbearia?.Nome ?? string.Empty,
                 Token = token
             };
 
@@ -143,7 +143,7 @@ namespace BarbeariaSaaS.Controllers
                     Email = usuario.Email,
                     TipoUsuario = usuario.TipoUsuario.ToString(),
                     BarbeariaId = null,
-                    NomeBarbearia = null,
+                    NomeBarbearia = string.Empty,
                     Token = token
                 };
 

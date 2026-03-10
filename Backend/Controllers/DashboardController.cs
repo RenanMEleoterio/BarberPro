@@ -107,9 +107,9 @@ namespace BarbeariaSaaS.Controllers
                     Id = a.Id,
                     Data = dataLocal.ToString("dd/MM/yyyy"),
                     Hora = dataLocal.ToString("HH:mm"),
-                    Barbeiro = a.Barbeiro.Nome,
+                    Barbeiro = a.Barbeiro != null ? a.Barbeiro.Nome : string.Empty,
                     BarbeiroId = a.BarbeiroId,
-                    Barbearia = a.Barbearia.Nome,
+                    Barbearia = a.Barbearia != null ? a.Barbearia.Nome : string.Empty,
                     BarbeariaId = a.BarbeariaId,
                     Status = a.Status.ToString(),
                     Preco = a.PrecoServico,
@@ -125,9 +125,9 @@ namespace BarbeariaSaaS.Controllers
                     Id = proximoAgendamento.Id,
                     Data = dataLocal.ToString("dd/MM/yyyy"),
                     Hora = dataLocal.ToString("HH:mm"),
-                    Barbeiro = proximoAgendamento.Barbeiro?.Nome,
+                    Barbeiro = proximoAgendamento.Barbeiro?.Nome ?? string.Empty,
                     BarbeiroId = proximoAgendamento.BarbeiroId,
-                    Barbearia = proximoAgendamento.Barbearia?.Nome,
+                    Barbearia = proximoAgendamento.Barbearia?.Nome ?? string.Empty,
                     BarbeariaId = proximoAgendamento.BarbeariaId
                 };
             }
@@ -185,7 +185,7 @@ namespace BarbeariaSaaS.Controllers
                            (a.Status == StatusAgendamento.Realizado || a.Status == StatusAgendamento.Atendido))
                 .SumAsync(a => (a.PrecoServico.HasValue && a.PrecoServico.Value > 0) 
                     ? a.PrecoServico.Value 
-                    : (a.AgendamentoServicos != null ? a.AgendamentoServicos.Sum(s => s.Servico.Preco) : 0));
+                    : (a.AgendamentoServicos != null ? a.AgendamentoServicos.Sum(s => s.Servico != null ? s.Servico.Preco : 0) : 0));
 
             // Logs de depuração
             Console.WriteLine($"[Dashboard] Calculando ganhos semanais para Barbeiro ID: {id}");
@@ -200,14 +200,14 @@ namespace BarbeariaSaaS.Controllers
                 .OrderBy(a => a.DataHora)
                 .Select(a => new {
                     Id = a.Id,
-                    Cliente = a.Cliente.Nome,
+                    Cliente = a.Cliente != null ? a.Cliente.Nome : string.Empty,
                     Hora = a.DataHora.ToString("HH:mm"),
                     Status = a.Status.ToString(),
                     Preco = a.PrecoServico,
                     TipoServico = a.AgendamentoServicos != null && a.AgendamentoServicos.Any() 
-                        ? string.Join(" + ", a.AgendamentoServicos.Select(s => s.Servico.Nome)) 
+                        ? string.Join(" + ", a.AgendamentoServicos.Select(s => s.Servico != null ? s.Servico.Nome : string.Empty)) 
                         : a.TipoServico,
-                    Telefone = a.Cliente.Telefone
+                    Telefone = a.Cliente != null ? a.Cliente.Telefone : string.Empty
                 })
                 .ToListAsync();
 
@@ -465,11 +465,9 @@ namespace BarbeariaSaaS.Controllers
             var inicioMes = new DateTime(hoje.Year, hoje.Month, 1, 0, 0, 0, DateTimeKind.Utc);
             var fimMes = inicioMes.AddMonths(1);
 
-            var barbeirosDetalhados = new List<object>();
+            var barbeirosComEstatisticas = new List<object>();
             decimal receitaTotalBarbearia = 0;
             int totalClientesUnicos = 0;
-            double somaAvaliacoes = 0;
-            int totalAvaliacoes = 0;
 
             foreach (var barbeiro in barbeiros)
             {
@@ -500,7 +498,7 @@ namespace BarbeariaSaaS.Controllers
                     .Select(a => a.DataHora)
                     .FirstOrDefaultAsync();
 
-                barbeirosDetalhados.Add(new {
+                barbeirosComEstatisticas.Add(new {
                     Id = barbeiro.Id,
                     Nome = barbeiro.Nome,
                     Email = barbeiro.Email,

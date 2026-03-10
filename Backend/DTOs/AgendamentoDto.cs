@@ -157,7 +157,7 @@ namespace BarbeariaSaaS.DTOs
         /// <summary>
         /// O nome do barbeiro.
         /// </summary>
-        public string NomeBarbeiro { get; set; }
+        public string NomeBarbeiro { get; set; } = string.Empty;
         /// <summary>
         /// Indica se o horário está disponível para agendamento.
         /// </summary>
@@ -188,19 +188,19 @@ namespace BarbeariaSaaS.DTOs
         /// <summary>
         /// O nome do barbeiro.
         /// </summary>
-        public string Nome { get; set; }
+        public string Nome { get; set; } = string.Empty;
         /// <summary>
         /// URL da foto de perfil do barbeiro.
         /// </summary>
-        public string Foto { get; set; }
+        public string Foto { get; set; } = string.Empty;
         /// <summary>
         /// As especialidades do barbeiro (ex: "Corte Masculino", "Barba Modelada").
         /// </summary>
-        public string Especialidades { get; set; }
+        public string Especialidades { get; set; } = string.Empty;
         /// <summary>
         /// Uma descrição sobre o barbeiro.
         /// </summary>
-        public string Descricao { get; set; }
+        public string Descricao { get; set; } = string.Empty;
         /// <summary>
         /// Lista de horários disponíveis para este barbeiro.
         /// </summary>

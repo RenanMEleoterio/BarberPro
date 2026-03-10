@@ -83,10 +83,10 @@ namespace BarbeariaSaaS.Services
                 // Retorna as informações do usuário do Google em um objeto GoogleUserInfo.
                 return new GoogleUserInfo
                 {
-                    Sub = tokenInfo.GetProperty("sub").GetString(), // ID único do usuário no Google.
-                    Email = tokenInfo.GetProperty("email").GetString(), // Email do usuário.
-                    Name = tokenInfo.GetProperty("name").GetString(), // Nome completo do usuário.
-                    Picture = tokenInfo.TryGetProperty("picture", out var picture) ? picture.GetString() : null, // URL da foto de perfil (se disponível).
+                    Sub = tokenInfo.GetProperty("sub").GetString() ?? string.Empty, // ID único do usuário no Google.
+                    Email = tokenInfo.GetProperty("email").GetString() ?? string.Empty, // Email do usuário.
+                    Name = tokenInfo.GetProperty("name").GetString() ?? string.Empty, // Nome completo do usuário.
+                    Picture = tokenInfo.TryGetProperty("picture", out var picture) ? picture.GetString() ?? string.Empty : string.Empty, // URL da foto de perfil (se disponível).
                     EmailVerified = emailVerified // Status de verificação do email.
                 };
             }
