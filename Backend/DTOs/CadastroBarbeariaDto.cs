@@ -13,39 +13,39 @@ namespace BarbeariaSaaS.DTOs
         /// </summary>
         [Required(ErrorMessage = "O nome da barbearia é obrigatório.")]
         [MinLength(2, ErrorMessage = "O nome da barbearia deve ter pelo menos 2 caracteres.")]
-        public string Nome { get; set; }
+        public string Nome { get; set; } = string.Empty;
 
         /// <summary>
         /// O endereço físico da barbearia. Campo obrigatório.
         /// </summary>
         [Required(ErrorMessage = "O endereço é obrigatório.")]
-        public string Endereco { get; set; }
+        public string Endereco { get; set; } = string.Empty;
 
         /// <summary>
         /// O número de telefone de contato da barbearia. Campo obrigatório com formato de telefone válido.
         /// </summary>
         [Required(ErrorMessage = "O telefone é obrigatório.")]
         [Phone(ErrorMessage = "Formato de telefone inválido.")]
-        public string Telefone { get; set; }
+        public string Telefone { get; set; } = string.Empty;
 
         /// <summary>
         /// O endereço de e-mail da barbearia, que também será o e-mail do gerente inicial. Campo obrigatório com formato de e-mail válido.
         /// </summary>
         [Required(ErrorMessage = "O email é obrigatório.")]
         [EmailAddress(ErrorMessage = "Formato de email inválido.")]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         /// <summary>
         /// A senha para a conta do gerente inicial da barbearia. Campo obrigatório com mínimo de 6 caracteres.
         /// </summary>
         [Required(ErrorMessage = "A senha é obrigatória.")]
         [MinLength(6, ErrorMessage = "A senha deve ter pelo menos 6 caracteres.")]
-        public string Senha { get; set; }
+        public string Senha { get; set; } = string.Empty;
 
         /// <summary>
         /// URL ou caminho para o logo da barbearia (opcional).
         /// </summary>
-        public string Logo { get; set; }
+        public string Logo { get; set; } = string.Empty;
     }
 
     /// <summary>
@@ -61,15 +61,15 @@ namespace BarbeariaSaaS.DTOs
         /// <summary>
         /// O nome da barbearia cadastrada.
         /// </summary>
-        public string NomeBarbearia { get; set; }
+        public string NomeBarbearia { get; set; } = string.Empty;
         /// <summary>
         /// O código de convite gerado para a barbearia, usado para novos barbeiros se cadastrarem.
         /// </summary>
-        public string CodigoConvite { get; set; }
+        public string CodigoConvite { get; set; } = string.Empty;
         /// <summary>
         /// O código único da barbearia, usado para identificação interna ou em outras operações.
         /// </summary>
-        public string CodigoBarbearia { get; set; }
+        public string CodigoBarbearia { get; set; } = string.Empty;
     }
 }
 

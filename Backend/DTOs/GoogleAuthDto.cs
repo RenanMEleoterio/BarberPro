@@ -5,10 +5,10 @@ namespace BarbeariaSaaS.DTOs
     public class GoogleAuthDto
     {
         [Required]
-        public string IdToken { get; set; }
+        public string IdToken { get; set; } = string.Empty;
         
         [Required]
-        public string TipoUsuario { get; set; } // Cliente, Barbeiro, Gerente
+        public string TipoUsuario { get; set; } = string.Empty; // Cliente, Barbeiro, Gerente
         
         // Para barbeiros, é necessário o código de convite
         public string? CodigoConvite { get; set; }
@@ -28,10 +28,10 @@ namespace BarbeariaSaaS.DTOs
 
     public class GoogleUserInfo
     {
-        public string Sub { get; set; } // Google User ID
-        public string Email { get; set; }
-        public string Name { get; set; }
-        public string Picture { get; set; }
+        public string Sub { get; set; } = string.Empty; // Google User ID
+        public string Email { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Picture { get; set; } = string.Empty;
         public bool EmailVerified { get; set; }
     }
 }

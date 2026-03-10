@@ -21,21 +21,21 @@ namespace BarbeariaSaaS.Models
         /// </summary>
         [Required]
         [StringLength(100)]
-        public string Nome { get; set; }
+        public string Nome { get; set; } = string.Empty;
 
         /// <summary>
         /// Endereço físico da barbearia. Campo obrigatório com tamanho máximo de 200 caracteres.
         /// </summary>
         [Required]
         [StringLength(200)]
-        public string Endereco { get; set; }
+        public string Endereco { get; set; } = string.Empty;
 
         /// <summary>
         /// Telefone de contato da barbearia. Campo obrigatório com tamanho máximo de 20 caracteres.
         /// </summary>
         [Required]
         [StringLength(20)]
-        public string Telefone { get; set; }
+        public string Telefone { get; set; } = string.Empty;
 
         /// <summary>
         /// Email da barbearia. Campo obrigatório com formato de email válido e tamanho máximo de 100 caracteres.
@@ -43,27 +43,27 @@ namespace BarbeariaSaaS.Models
         [Required]
         [EmailAddress]
         [StringLength(100)]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         /// <summary>
         /// URL ou caminho para o logo da barbearia. Campo opcional com tamanho máximo de 500 caracteres.
         /// </summary>
         [StringLength(500)]
-        public string Logo { get; set; }
+        public string Logo { get; set; } = string.Empty;
 
         /// <summary>
         /// Código único para convite de novos usuários (barbeiros, gerentes) para esta barbearia. Campo obrigatório com tamanho máximo de 10 caracteres.
         /// </summary>
         [Required]
         [StringLength(10)]
-        public string CodigoConvite { get; set; }
+        public string CodigoConvite { get; set; } = string.Empty;
 
         /// <summary>
         /// Código único de identificação da barbearia. Campo obrigatório com tamanho máximo de 8 caracteres.
         /// </summary>
         [Required]
         [StringLength(8)]
-        public string CodigoBarbearia { get; set; }
+        public string CodigoBarbearia { get; set; } = string.Empty;
 
         /// <summary>
         /// Data de criação da barbearia. Definida automaticamente como UTC no momento da criação.

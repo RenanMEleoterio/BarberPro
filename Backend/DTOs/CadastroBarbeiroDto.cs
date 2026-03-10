@@ -13,28 +13,28 @@ namespace BarbeariaSaaS.DTOs
         /// </summary>
         [Required(ErrorMessage = "O nome é obrigatório.")]
         [StringLength(100, ErrorMessage = "O nome deve ter no máximo 100 caracteres.")]
-        public string Nome { get; set; }
+        public string Nome { get; set; } = string.Empty;
 
         /// <summary>
         /// O endereço de e-mail do barbeiro. Campo obrigatório com formato de e-mail válido.
         /// </summary>
         [Required(ErrorMessage = "O email é obrigatório.")]
         [EmailAddress(ErrorMessage = "Formato de email inválido.")]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         /// <summary>
         /// A senha para a conta do barbeiro. Campo obrigatório com mínimo de 6 caracteres.
         /// </summary>
         [Required(ErrorMessage = "A senha é obrigatória.")]
         [MinLength(6, ErrorMessage = "A senha deve ter pelo menos 6 caracteres.")]
-        public string Senha { get; set; }
+        public string Senha { get; set; } = string.Empty;
 
         /// <summary>
         /// O código único da barbearia à qual o barbeiro será associado. Campo obrigatório com comprimento máximo de 10 caracteres.
         /// </summary>
         [Required(ErrorMessage = "O código da barbearia é obrigatório.")]
         [StringLength(10, ErrorMessage = "O código da barbearia deve ter no máximo 10 caracteres.")]
-        public string CodigoBarbearia { get; set; }
+        public string CodigoBarbearia { get; set; } = string.Empty;
 
         /// <summary>
         /// Código de convite da barbearia. Opcional e usado como alternativa ao Código da Barbearia

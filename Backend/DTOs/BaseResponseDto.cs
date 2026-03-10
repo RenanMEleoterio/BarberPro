@@ -15,15 +15,15 @@ namespace BarbeariaSaaS.DTOs
         /// <summary>
         /// O nome completo do usuário.
         /// </summary>
-        public string Nome { get; set; }
+        public string Nome { get; set; } = string.Empty;
         /// <summary>
         /// O endereço de e-mail do usuário.
         /// </summary>
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
         /// <summary>
         /// O tipo de usuário (ex: "Cliente", "Barbeiro", "Gerente").
         /// </summary>
-        public string TipoUsuario { get; set; }
+        public string TipoUsuario { get; set; } = string.Empty;
         /// <summary>
         /// O ID da barbearia à qual o usuário está associado (nulo para clientes sem barbearia específica).
         /// </summary>
@@ -31,13 +31,13 @@ namespace BarbeariaSaaS.DTOs
         /// <summary>
         /// O nome da barbearia à qual o usuário está associado.
         /// </summary>
-        public string NomeBarbearia { get; set; }
+        public string NomeBarbearia { get; set; } = string.Empty;
         
         /// <summary>
         /// O hash da senha do usuário. Este campo é ignorado na serialização JSON para segurança.
         /// </summary>
         [JsonIgnore]
-        public string SenhaHash { get; set; }
+        public string SenhaHash { get; set; } = string.Empty;
     }
 
     /// <summary>
@@ -53,15 +53,15 @@ namespace BarbeariaSaaS.DTOs
         /// <summary>
         /// O nome completo do usuário.
         /// </summary>
-        public string Nome { get; set; }
+        public string Nome { get; set; } = string.Empty;
         /// <summary>
         /// O endereço de e-mail do usuário.
         /// </summary>
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
         /// <summary>
         /// O tipo de usuário (ex: "Cliente", "Barbeiro", "Gerente").
         /// </summary>
-        public string TipoUsuario { get; set; }
+        public string TipoUsuario { get; set; } = string.Empty;
         /// <summary>
         /// O ID da barbearia à qual o usuário está associado (nulo para clientes sem barbearia específica).
         /// </summary>
@@ -69,11 +69,11 @@ namespace BarbeariaSaaS.DTOs
         /// <summary>
         /// O nome da barbearia à qual o usuário está associado.
         /// </summary>
-        public string NomeBarbearia { get; set; }
+        public string NomeBarbearia { get; set; } = string.Empty;
         /// <summary>
         /// O token JWT (JSON Web Token) para autenticação futura.
         /// </summary>
-        public string Token { get; set; }
+        public string Token { get; set; } = string.Empty;
         
         // Dados sensíveis nunca devem ser incluídos
         // - Senha (hash ou plain text)

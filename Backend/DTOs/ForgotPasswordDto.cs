@@ -9,7 +9,7 @@ namespace BarbeariaSaaS.DTOs
         /// <summary>
         /// O endereço de email do usuário.
         /// </summary>
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
     }
 }
 

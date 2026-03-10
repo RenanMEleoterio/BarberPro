@@ -37,7 +37,7 @@ namespace BarbeariaSaaS.Models
         /// Propriedade de navegação para o objeto Cliente (usuário). Define ClienteId como chave estrangeira.
         /// </summary>
         [ForeignKey("ClienteId")]
-        public virtual Usuario Cliente { get; set; }
+        public virtual Usuario? Cliente { get; set; }
 
         /// <summary>
         /// O ID do barbeiro que realizará o serviço. Campo obrigatório.
@@ -48,7 +48,7 @@ namespace BarbeariaSaaS.Models
         /// Propriedade de navegação para o objeto Barbeiro (usuário). Define BarbeiroId como chave estrangeira.
         /// </summary>
         [ForeignKey("BarbeiroId")]
-        public virtual Usuario Barbeiro { get; set; }
+        public virtual Usuario? Barbeiro { get; set; }
 
         /// <summary>
         /// O ID da barbearia onde o agendamento será realizado. Campo obrigatório.
@@ -59,7 +59,7 @@ namespace BarbeariaSaaS.Models
         /// Propriedade de navegação para o objeto Barbearia. Define BarbeariaId como chave estrangeira.
         /// </summary>
         [ForeignKey("BarbeariaId")]
-        public virtual Barbearia Barbearia { get; set; }
+        public virtual Barbearia? Barbearia { get; set; }
 
         /// <summary>
         /// A data e hora do agendamento. Campo obrigatório. Será tratada como UTC antes de salvar.
@@ -72,7 +72,7 @@ namespace BarbeariaSaaS.Models
         /// </summary>
         [Required]
         [StringLength(100)]
-        public string TipoServico { get; set; }
+        public string TipoServico { get; set; } = string.Empty;
 
         /// <summary>
         /// O preço do serviço. Campo opcional.
@@ -97,7 +97,7 @@ namespace BarbeariaSaaS.Models
         [StringLength(50)]
         public string? MetodoPagamento { get; set; }
 
-        public virtual ICollection<AgendamentoServico> AgendamentoServicos { get; set; }
+        public virtual ICollection<AgendamentoServico> AgendamentoServicos { get; set; } = new List<AgendamentoServico>();
 
         /// <summary>
         /// A data e hora de criação do agendamento. Definida automaticamente como UTC no momento da criação.
@@ -116,7 +116,7 @@ namespace BarbeariaSaaS.Models
         /// Propriedade de navegação para o objeto HorarioDisponivel. Define HorarioDisponivelId como chave estrangeira.
         /// </summary>
         [ForeignKey("HorarioDisponivelId")]
-        public virtual HorarioDisponivel HorarioDisponivel { get; set; }
+        public virtual HorarioDisponivel? HorarioDisponivel { get; set; }
     }
 }
 

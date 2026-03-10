@@ -58,11 +58,11 @@ namespace BarbeariaSaaS.DTOs
         /// <summary>
         /// O nome do cliente.
         /// </summary>
-        public string NomeCliente { get; set; }
+        public string NomeCliente { get; set; } = string.Empty;
         /// <summary>
         /// O email do cliente.
         /// </summary>
-        public string EmailCliente { get; set; }
+        public string EmailCliente { get; set; } = string.Empty;
         /// <summary>
         /// O ID do barbeiro que realizará o serviço.
         /// </summary>
@@ -70,7 +70,7 @@ namespace BarbeariaSaaS.DTOs
         /// <summary>
         /// O nome do barbeiro.
         /// </summary>
-        public string NomeBarbeiro { get; set; }
+        public string NomeBarbeiro { get; set; } = string.Empty;
         /// <summary>
         /// O ID da barbearia.
         /// </summary>
@@ -78,7 +78,7 @@ namespace BarbeariaSaaS.DTOs
         /// <summary>
         /// O nome da barbearia.
         /// </summary>
-        public string NomeBarbearia { get; set; }
+        public string NomeBarbearia { get; set; } = string.Empty;
         /// <summary>
         /// A data e hora do agendamento.
         /// </summary>
@@ -86,11 +86,11 @@ namespace BarbeariaSaaS.DTOs
         /// <summary>
         /// Observações sobre o agendamento.
         /// </summary>
-        public string Observacoes { get; set; }
+        public string Observacoes { get; set; } = string.Empty;
         /// <summary>
         /// O status atual do agendamento (ex: "Confirmado", "Cancelado", "Realizado").
         /// </summary>
-        public string Status { get; set; }
+        public string Status { get; set; } = string.Empty;
         /// <summary>
         /// A data de criação do agendamento.
         /// </summary>
@@ -99,7 +99,7 @@ namespace BarbeariaSaaS.DTOs
         /// <summary>
         /// O tipo de serviço agendado (descrição).
         /// </summary>
-        public string TipoServico { get; set; }
+        public string TipoServico { get; set; } = string.Empty;
 
         /// <summary>
         /// O preço do serviço.

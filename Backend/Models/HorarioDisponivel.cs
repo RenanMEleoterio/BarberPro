@@ -32,7 +32,7 @@ namespace BarbeariaSaaS.Models
         /// Propriedade de navegação para o objeto Barbeiro (usuário). Define BarbeiroId como chave estrangeira.
         /// </summary>
         [ForeignKey("BarbeiroId")]
-        public virtual Usuario Barbeiro { get; set; }
+        public virtual Usuario? Barbeiro { get; set; }
 
         /// <summary>
         /// Indica se o horário está atualmente disponível para agendamento. Padrão é 'true'. Campo obrigatório.

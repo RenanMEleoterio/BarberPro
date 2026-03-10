@@ -40,7 +40,7 @@ namespace BarbeariaSaaS.Models
         /// </summary>
         [Required]
         [StringLength(100)]
-        public string Nome { get; set; }
+        public string Nome { get; set; } = string.Empty;
 
         /// <summary>
         /// Endereço de email do usuário. Campo obrigatório, deve ser único e ter formato de email válido. Tamanho máximo de 100 caracteres.
@@ -48,7 +48,7 @@ namespace BarbeariaSaaS.Models
         [Required]
         [EmailAddress]
         [StringLength(100)]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         /// <summary>
         /// Hash da senha do usuário. Campo opcional, pois usuários autenticados via Google podem não ter uma senha local. Tamanho máximo de 255 caracteres.
@@ -77,24 +77,24 @@ namespace BarbeariaSaaS.Models
         /// Propriedade de navegação para o objeto Barbearia. Define BarbeariaId como chave estrangeira.
         /// </summary>
         [ForeignKey("BarbeariaId")]
-        public virtual Barbearia Barbearia { get; set; }
+        public virtual Barbearia? Barbearia { get; set; }
 
         /// <summary>
         /// URL ou caminho para a foto de perfil do usuário. Campo opcional com tamanho máximo de 500 caracteres.
         /// </summary>
         [StringLength(500)]
-        public string Foto { get; set; }
+        public string Foto { get; set; } = string.Empty;
         /// <summary>
         /// Lista de especialidades do barbeiro (ex: 'Corte Masculino, Barba'). Campo opcional com tamanho máximo de 500 caracteres.
         /// </summary>
         [StringLength(500)]
-        public string Especialidades { get; set; }
+        public string Especialidades { get; set; } = string.Empty;
 
         /// <summary>
         /// Descrição ou biografia do usuário. Campo opcional com tamanho máximo de 1000 caracteres.
         /// </summary>
         [StringLength(1000)]
-        public string Descricao { get; set; }
+        public string Descricao { get; set; } = string.Empty;
 
         /// <summary>
         /// Data de criação do usuário. Definida automaticamente como UTC no momento da criação.
