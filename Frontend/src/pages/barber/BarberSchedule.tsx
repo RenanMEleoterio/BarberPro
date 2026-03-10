@@ -37,11 +37,10 @@ export default function BarberSchedule() {
     const day = String(today.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   });
-  const [filterByDate, setFilterByDate] = useState(true);
-  const [viewMode, setViewMode] = useState<'daily' | 'all'>('daily');
+  const [viewMode, setViewMode] = useState<'daily' | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('Todos');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   useEffect(() => {
     loadAppointments();
