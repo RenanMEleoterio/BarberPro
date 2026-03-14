@@ -160,3 +160,4 @@ if (args.Length > 0 && args[0] == "check-barbearias")
 app.Run();
 
 
+
