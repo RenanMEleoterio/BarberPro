@@ -106,3 +106,5 @@ namespace BarbeariaSaaS.Controllers
 }
 
 
+
+

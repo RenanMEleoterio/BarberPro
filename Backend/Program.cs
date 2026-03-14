@@ -58,6 +58,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // IGoogleAuthService é registrado com um HttpClient, útil para fazer requisições HTTP externas (e.g., para a API do Google).
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<HorarioService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
 
 // Configura as políticas de CORS (Cross-Origin Resource Sharing).
