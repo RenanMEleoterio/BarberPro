@@ -68,24 +68,27 @@ export default function ManagerBarbers() {
       if (user?.barbeariaId) {
         // Busca os barbeiros e estatísticas associadas à barbearia do gerente.
         const data = await apiService.getManagerBarbers(user.barbeariaId);
+        const barbeirosList = data.barbeiros || data.Barbeiros;
+        const estatisticasObj = data.estatisticas || data.Estatisticas;
+
         setBarbersData({
-          barbeiros: Array.isArray(data.Barbeiros) ? data.Barbeiros.map((b: any) => ({
-            id: b.Id?.toString() || '',
-            name: b.Name || 'Barbeiro',
-            email: b.Email || '',
-            phone: b.Phone || '',
-            specialties: Array.isArray(b.Specialties) ? b.Specialties : [],
-            rating: b.Rating || 0,
-            totalClients: b.TotalClients || 0,
-            monthlyRevenue: b.MonthlyRevenue || 0,
-            status: b.Status || 'inactive',
-            joinDate: b.JoinDate || new Date().toISOString()
+          barbeiros: Array.isArray(barbeirosList) ? barbeirosList.map((b: any) => ({
+            id: b.id?.toString() || b.Id?.toString() || '',
+            name: b.name || b.Name || 'Barbeiro',
+            email: b.email || b.Email || '',
+            phone: b.phone || b.Phone || '',
+            specialties: Array.isArray(b.specialties || b.Specialties) ? (b.specialties || b.Specialties) : [],
+            rating: b.rating || b.Rating || 0,
+            totalClients: b.totalClients || b.TotalClients || 0,
+            monthlyRevenue: b.monthlyRevenue || b.MonthlyRevenue || 0,
+            status: b.status || b.Status || 'inactive',
+            joinDate: b.joinDate || b.JoinDate || new Date().toISOString()
           })) : [],
           estatisticas: {
-            totalBarbeiros: data.Estatisticas?.TotalBarbeiros || 0,
-            barbeirosAtivos: data.Estatisticas?.BarbeirosAtivos || 0,
-            receitaTotal: data.Estatisticas?.ReceitaTotal || 0,
-            avaliacaoMedia: data.Estatisticas?.AvaliacaoMedia || 0
+            totalBarbeiros: estatisticasObj?.totalBarbeiros || estatisticasObj?.TotalBarbeiros || 0,
+            barbeirosAtivos: estatisticasObj?.barbeirosAtivos || estatisticasObj?.BarbeirosAtivos || 0,
+            receitaTotal: estatisticasObj?.receitaTotal || estatisticasObj?.ReceitaTotal || 0,
+            avaliacaoMedia: estatisticasObj?.avaliacaoMedia || estatisticasObj?.AvaliacaoMedia || 0
           }
         });
       } else {
