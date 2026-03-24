@@ -286,6 +286,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     apiService.clearToken();
   };
 
+  /**
+   * Efeito global para escutar expiração de JWT.
+   * O utilitário httpClient despacha esse evento se receber HTTP 401.
+   */
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      signOut();
+    };
+
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    
+    return () => {
+      window.removeEventListener('auth:unauthorized', handleUnauthorized);
+    };
+  }, []);
+
   return (
     <AuthContext.Provider value={{ user, loading, signIn, signUp, signUpBarber, signUpBarbershop, signInWithGoogle, signOut }}>
       {children}

@@ -35,6 +35,10 @@ export class HttpClient {
       const response = await fetch(url, config);
 
       if (!response.ok) {
+        if (response.status === 401) {
+          window.dispatchEvent(new Event('auth:unauthorized'));
+        }
+
         const errorData = await response.text();
         let errorMessage = 'Erro na requisição';
 
