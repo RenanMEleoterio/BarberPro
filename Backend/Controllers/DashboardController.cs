@@ -54,31 +54,31 @@ namespace BarbeariaSaaS.Controllers
             }
         }
 
-        [HttpGet("manager/{barbeariaId}")]
-        public async Task<ActionResult> GetManagerDashboard(int barbeariaId)
+        [HttpGet("manager/{managerId}")]
+        public async Task<ActionResult> GetManagerDashboard(int managerId)
         {
             try
             {
-                var response = await _dashboardService.GetManagerDashboardAsync(barbeariaId);
+                var response = await _dashboardService.GetManagerDashboardAsync(managerId);
                 if (response == null) return NotFound();
                 return Ok(response);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro no dashboard do gerente da barbearia {Id}", barbeariaId);
+                _logger.LogError(ex, "Erro no dashboard do gerente {Id}", managerId);
                 return StatusCode(500, "Ocorreu um erro interno");
             }
         }
 
-        [HttpGet("manager/{barbeariaId}/barbers")]
-        public async Task<ActionResult> GetManagerBarbers(int barbeariaId)
+        [HttpGet("manager/{managerId}/barbers")]
+        public async Task<ActionResult> GetManagerBarbers(int managerId)
         {
             try
             {
                 var userId = GetUserIdFromClaims();
                 if (userId == null) return Unauthorized();
 
-                var response = await _dashboardService.GetManagerBarbersAsync(barbeariaId, userId.Value);
+                var response = await _dashboardService.GetManagerBarbersAsync(managerId, userId.Value);
                 if (response == null) return NotFound();
                 return Ok(response);
             }
@@ -88,7 +88,7 @@ namespace BarbeariaSaaS.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao buscar barbeiros do gerente da barbearia {Id}", barbeariaId);
+                _logger.LogError(ex, "Erro ao buscar barbeiros do gerente {Id}", managerId);
                 return StatusCode(500, "Ocorreu um erro interno");
             }
         }

@@ -54,20 +54,22 @@ export default function ManagerBarbers() {
 
   // Efeito que carrega os dados dos barbeiros quando o componente é montado ou o usuário muda.
   useEffect(() => {
-    loadBarbersData();
-  }, [user]);
+    /**
+     * Carrega os dados dos barbeiros e as estatísticas da barbearia a partir da API.
+     * Atualiza os estados de carregamento, dados dos barbeiros e erro.
+     */
+    const loadBarbersData = async () => {
+      if (!user?.id) {
+        setError("Autenticação não encontrada. Faça login novamente.");
+        setLoading(false);
+        return;
+      }
 
-  /**
-   * Carrega os dados dos barbeiros e as estatísticas da barbearia a partir da API.
-   * Atualiza os estados de carregamento, dados dos barbeiros e erro.
-   */
-  const loadBarbersData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      if (user?.barbeariaId) {
+      try {
+        setLoading(true);
+        setError(null);
         // Busca os barbeiros e estatísticas associadas à barbearia do gerente.
-        const data = await apiService.getManagerBarbers(user.barbeariaId);
+        const data = await apiService.getManagerBarbers(Number(user.id));
         const barbeirosList = data.barbeiros || data.Barbeiros;
         const estatisticasObj = data.estatisticas || data.Estatisticas;
 
@@ -91,23 +93,23 @@ export default function ManagerBarbers() {
             avaliacaoMedia: estatisticasObj?.avaliacaoMedia || estatisticasObj?.AvaliacaoMedia || 0
           }
         });
-      } else {
-        setError("ID da barbearia não encontrado.");
+      } catch (err: any) {
+        console.error("Erro ao carregar barbeiros:", err);
+        if (err.response?.status !== 404) {
+          const message =
+            err instanceof Error && err.message
+              ? err.message
+              : "Erro ao carregar dados dos barbeiros";
+          setError(message);
+          toast.error(message);
+        }
+      } finally {
+        setLoading(false);
       }
-    } catch (err: any) {
-      console.error("Erro ao carregar barbeiros:", err);
-      if (err.response?.status !== 404) {
-        const message =
-          err instanceof Error && err.message
-            ? err.message
-            : "Erro ao carregar dados dos barbeiros";
-        setError(message);
-        toast.error(message);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    loadBarbersData();
+  }, [user]);
 
   // Extrai os barbeiros e estatísticas do estado, fornecendo valores padrão se não existirem.
   const barbers = barbersData?.barbeiros || [];

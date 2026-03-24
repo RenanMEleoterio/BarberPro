@@ -9,19 +9,19 @@ export const DashboardAPI = {
     return HttpClient.request<any>(`/dashboard/barber/${id}`);
   },
 
-  async getManagerDashboard(barbeariaId: number) {
-    return HttpClient.request<any>(`/dashboard/manager/${barbeariaId}`);
+  async getManagerDashboard(managerId: number) {
+    return HttpClient.request<any>(`/dashboard/manager/${managerId}`);
   },
 
-  async getManagerBarbers(barbeariaId: number) {
-    return HttpClient.request<any>(`/dashboard/manager/${barbeariaId}/barbers`);
+  async getManagerBarbers(managerId: number) {
+    return HttpClient.request<any>(`/dashboard/manager/${managerId}/barbers`);
   },
 
   async getBarberStats(id: number, periodo: string = 'semana') {
     return HttpClient.request<any>(`/stats/barber/${id}?periodo=${periodo}`);
   },
 
-  async getManagerStats(barbeariaId: number, periodo: string = 'mes') {
-    return HttpClient.request<any>(`/stats/manager/${barbeariaId}?periodo=${periodo}`);
+  async getManagerStats(managerId: number, periodo: string = 'mes') {
+    return HttpClient.request<any>(`/stats/manager/${managerId}?periodo=${periodo}`);
   }
 };

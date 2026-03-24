@@ -33,8 +33,8 @@ export default function ManagerDashboard() {
   const [error, setError] = useState<string | null>(null);
 
   const loadDashboardData = useCallback(async () => {
-    if (!user?.barbeariaId) {
-      setError("ID da barbearia não encontrado. Faça login novamente.");
+    if (!user?.id) {
+      setError("Autenticação não encontrada. Faça login novamente.");
       setLoading(false);
       return;
     }
@@ -42,7 +42,7 @@ export default function ManagerDashboard() {
     try {
       setLoading(true);
       setError(null);
-      const dashboardData = await apiService.getManagerDashboard(user.barbeariaId);
+      const dashboardData = await apiService.getManagerDashboard(Number(user.id));
       setData(dashboardData);
     } catch (err: any) {
       console.error("Erro ao carregar dashboard do gerente:", err);

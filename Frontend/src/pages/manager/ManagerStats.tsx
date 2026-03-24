@@ -78,7 +78,7 @@ export default function ManagerStats() {
     try {
       setLoading(true);
       setError(null);
-      if (user?.barbeariaId) {
+      if (user?.id) {
         // Mapeia os períodos do frontend para o formato esperado pelo backend.
         const periodoMap: { [key: string]: string } = {
           'semana': 'semana',
@@ -89,7 +89,7 @@ export default function ManagerStats() {
         
         const periodoBackend = periodoMap[selectedPeriod] || 'mes';
         // Chama o serviço de API para obter as estatísticas do gerente.
-        const data = await apiService.getManagerStats(user.barbeariaId, periodoBackend);
+        const data = await apiService.getManagerStats(Number(user.id), periodoBackend);
         setStatsData({
           totalRevenue: data.ReceitaTotal || 0,
           totalClients: data.TotalClientes || 0,

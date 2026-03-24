@@ -179,8 +179,16 @@ namespace BarbeariaSaaS.Services
             };
         }
 
-        public async Task<object> GetManagerDashboardAsync(int barbeariaId)
+        public async Task<object> GetManagerDashboardAsync(int managerId)
         {
+            var manager = await _context.Usuarios.FirstOrDefaultAsync(u => u.Id == managerId && u.TipoUsuario == TipoUsuario.Gerente);
+            if (manager == null || manager.BarbeariaId == null)
+            {
+                return null;
+            }
+
+            int barbeariaId = manager.BarbeariaId.Value;
+
             var barbearia = await _context.Barbearias.FirstOrDefaultAsync(b => b.Id == barbeariaId);
             if (barbearia == null)
                 return null;
@@ -198,15 +206,16 @@ namespace BarbeariaSaaS.Services
 
             // Refatoração N+1: Buscar todos agendamentos relevantes do mês para a barbearia
             var agendamentosMes = await _context.Agendamentos
+                .Include(a => a.AgendamentoServicos).ThenInclude(asv => asv.Servico)
                 .Where(a => a.BarbeariaId == barbeariaId && a.DataHora >= inicioMes && a.DataHora < fimMes)
-                .Select(a => new { a.Id, a.BarbeiroId, a.Status, a.PrecoServico, a.MetodoPagamento, a.DataHora, a.ClienteId })
                 .ToListAsync();
 
             var agendamentosRealizadosMes = agendamentosMes.Where(a => a.Status == StatusAgendamento.Realizado).ToList();
 
             var totalAgendamentosMesBarbearia = agendamentosMes.Count;
             var agendamentosConcluidos = agendamentosRealizadosMes.Count;
-            var receitaTotal = agendamentosRealizadosMes.Sum(a => a.PrecoServico ?? 0);
+            var receitaTotal = agendamentosRealizadosMes.Sum(a => a.PrecoServico ?? 
+                (a.AgendamentoServicos?.Sum(s => s.Servico?.Preco ?? 0) ?? 0));
 
             var inicioSemana = hoje.AddDays(-(int)hoje.DayOfWeek);
             var performanceSemanal = new int[7];
@@ -228,18 +237,18 @@ namespace BarbeariaSaaS.Services
             {
                 var agsBarbeiro = agendamentosMes.Where(a => a.BarbeiroId == barbeiro.Id).ToList();
                 var realizados = agsBarbeiro.Where(a => a.Status == StatusAgendamento.Realizado).ToList();
-                var receitaMensal = realizados.Sum(a => a.PrecoServico ?? 0);
+                var receitaMensal = realizados.Sum(a => a.PrecoServico ?? (a.AgendamentoServicos?.Sum(s => s.Servico?.Preco ?? 0) ?? 0));
                 var clientesUnicos = agsBarbeiro.Select(a => a.ClienteId).Distinct().Count();
                 var ultimaAtividade = agsBarbeiro.OrderByDescending(a => a.DataHora).Select(a => (DateTime?)a.DataHora).FirstOrDefault();
 
-                return new
+                return new BarbeariaSaaS.Models.DTOs.BarbeiroEstatisticaDto
                 {
-                    barbeiro.Id,
-                    barbeiro.Nome,
-                    barbeiro.Email,
+                    Id = barbeiro.Id,
+                    Nome = barbeiro.Nome,
+                    Email = barbeiro.Email,
                     ReceitaMensal = receitaMensal,
                     ClientesUnicos = clientesUnicos,
-                    AvaliacaoMedia = 0.0,
+                    AvaliacaoMedia = 0.0m,
                     UltimaAtividade = ultimaAtividade
                 };
             }).ToList();
@@ -248,26 +257,44 @@ namespace BarbeariaSaaS.Services
             var pagamentosCartao = agendamentosRealizadosMes.Count(a => a.MetodoPagamento == "Cartao");
             var pagamentosDinheiro = agendamentosRealizadosMes.Count(a => a.MetodoPagamento == "Dinheiro");
 
-            return new
+            var totalPagamentos = pagamentosPix + pagamentosCartao + pagamentosDinheiro;
+            
+            return new BarbeariaSaaS.Models.DTOs.ManagerDashboardDto
             {
-                Barbearia = new { barbearia.Id, barbearia.Nome, barbearia.CodigoConvite, barbearia.CodigoBarbearia, barbearia.Endereco, barbearia.Telefone, barbearia.Email },
+                Barbearia = new BarbeariaSaaS.Models.DTOs.BarbeariaDataDto 
+                { 
+                    Id = barbearia.Id, 
+                    Nome = barbearia.Nome, 
+                    CodigoConvite = barbearia.CodigoConvite, 
+                    CodigoBarbearia = barbearia.CodigoBarbearia, 
+                    Endereco = barbearia.Endereco, 
+                    Telefone = barbearia.Telefone ?? "", 
+                    Email = barbearia.Email 
+                },
                 TotalBarbeiros = totalBarbeiros,
                 AgendamentosMes = totalAgendamentosMesBarbearia,
                 ConcluidosMes = agendamentosConcluidos,
                 ReceitaTotal = receitaTotal,
                 PerformanceSemanal = performanceSemanal,
                 Barbeiros = barbeirosComEstatisticas,
-                FormasPagamento = new { Pix = pagamentosPix, Cartao = pagamentosCartao, Dinheiro = pagamentosDinheiro }
+                FormasPagamento = new BarbeariaSaaS.Models.DTOs.FormasPagamentoDto 
+                { 
+                    Pix = totalPagamentos > 0 ? (Math.Round((decimal)pagamentosPix * 100 / totalPagamentos, 1)) : 0, 
+                    Cartao = totalPagamentos > 0 ? (Math.Round((decimal)pagamentosCartao * 100 / totalPagamentos, 1)) : 0, 
+                    Dinheiro = totalPagamentos > 0 ? (Math.Round((decimal)pagamentosDinheiro * 100 / totalPagamentos, 1)) : 0 
+                }
             };
         }
 
-        public async Task<object> GetManagerBarbersAsync(int barbeariaId, int userId)
+        public async Task<object> GetManagerBarbersAsync(int managerId, int userId)
         {
             var gerente = await _context.Usuarios
-                .FirstOrDefaultAsync(u => u.Id == userId && u.TipoUsuario == TipoUsuario.Gerente && u.BarbeariaId == barbeariaId);
+                .FirstOrDefaultAsync(u => u.Id == userId && u.Id == managerId && u.TipoUsuario == TipoUsuario.Gerente);
 
-            if (gerente == null)
-                throw new UnauthorizedAccessException("Usuário ausente ou não tem permissão nesta barbearia");
+            if (gerente == null || gerente.BarbeariaId == null)
+                throw new UnauthorizedAccessException("Usuário ausente ou não tem permissão de gerente nesta barbearia");
+
+            int barbeariaId = gerente.BarbeariaId.Value;
 
             var barbearia = await _context.Barbearias.FirstOrDefaultAsync(b => b.Id == barbeariaId);
             if (barbearia == null)
@@ -283,8 +310,8 @@ namespace BarbeariaSaaS.Services
 
             // Refatoração N+1 Similar à GetManagerDashboardAsync
             var agendamentosMes = await _context.Agendamentos
+                .Include(a => a.AgendamentoServicos).ThenInclude(asv => asv.Servico)
                 .Where(a => a.BarbeariaId == barbeariaId && a.DataHora >= inicioMes && a.DataHora < fimMes)
-                .Select(a => new { a.BarbeiroId, a.Status, a.PrecoServico, a.MetodoPagamento, a.DataHora, a.ClienteId })
                 .ToListAsync();
 
             var barbeirosComEstatisticas = barbeiros.Select(barbeiro =>
@@ -292,11 +319,11 @@ namespace BarbeariaSaaS.Services
                 var agsBarbeiro = agendamentosMes.Where(a => a.BarbeiroId == barbeiro.Id).ToList();
                 var agsRealizados = agsBarbeiro.Where(a => a.Status == StatusAgendamento.Realizado).ToList();
                 
-                var avaliacao = 0.0; // TODO: Obter da tabela de avaliações no futuro
+                var avaliacao = 0.0m; // TODO: Obter da tabela de avaliações no futuro
                 if (barbeiro.Nome == "Sandro") {
-                    avaliacao = 4.8;
+                    avaliacao = 4.8m;
                 } else if (barbeiro.Nome == "Diego") {
-                    avaliacao = 5.0;
+                    avaliacao = 5.0m;
                 }
 
                 return new
@@ -308,7 +335,7 @@ namespace BarbeariaSaaS.Services
                     Specialties = !string.IsNullOrEmpty(barbeiro.Especialidades) ? barbeiro.Especialidades.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList() : new List<string>(),
                     Rating = avaliacao,
                     TotalClients = agsBarbeiro.Select(a => a.ClienteId).Distinct().Count(),
-                    MonthlyRevenue = agsRealizados.Sum(a => a.PrecoServico ?? 0),
+                    MonthlyRevenue = agsRealizados.Sum(a => a.PrecoServico ?? (a.AgendamentoServicos?.Sum(s => s.Servico?.Preco ?? 0) ?? 0)),
                     Status = "active", // Barbeiros retornados na lista da barbearia geralmente estão ativos, pode ser melhorado
                     JoinDate = barbeiro.DataCriacao.ToString("yyyy-MM-ddTHH:mm:ssZ"),
                 };
@@ -316,7 +343,7 @@ namespace BarbeariaSaaS.Services
 
             var agsAllRealizados = agendamentosMes.Where(a => a.Status == StatusAgendamento.Realizado).ToList();
             var totalPagamentos = agsAllRealizados.Count;
-            var receitaTotal = agsAllRealizados.Sum(a => a.PrecoServico ?? 0);
+            var receitaTotal = agsAllRealizados.Sum(a => a.PrecoServico ?? (a.AgendamentoServicos?.Sum(s => s.Servico?.Preco ?? 0) ?? 0));
             
             // Calculando avaliação média da barbearia (mockado ou real)
             var sumAvaliacoes = barbeirosComEstatisticas.Sum(b => b.Rating);

@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -157,21 +158,24 @@ namespace BarbeariaSaaS.Controllers
 
         /// <summary>
         /// Retorna estatísticas detalhadas para uma barbearia específica, destinadas a gerentes.
-        /// Inclui receita total, total de clientes, total de agendamentos, avaliação média (mock),
-        /// performance mensal, serviços mais populares, ranking de barbeiros e progresso da meta mensal.
-        /// O período das estatísticas pode ser especificado (mês, trimestre, ano, semana).
+        /// O ID passado é o ID do Gerente. A barbearia será inferida a partir do gerente.
         /// </summary>
-        /// <param name="barbeariaId">O ID da barbearia.</param>
+        /// <param name="managerId">O ID do gerente.</param>
         /// <param name="periodo">O período para o qual as estatísticas devem ser calculadas (ex: "mes", "trimestre", "ano", "semana"). Padrão é "mes".</param>
         /// <returns>ActionResult contendo um objeto anônimo com as estatísticas da barbearia ou NotFound se a barbearia não for encontrada.</returns>
-        [HttpGet("manager/{barbeariaId}")]
-        public async Task<ActionResult> GetManagerStats(int barbeariaId, [FromQuery] string periodo = "mes")
+        [HttpGet("manager/{managerId}")]
+        public async Task<ActionResult> GetManagerStats(int managerId, [FromQuery] string periodo = "mes")
         {
-            var barbearia = await _context.Barbearias
-                .FirstOrDefaultAsync(b => b.Id == barbeariaId);
+            var manager = await _context.Usuarios.FirstOrDefaultAsync(u => u.Id == managerId && u.TipoUsuario == TipoUsuario.Gerente);
+            if (manager == null || manager.BarbeariaId == null)
+            {
+                return NotFound("Gerente não encontrado ou não associado a uma barbearia.");
+            }
 
-            if (barbearia == null)
-                return NotFound();
+            int barbeariaId = manager.BarbeariaId.Value;
+
+            var barbearia = await _context.Barbearias.FirstOrDefaultAsync(b => b.Id == barbeariaId);
+            if (barbearia == null) return NotFound();
 
             DateTime dataInicio, dataFim;
             switch (periodo.ToLower())
@@ -197,16 +201,21 @@ namespace BarbeariaSaaS.Controllers
 
             var agendamentos = await _context.Agendamentos
                 .Include(a => a.Barbeiro)
+                .Include(a => a.AgendamentoServicos).ThenInclude(asv => asv.Servico)
                 .Where(a => a.BarbeariaId == barbeariaId && a.DataHora >= dataInicio && a.DataHora < dataFim)
                 .ToListAsync();
 
-            var receitaTotal = agendamentos.Where(a => a.Status == StatusAgendamento.Realizado).Sum(a => a.PrecoServico ?? 0);
+            var agendamentosRealizados = agendamentos.Where(a => a.Status == StatusAgendamento.Realizado).ToList();
+
+            var receitaTotal = agendamentosRealizados.Sum(a => a.PrecoServico ?? 
+                (a.AgendamentoServicos?.Sum(s => s.Servico?.Preco ?? 0) ?? 0));
+                
             var totalClientes = agendamentos.Select(a => a.ClienteId).Distinct().Count();
             var totalAgendamentos = agendamentos.Count;
             var avaliacaoMedia = 4.7m; // Mock
 
             // Performance mensal (últimos 5 meses)
-            var performanceMensal = new object[5];
+            var performanceMensal = new List<BarbeariaSaaS.Models.DTOs.PerformanceMesDto>();
             for (int i = 4; i >= 0; i--)
             {
                 var mesInicio = DateTime.Now.AddMonths(-i).Date;
@@ -214,45 +223,44 @@ namespace BarbeariaSaaS.Controllers
                 var mesFim = mesInicio.AddMonths(1);
 
                 var agendamentosMes = await _context.Agendamentos
+                    .Include(a => a.AgendamentoServicos).ThenInclude(asv => asv.Servico)
                     .Where(a => a.BarbeariaId == barbeariaId && a.DataHora >= mesInicio && a.DataHora < mesFim)
-                    .CountAsync();
+                    .ToListAsync();
 
-                var receitaMes = await _context.Agendamentos
-                    .Where(a => a.BarbeariaId == barbeariaId && 
-                               a.DataHora >= mesInicio && 
-                               a.DataHora < mesFim && 
-                               a.Status == StatusAgendamento.Realizado)
-                    .SumAsync(a => a.PrecoServico ?? 0);
+                var receitaMes = agendamentosMes
+                    .Where(a => a.Status == StatusAgendamento.Realizado)
+                    .Sum(a => a.PrecoServico ?? (a.AgendamentoServicos?.Sum(s => s.Servico?.Preco ?? 0) ?? 0));
 
-                performanceMensal[4 - i] = new {
+                performanceMensal.Add(new BarbeariaSaaS.Models.DTOs.PerformanceMesDto {
                     Mes = mesInicio.ToString("MMM"),
                     Receita = receitaMes,
-                    Agendamentos = agendamentosMes
-                };
+                    Agendamentos = agendamentosMes.Count
+                });
             }
 
             // Serviços mais populares
             var servicosPopulares = agendamentos
-                .Where(a => !string.IsNullOrEmpty(a.TipoServico))
-                .GroupBy(a => a.TipoServico)
-                .Select(g => new {
+                .SelectMany(a => a.AgendamentoServicos)
+                .Where(asv => asv.Servico != null)
+                .GroupBy(asv => asv.Servico.Nome)
+                .Select(g => new BarbeariaSaaS.Models.DTOs.ServicoPopularDto {
                     Servico = g.Key,
                     Quantidade = g.Count(),
-                    Porcentagem = Math.Round((double)g.Count() / agendamentos.Count * 100, 1),
-                    Receita = g.Where(a => a.Status == StatusAgendamento.Realizado).Sum(a => a.PrecoServico ?? 0)
+                    Porcentagem = Math.Round((decimal)g.Count() / Math.Max(agendamentos.SelectMany(a => a.AgendamentoServicos).Count(), 1) * 100, 1),
+                    Receita = g.Where(asv => asv.Agendamento.Status == StatusAgendamento.Realizado)
+                               .Sum(asv => asv.Servico.Preco)
                 })
                 .OrderByDescending(s => s.Quantidade)
                 .Take(4)
                 .ToList();
 
             // Ranking de barbeiros
-            var rankingBarbeiros = agendamentos
-                .Where(a => a.Status == StatusAgendamento.Realizado)
+            var rankingBarbeiros = agendamentosRealizados
                 .GroupBy(a => a.BarbeiroId)
-                .Select(g => new {
+                .Select(g => new BarbeariaSaaS.Models.DTOs.BarbeiroTopDto {
                     BarbeiroId = g.Key,
                     Nome = g.FirstOrDefault()?.Barbeiro?.Nome ?? "N/A",
-                    Receita = g.Sum(a => a.PrecoServico ?? 0),
+                    Receita = g.Sum(a => a.PrecoServico ?? (a.AgendamentoServicos?.Sum(s => s.Servico?.Preco ?? 0) ?? 0)),
                     Clientes = g.Select(a => a.ClienteId).Distinct().Count(),
                     Avaliacao = 4.8m // Mock
                 })
@@ -260,11 +268,11 @@ namespace BarbeariaSaaS.Controllers
                 .Take(4)
                 .ToList();
 
-            // Meta mensal
             var metaMensal = 20000m; // Mock - implementar configuração
-            var progressoMeta = Math.Round((double)(receitaTotal / metaMensal) * 100, 1);
+            var progressoMeta = metaMensal > 0 ? Math.Round((receitaTotal / metaMensal) * 100, 1) : 0;
 
-            var response = new {
+            var response = new BarbeariaSaaS.Models.DTOs.ManagerStatsDto 
+            {
                 ReceitaTotal = receitaTotal,
                 TotalClientes = totalClientes,
                 TotalAgendamentos = totalAgendamentos,
@@ -272,17 +280,17 @@ namespace BarbeariaSaaS.Controllers
                 PerformanceMensal = performanceMensal,
                 ServicosPopulares = servicosPopulares,
                 RankingBarbeiros = rankingBarbeiros,
-                MetaMensal = new {
+                MetaMensal = new BarbeariaSaaS.Models.DTOs.MetaMensalDto {
                     Meta = metaMensal,
                     Atual = receitaTotal,
                     Progresso = progressoMeta
                 },
-                Eficiencia = new {
+                Eficiencia = new BarbeariaSaaS.Models.DTOs.EficienciaDto {
                     TempoMedioCorte = 25,
                     TempoMedioBarba = 15,
                     TempoMedioCompleto = 40
                 },
-                Satisfacao = new {
+                Satisfacao = new BarbeariaSaaS.Models.DTOs.SatisfacaoDto {
                     Excelente = 78,
                     Bom = 18,
                     Regular = 4
