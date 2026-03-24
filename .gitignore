@@ -30,3 +30,14 @@ Frontend/dist/
 ####################################
 .DS_Store
 Thumbs.db
+
+####################################
+# Trae
+####################################
+.trae/
+
+####################################
+# Logs
+####################################
+Backend/build_log.txt
+Frontend/src/pages/barber/BarberSchedule.test.tsx
