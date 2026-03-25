@@ -212,6 +212,14 @@ namespace BarbeariaSaaS.Services
 
             var agendamentosRealizadosMes = agendamentosMes.Where(a => a.Status == StatusAgendamento.Realizado).ToList();
 
+            _logger.LogWarning("==== DEBUG MANAGER DASHBOARD ====");
+            _logger.LogWarning("ManagerId Recebido: {ManagerId}", managerId);
+            _logger.LogWarning("BarbeariaId Refletido: {BarbeariaId} ({Nome})", barbeariaId, barbearia.Nome);
+            _logger.LogWarning("Filtro de Data (Mês Atual): Entre {Inicio} e {Fim}", inicioMes, fimMes);
+            _logger.LogWarning("Agendamentos Recuperados Brutos no BD: {Count}", agendamentosMes.Count);
+            _logger.LogWarning("Desses, qtd com Status == Realizado(4): {Count}", agendamentosRealizadosMes.Count);
+            _logger.LogWarning("=============================");
+
             var totalAgendamentosMesBarbearia = agendamentosMes.Count;
             var agendamentosConcluidos = agendamentosRealizadosMes.Count;
             var receitaTotal = agendamentosRealizadosMes.Sum(a => a.PrecoServico ?? 

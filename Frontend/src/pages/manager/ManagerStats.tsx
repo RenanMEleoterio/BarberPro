@@ -55,7 +55,7 @@ interface StatsData {
  */
 export default function ManagerStats() {
   // Estado para o período selecionado (semana, mês, trimestre, ano).
-  const [selectedPeriod, setSelectedPeriod] = useState('mes');
+  const [selectedPeriod, setSelectedPeriod] = useState('ano');
   // Estado para armazenar os dados de estatísticas.
   const [statsData, setStatsData] = useState<StatsData | null>(null);
   // Estado para controlar o status de carregamento.

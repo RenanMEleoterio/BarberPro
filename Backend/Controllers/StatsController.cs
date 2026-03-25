@@ -16,14 +16,16 @@ namespace BarbeariaSaaS.Controllers
     public class StatsController : ControllerBase
     {
         private readonly BarbeariaContext _context;
+        private readonly ILogger<StatsController> _logger;
 
         /// <summary>
         /// Construtor do controlador. Injeta o contexto do banco de dados (BarbeariaContext) para permitir a interação com o Entity Framework Core.
         /// </summary>
         /// <param name="context">O contexto do banco de dados.</param>
-        public StatsController(BarbeariaContext context)
+        public StatsController(BarbeariaContext context, ILogger<StatsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         /// <summary>
@@ -213,6 +215,18 @@ namespace BarbeariaSaaS.Controllers
             var totalClientes = agendamentos.Select(a => a.ClienteId).Distinct().Count();
             var totalAgendamentos = agendamentos.Count;
             var avaliacaoMedia = 4.7m; // Mock
+
+            _logger.LogWarning("==== DEBUG MANAGER STATS ====");
+            _logger.LogWarning("ManagerId Recebido: {ManagerId}", managerId);
+            _logger.LogWarning("BarbeariaId Refletido: {BarbeariaId} ({Nome})", barbeariaId, barbearia.Nome);
+            _logger.LogWarning("Filtro de Data (Período: {Periodo}): Entre {Inicio} e {Fim}", periodo, dataInicio, dataFim);
+            _logger.LogWarning("Agendamentos Recuperados Bruto no BD: {Count}", agendamentos.Count);
+            _logger.LogWarning("Desses, qtd com Status == Realizado(4): {Count}", agendamentosRealizados.Count);
+            _logger.LogWarning("Servicos Populares: {Count} detectados", servicosPopulares?.Count ?? 0);
+            _logger.LogWarning("Top Barbeiros: {Count} detectados", rankingBarbeiros?.Count ?? 0);
+            _logger.LogWarning("Total de Clientes Distintos: {Count}", totalClientes);
+            _logger.LogWarning("Receita Mensal Somada: {Receita}", receitaTotal);
+            _logger.LogWarning("=============================");
 
             // Performance mensal (últimos 5 meses)
             var performanceMensal = new List<BarbeariaSaaS.Models.DTOs.PerformanceMesDto>();
