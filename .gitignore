@@ -40,4 +40,4 @@ Thumbs.db
 # Logs
 ####################################
 Backend/build_log.txt
-Frontend/src/pages/barber/BarberSchedule.test.tsx
+Backend/appsettings.Local.json

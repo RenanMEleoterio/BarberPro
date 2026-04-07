@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Calendar, Clock, CheckCircle } from 'lucide-react';
+import { getAppointmentStatusBadgeClass, isConfirmedAppointmentStatus } from '../../../utils/appointmentStatus';
 
 interface Appointment {
   id: number;
@@ -68,16 +69,10 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = ({ appointments
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    appointment.status === 'Confirmado' 
-                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
-                      : ['Realizado', 'Concluído', 'Atendido'].includes(appointment.status)
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                      : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-                  }`}>
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${getAppointmentStatusBadgeClass(appointment.status)}`}>
                     {appointment.status}
                   </span>
-                  {appointment.status === 'Confirmado' && onMarkAsDone && (
+                  {isConfirmedAppointmentStatus(appointment.status) && onMarkAsDone && (
                     <button 
                       onClick={() => onMarkAsDone(appointment.id)}
                       className="bg-green-500 hover:bg-green-600 text-white p-1.5 rounded-lg transition-colors shadow-sm"

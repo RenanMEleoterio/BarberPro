@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '../types';
 import { apiService, LoginResponse } from '../services/api';
+import { mapLoginResponseToUser } from './auth-helpers';
 
 /**
  * Define a interface para o contexto de autenticação, especificando os dados e funções disponíveis.
@@ -46,7 +47,7 @@ interface AuthContextType {
 }
 
 // Cria o contexto de autenticação com um valor inicial indefinido.
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 /**
  * Provedor de autenticação que gerencia o estado do usuário e as operações de autenticação.
@@ -60,6 +61,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
   // Estado para controlar o status de carregamento das operações de autenticação.
   const [loading, setLoading] = useState(false);
+
+  const applyAuthenticatedUser = (response: LoginResponse): User => {
+    apiService.setToken(response.token);
+    const mappedUser = mapLoginResponseToUser(response);
+    setUser(mappedUser);
+    return mappedUser;
+  };
 
   // Efeito para persistir o estado do usuário no localStorage sempre que ele muda.
   useEffect(() => {
@@ -81,22 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     try {
       const response: LoginResponse = await apiService.login(email, password);
-      
-      // Configura o token JWT no serviço de API para futuras requisições autenticadas.
-      apiService.setToken(response.token);
-      
-      // Mapeia a resposta da API para o formato de usuário esperado pelo frontend.
-      const mappedUser: User = {
-        id: response.id.toString(),
-        email: response.email,
-        name: response.nome,
-        role: mapTipoUsuarioToRole(response.tipoUsuario), // Converte o tipo de usuário do backend para o role do frontend.
-        barbeariaId: response.barbeariaId,
-        created_at: new Date().toISOString(),
-      };
-      
-      setUser(mappedUser); // Atualiza o estado do usuário.
-      return mappedUser;
+      return applyAuthenticatedUser(response);
     } catch (error: any) {
       console.error('Erro no login:', error);
       if (error?.message) {
@@ -128,20 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     try {
       const response: LoginResponse = await apiService.register(email, password, name, role, barbershopCode);
-      
-      apiService.setToken(response.token);
-      
-      const mappedUser: User = {
-        id: response.id.toString(),
-        email: response.email,
-        name: response.nome,
-        role: mapTipoUsuarioToRole(response.tipoUsuario),
-        barbeariaId: response.barbeariaId,
-        created_at: new Date().toISOString(),
-      };
-      
-      setUser(mappedUser);
-      return mappedUser;
+      return applyAuthenticatedUser(response);
     } catch (error: any) {
       console.error('Erro no cadastro:', error);
       // Preserva a mensagem de erro detalhada do backend, se disponível.
@@ -169,20 +149,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     try {
       const response: LoginResponse = await apiService.registerBarber(email, password, name, barbershopCode, specialties, description);
-      
-      apiService.setToken(response.token);
-      
-      const mappedUser: User = {
-        id: response.id.toString(),
-        email: response.email,
-        name: response.nome,
-        role: mapTipoUsuarioToRole(response.tipoUsuario),
-        barbeariaId: response.barbeariaId,
-        created_at: new Date().toISOString(),
-      };
-      
-      setUser(mappedUser);
-      return mappedUser;
+      return applyAuthenticatedUser(response);
     } catch (error) {
       console.error("Erro no cadastro de barbeiro:", error);
       throw new Error("Erro ao criar conta de barbeiro");
@@ -205,20 +172,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     try {
       const response: LoginResponse = await apiService.registerBarbershop(name, address, phone, email, password);
-      
-      apiService.setToken(response.token);
-      
-      const mappedUser: User = {
-        id: response.id.toString(),
-        email: response.email,
-        name: response.nome,
-        role: mapTipoUsuarioToRole(response.tipoUsuario),
-        barbeariaId: response.barbeariaId,
-        created_at: new Date().toISOString(),
-      };
-      
-      setUser(mappedUser);
-      return mappedUser;
+      return applyAuthenticatedUser(response);
     } catch (error: any) {
       console.error("Erro no cadastro de barbearia:", error);
       if (error?.message) {
@@ -252,20 +206,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     try {
       const response: LoginResponse = await apiService.googleAuth(idToken, userType, additionalData);
-      
-      apiService.setToken(response.token);
-      
-      const mappedUser: User = {
-        id: response.id.toString(),
-        email: response.email,
-        name: response.nome,
-        role: mapTipoUsuarioToRole(response.tipoUsuario),
-        barbeariaId: response.barbeariaId,
-        created_at: new Date().toISOString(),
-      };
-      
-      setUser(mappedUser);
-      return mappedUser;
+      return applyAuthenticatedUser(response);
     } catch (error: any) {
       console.error('Erro na autenticação Google:', error);
       if (error?.message) {
@@ -310,24 +251,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * Função auxiliar para mapear o tipo de usuário retornado pelo backend para o formato de role usado no frontend.
- * @param {string} tipoUsuario - O tipo de usuário retornado pela API (ex: "Cliente", "Barbeiro", "Gerente").
- * @returns {'client' | 'barber' | 'manager'} - O role correspondente no frontend.
- */
-function mapTipoUsuarioToRole(tipoUsuario: string): 'client' | 'barber' | 'manager' {
-  switch (tipoUsuario.toLowerCase()) {
-    case 'cliente':
-      return 'client';
-    case 'barbeiro':
-      return 'barber';
-    case 'gerente':
-      return 'manager';
-    default:
-      return 'client';
-  }
-}
-
-/**
  * Hook personalizado para consumir o contexto de autenticação.
  * Garante que o hook seja usado dentro de um AuthProvider.
  * @returns {AuthContextType} - O objeto do contexto de autenticação.
@@ -340,5 +263,3 @@ export function useAuth() {
   }
   return context;
 }
-
-

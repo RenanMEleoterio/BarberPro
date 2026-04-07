@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 using BarbeariaSaaS.Data;
 using BarbeariaSaaS.DTOs;
+using BarbeariaSaaS.Extensions;
 using BarbeariaSaaS.Models;
 using BarbeariaSaaS.Services;
 
@@ -33,24 +33,6 @@ namespace BarbeariaSaaS.Controllers
         }
 
         /// <summary>
-        /// Retorna o ID do usuário logado a partir dos claims do token JWT.
-        /// </summary>
-        /// <returns>Um inteiro representando o ID do usuário.</returns>
-        private int GetUsuarioId()
-        {
-            return int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-        }
-
-        /// <summary>
-        /// Retorna o tipo de usuário logado (e.g., "Cliente", "Barbeiro", "Gerente") a partir dos claims do token JWT.
-        /// </summary>
-        /// <returns>Uma string representando o tipo de usuário.</returns>
-        private string GetTipoUsuario()
-        {
-            return User.FindFirst("TipoUsuario")?.Value ?? "";
-        }
-
-        /// <summary>
         /// Cria um novo horário disponível para o barbeiro logado. Verifica se o usuário é um barbeiro e se o horário já existe.
         /// </summary>
         /// <param name="criarDto">Objeto contendo a data e hora do novo horário.</param>
@@ -58,8 +40,8 @@ namespace BarbeariaSaaS.Controllers
         [HttpPost]
         public async Task<ActionResult<HorarioDisponivelDto>> CriarHorario(CriarHorarioDto criarDto)
         {
-            var usuarioId = GetUsuarioId();
-            var tipoUsuario = GetTipoUsuario();
+            var usuarioId = User.GetUserIdOrDefault();
+            var tipoUsuario = User.GetTipoUsuario();
 
             if (tipoUsuario != "Barbeiro")
             {
@@ -78,7 +60,7 @@ namespace BarbeariaSaaS.Controllers
             var horario = new HorarioDisponivel
             {
                 BarbeiroId = usuarioId,
-                DataHora = criarDto.DataHora,
+                DataHora = AppDateTime.MarkAsUtc(criarDto.DataHora),
                 EstaDisponivel = true
             };
 
@@ -106,8 +88,8 @@ namespace BarbeariaSaaS.Controllers
         [HttpGet("meus-horarios")]
         public async Task<ActionResult<List<HorarioDisponivelDto>>> GetMeusHorarios()
         {
-            var usuarioId = GetUsuarioId();
-            var tipoUsuario = GetTipoUsuario();
+            var usuarioId = User.GetUserIdOrDefault();
+            var tipoUsuario = User.GetTipoUsuario();
 
             if (tipoUsuario != "Barbeiro")
             {
@@ -141,8 +123,8 @@ namespace BarbeariaSaaS.Controllers
         [HttpPut("{id}/disponibilidade")]
         public async Task<IActionResult> AlterarDisponibilidade(int id, [FromBody] bool disponivel)
         {
-            var usuarioId = GetUsuarioId();
-            var tipoUsuario = GetTipoUsuario();
+            var usuarioId = User.GetUserIdOrDefault();
+            var tipoUsuario = User.GetTipoUsuario();
 
             var horario = await _context.HorariosDisponiveis
                 .FirstOrDefaultAsync(h => h.Id == id);
@@ -159,7 +141,7 @@ namespace BarbeariaSaaS.Controllers
             }
             else if (tipoUsuario == "Gerente")
             {
-                var barbeariaId = int.Parse(User.FindFirst("BarbeariaId")?.Value ?? "0");
+                var barbeariaId = User.GetBarbeariaId() ?? 0;
                 var barbeiro = await _context.Usuarios.FindAsync(horario.BarbeiroId);
                 if (barbeiro?.BarbeariaId != barbeariaId)
                 {
@@ -186,8 +168,8 @@ namespace BarbeariaSaaS.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> RemoverHorario(int id)
         {
-            var usuarioId = GetUsuarioId();
-            var tipoUsuario = GetTipoUsuario();
+            var usuarioId = User.GetUserIdOrDefault();
+            var tipoUsuario = User.GetTipoUsuario();
 
             var horario = await _context.HorariosDisponiveis
                 .FirstOrDefaultAsync(h => h.Id == id);
@@ -204,7 +186,7 @@ namespace BarbeariaSaaS.Controllers
             }
             else if (tipoUsuario == "Gerente")
             {
-                var barbeariaId = int.Parse(User.FindFirst("BarbeariaId")?.Value ?? "0");
+                var barbeariaId = User.GetBarbeariaId() ?? 0;
                 var barbeiro = await _context.Usuarios.FindAsync(horario.BarbeiroId);
                 if (barbeiro?.BarbeariaId != barbeariaId)
                 {
@@ -241,8 +223,8 @@ namespace BarbeariaSaaS.Controllers
         [HttpPost("lote")]
         public async Task<ActionResult<List<HorarioDisponivelDto>>> CriarHorariosLote([FromBody] List<CriarHorarioDto> horariosDto)
         {
-            var usuarioId = GetUsuarioId();
-            var tipoUsuario = GetTipoUsuario();
+            var usuarioId = User.GetUserIdOrDefault();
+            var tipoUsuario = User.GetTipoUsuario();
 
             if (tipoUsuario != "Barbeiro")
             {
@@ -260,7 +242,7 @@ namespace BarbeariaSaaS.Controllers
                 .Select(dto => new HorarioDisponivel
                 {
                     BarbeiroId = usuarioId,
-                    DataHora = dto.DataHora,
+                    DataHora = AppDateTime.MarkAsUtc(dto.DataHora),
                     EstaDisponivel = true
                 })
                 .ToList();
@@ -303,19 +285,19 @@ namespace BarbeariaSaaS.Controllers
         {
             try
             {
-                var tipoUsuario = GetTipoUsuario();
+                var tipoUsuario = User.GetTipoUsuario();
                 if (tipoUsuario != "Gerente" && tipoUsuario != "Barbeiro")
                 {
                     return Forbid("Apenas gerentes e barbeiros podem gerar horários");
                 }
 
-                if (tipoUsuario == "Barbeiro" && GetUsuarioId() != barbeiroId)
+                if (tipoUsuario == "Barbeiro" && User.GetUserIdOrDefault() != barbeiroId)
                 {
                     return Forbid("Barbeiros só podem gerar horários para si mesmos");
                 }
 
-                var inicio = dataInicio ?? DateTime.Today;
-                var fim = dataFim ?? DateTime.Today.AddDays(30);
+                var inicio = AppDateTime.MarkAsUtc(dataInicio ?? DateTime.Today);
+                var fim = AppDateTime.MarkAsUtc(dataFim ?? DateTime.Today.AddDays(30));
 
                 var horariosGerados = await _horarioService.GerarHorariosParaBarbeiro(
                     barbeiroId, inicio, fim, intervaloMinutos);
@@ -372,20 +354,20 @@ namespace BarbeariaSaaS.Controllers
         {
             try
             {
-                var tipoUsuario = GetTipoUsuario();
+                var tipoUsuario = User.GetTipoUsuario();
                 if (tipoUsuario != "Gerente")
                 {
                     return Forbid("Apenas gerentes podem gerar horários para toda a barbearia");
                 }
 
-                var barbeariaId = int.Parse(User.FindFirst("BarbeariaId")?.Value ?? "0");
+                var barbeariaId = User.GetBarbeariaId() ?? 0;
                 if (barbeariaId == 0)
                 {
                     return BadRequest(new { message = "Usuário não está vinculado a uma barbearia" });
                 }
 
-                var inicio = dataInicio ?? DateTime.Today;
-                var fim = dataFim ?? DateTime.Today.AddDays(30);
+                var inicio = AppDateTime.MarkAsUtc(dataInicio ?? DateTime.Today);
+                var fim = AppDateTime.MarkAsUtc(dataFim ?? DateTime.Today.AddDays(30));
 
                 var totalHorarios = await _horarioService.GerarHorariosParaBarbearia(
                     barbeariaId, inicio, fim, intervaloMinutos);
@@ -425,12 +407,10 @@ namespace BarbeariaSaaS.Controllers
         [Microsoft.AspNetCore.Authorization.AllowAnonymous]
         public async Task<IActionResult> FixSlots(int barbeiroId)
         {
-            var inicio = DateTime.Today;
-            var fim = DateTime.Today.AddDays(30);
+            var inicio = AppDateTime.MarkAsUtc(DateTime.Today);
+            var fim = AppDateTime.MarkAsUtc(DateTime.Today.AddDays(30));
             var result = await _horarioService.GerarHorariosParaBarbeiro(barbeiroId, inicio, fim);
             return Ok(new { message = "Horários corrigidos", count = result.Count });
         }
     }
 }
-
-

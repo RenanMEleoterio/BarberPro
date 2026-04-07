@@ -5,8 +5,10 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using BarbeariaSaaS.Data;
 using BarbeariaSaaS.Models;
+using BarbeariaSaaS.Services;
 
 namespace BarbeariaSaaS.Controllers
 {
@@ -49,18 +51,18 @@ namespace BarbeariaSaaS.Controllers
             {
                 case "mes":
                 case "month":
-                    dataInicio = DateTime.SpecifyKind(new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1), DateTimeKind.Utc);
+                    dataInicio = AppDateTime.CreateUtcDate(AppDateTime.UtcNow().Year, AppDateTime.UtcNow().Month, 1);
                     dataFim = dataInicio.AddMonths(1);
                     break;
                 case "trimestre":
                 case "quarter":
-                    var trimestre = (DateTime.Now.Month - 1) / 3;
-                    dataInicio = DateTime.SpecifyKind(new DateTime(DateTime.Now.Year, trimestre * 3 + 1, 1), DateTimeKind.Utc);
+                    var trimestre = (AppDateTime.UtcNow().Month - 1) / 3;
+                    dataInicio = AppDateTime.CreateUtcDate(AppDateTime.UtcNow().Year, trimestre * 3 + 1, 1);
                     dataFim = dataInicio.AddMonths(3);
                     break;
                 case "ano":
                 case "year":
-                    dataInicio = DateTime.SpecifyKind(new DateTime(DateTime.Now.Year, 1, 1), DateTimeKind.Utc);
+                    dataInicio = AppDateTime.CreateUtcDate(AppDateTime.UtcNow().Year, 1, 1);
                     dataFim = dataInicio.AddYears(1);
                     break;
                 case "semana":
@@ -68,7 +70,7 @@ namespace BarbeariaSaaS.Controllers
                 default:
                     // Ajuste para garantir que a semana comece no domingo (ou segunda, dependendo da regra de negócio)
                     // Aqui vamos usar Domingo como início da semana (DayOfWeek.Sunday = 0)
-                    dataInicio = DateTime.SpecifyKind(DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek), DateTimeKind.Utc);
+                    dataInicio = AppDateTime.StartOfWeekUtc(AppDateTime.UtcNow());
                     dataFim = dataInicio.AddDays(7);
                     break;
             }
@@ -93,8 +95,8 @@ namespace BarbeariaSaaS.Controllers
             if (isWeeklyFilter)
             {
                 // Lógica para Semana: Mostrar os dias específicos da semana atual
-                var hoje = DateTime.UtcNow.Date;
-                var inicioSemanaAtual = DateTime.SpecifyKind(hoje.AddDays(-(int)hoje.DayOfWeek), DateTimeKind.Utc);
+                var hoje = AppDateTime.UtcNow().Date;
+                var inicioSemanaAtual = AppDateTime.StartOfWeekUtc(hoje);
                 
                 for (int i = 0; i < 7; i++)
                 {
@@ -183,20 +185,20 @@ namespace BarbeariaSaaS.Controllers
             switch (periodo.ToLower())
             {
                 case "trimestre":
-                    var trimestre = (DateTime.Now.Month - 1) / 3;
-                    dataInicio = DateTime.SpecifyKind(new DateTime(DateTime.Now.Year, trimestre * 3 + 1, 1), DateTimeKind.Utc);
+                    var trimestre = (AppDateTime.UtcNow().Month - 1) / 3;
+                    dataInicio = AppDateTime.CreateUtcDate(AppDateTime.UtcNow().Year, trimestre * 3 + 1, 1);
                     dataFim = dataInicio.AddMonths(3);
                     break;
                 case "ano":
-                    dataInicio = DateTime.SpecifyKind(new DateTime(DateTime.Now.Year, 1, 1), DateTimeKind.Utc);
+                    dataInicio = AppDateTime.CreateUtcDate(AppDateTime.UtcNow().Year, 1, 1);
                     dataFim = dataInicio.AddYears(1);
                     break;
                 case "semana":
-                    dataInicio = DateTime.SpecifyKind(DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek), DateTimeKind.Utc);
+                    dataInicio = AppDateTime.StartOfWeekUtc(AppDateTime.UtcNow());
                     dataFim = dataInicio.AddDays(7);
                     break;
                 default: // mes
-                    dataInicio = DateTime.SpecifyKind(new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1), DateTimeKind.Utc);
+                    dataInicio = AppDateTime.CreateUtcDate(AppDateTime.UtcNow().Year, AppDateTime.UtcNow().Month, 1);
                     dataFim = dataInicio.AddMonths(1);
                     break;
             }
@@ -222,8 +224,6 @@ namespace BarbeariaSaaS.Controllers
             _logger.LogWarning("Filtro de Data (Período: {Periodo}): Entre {Inicio} e {Fim}", periodo, dataInicio, dataFim);
             _logger.LogWarning("Agendamentos Recuperados Bruto no BD: {Count}", agendamentos.Count);
             _logger.LogWarning("Desses, qtd com Status == Realizado(4): {Count}", agendamentosRealizados.Count);
-            _logger.LogWarning("Servicos Populares: {Count} detectados", servicosPopulares?.Count ?? 0);
-            _logger.LogWarning("Top Barbeiros: {Count} detectados", rankingBarbeiros?.Count ?? 0);
             _logger.LogWarning("Total de Clientes Distintos: {Count}", totalClientes);
             _logger.LogWarning("Receita Mensal Somada: {Receita}", receitaTotal);
             _logger.LogWarning("=============================");
@@ -232,8 +232,8 @@ namespace BarbeariaSaaS.Controllers
             var performanceMensal = new List<BarbeariaSaaS.Models.DTOs.PerformanceMesDto>();
             for (int i = 4; i >= 0; i--)
             {
-                var mesInicio = DateTime.Now.AddMonths(-i).Date;
-                mesInicio = DateTime.SpecifyKind(new DateTime(mesInicio.Year, mesInicio.Month, 1), DateTimeKind.Utc);
+                var mesInicio = AppDateTime.UtcNow().AddMonths(-i).Date;
+                mesInicio = AppDateTime.CreateUtcDate(mesInicio.Year, mesInicio.Month, 1);
                 var mesFim = mesInicio.AddMonths(1);
 
                 var agendamentosMes = await _context.Agendamentos
@@ -281,6 +281,9 @@ namespace BarbeariaSaaS.Controllers
                 .OrderByDescending(b => b.Receita)
                 .Take(4)
                 .ToList();
+
+            _logger.LogWarning("Servicos Populares: {Count} detectados", servicosPopulares?.Count ?? 0);
+            _logger.LogWarning("Top Barbeiros: {Count} detectados", rankingBarbeiros?.Count ?? 0);
 
             var metaMensal = 20000m; // Mock - implementar configuração
             var progressoMeta = metaMensal > 0 ? Math.Round((receitaTotal / metaMensal) * 100, 1) : 0;

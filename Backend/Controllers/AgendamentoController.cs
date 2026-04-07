@@ -6,10 +6,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Security.Claims;
 using BarbeariaSaaS.Data;
 using BarbeariaSaaS.DTOs;
+using BarbeariaSaaS.Extensions;
 using BarbeariaSaaS.Models;
+using BarbeariaSaaS.Services;
 
 namespace BarbeariaSaaS.Controllers
 {
@@ -28,36 +29,6 @@ namespace BarbeariaSaaS.Controllers
         }
 
         /// <summary>
-        /// Retorna o ID do usuário logado a partir dos claims do token JWT.
-        /// </summary>
-        /// <returns>Um inteiro representando o ID do usuário.</returns>
-        private int GetUsuarioId()
-        {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return int.TryParse(userIdClaim, out var userId) ? userId : 0;
-        }
-
-        /// <summary>
-        /// Retorna o ID da barbearia associada ao usuário logado a partir dos claims do token JWT.
-        /// Pode ser nulo se o usuário não estiver vinculado a uma barbearia.
-        /// </summary>
-        /// <returns>Um inteiro anulável (int?) representando o ID da barbearia.</returns>
-        private int? GetBarbeariaId()
-        {
-            var barbeariaIdClaim = User.FindFirst("BarbeariaId")?.Value;
-            return !string.IsNullOrEmpty(barbeariaIdClaim) && int.TryParse(barbeariaIdClaim, out var barbeariaId) ? barbeariaId : null;
-        }
-
-        /// <summary>
-        /// Retorna o tipo de usuário logado (e.g., "Cliente", "Barbeiro", "Gerente") a partir dos claims do token JWT.
-        /// </summary>
-        /// <returns>Uma string representando o tipo de usuário.</returns>
-        private string GetTipoUsuario()
-        {
-            return User.FindFirst("TipoUsuario")?.Value ?? string.Empty;
-        }
-
-        /// <summary>
         /// Retorna uma lista de barbeiros disponíveis. Clientes podem ver barbeiros de todas as barbearias
         /// ou filtrar por uma barbearia específica informando o parâmetro barbeariaId.
         /// Outros tipos de usuário veem apenas os barbeiros de sua barbearia.
@@ -67,8 +38,8 @@ namespace BarbeariaSaaS.Controllers
         [HttpGet("barbeiros")]
         public async Task<ActionResult<List<BarbeiroDto>>> GetBarbeiros([FromQuery] int? barbeariaId = null, [FromQuery] int? reschedulingId = null)
         {
-            var tipoUsuario = GetTipoUsuario();
-            var usuarioId = GetUsuarioId();
+            var tipoUsuario = User.GetTipoUsuario();
+            var usuarioId = User.GetUserIdOrDefault();
             IQueryable<Usuario> query = _context.Usuarios.Where(u => u.TipoUsuario == TipoUsuario.Barbeiro);
 
             if (tipoUsuario == "Cliente")
@@ -80,7 +51,7 @@ namespace BarbeariaSaaS.Controllers
             }
             else
             {
-                var usuarioBarbeariaId = GetBarbeariaId();
+                var usuarioBarbeariaId = User.GetBarbeariaId();
                 if (!usuarioBarbeariaId.HasValue)
                 {
                     return BadRequest(new { message = "Usuário não está vinculado a uma barbearia" });
@@ -102,7 +73,7 @@ namespace BarbeariaSaaS.Controllers
             }
 
             var barbeiros = await query
-                .Include(u => u.HorariosDisponiveis.Where(h => h.DataHora > DateTime.UtcNow))
+                .Include(u => u.HorariosDisponiveis.Where(h => h.DataHora > AppDateTime.UtcNow()))
                 .Select(u => new BarbeiroDto
                 {
                     Id = u.Id,
@@ -135,8 +106,8 @@ namespace BarbeariaSaaS.Controllers
         {
             try
             {
-                var clienteId = GetUsuarioId();
-                var tipoUsuario = GetTipoUsuario();
+                var clienteId = User.GetUserIdOrDefault();
+                var tipoUsuario = User.GetTipoUsuario();
 
                 if (tipoUsuario != "Cliente")
                 {
@@ -144,23 +115,10 @@ namespace BarbeariaSaaS.Controllers
                 }
 
                 // Validar se a data/hora não é no passado
-                var dataHoraInput = criarDto.DataHora;
-                DateTime dataHoraUtc;
-
-                if (dataHoraInput.Kind == DateTimeKind.Utc)
-                {
-                    dataHoraUtc = dataHoraInput;
-                }
-                else
-                {
-                    // Considera UTC-3 (Horário de Brasília) para inputs sem timezone
-                    var offsetBrasil = TimeSpan.FromHours(-3);
-                    var dataHoraBrasil = new DateTimeOffset(dataHoraInput, offsetBrasil);
-                    dataHoraUtc = dataHoraBrasil.UtcDateTime;
-                }
+                var dataHoraUtc = AppDateTime.NormalizeClientDateTimeToUtc(criarDto.DataHora);
 
                 // Tolerância de 5 minutos para diferenças de relógio/rede
-                if (dataHoraUtc < DateTime.UtcNow.AddMinutes(-5))
+                if (dataHoraUtc < AppDateTime.UtcNow().AddMinutes(-5))
                 {
                     return BadRequest(new { message = "Não é possível agendar para uma data/hora no passado" });
                 }
@@ -301,7 +259,7 @@ namespace BarbeariaSaaS.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao criar agendamento para o cliente {UsuarioId}", User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                _logger.LogError(ex, "Erro ao criar agendamento para o cliente {UsuarioId}", User.TryGetUserId());
                 return StatusCode(500, new { message = "Ocorreu um erro interno no servidor ao processar sua solicitação.", error = ex.Message });
             }
         }
@@ -314,9 +272,9 @@ namespace BarbeariaSaaS.Controllers
         [HttpGet("meus-agendamentos")]
         public async Task<ActionResult<List<AgendamentoDto>>> GetMeusAgendamentos()
         {
-            var usuarioId = GetUsuarioId();
-            var tipoUsuario = GetTipoUsuario();
-            var agoraUtc = DateTime.UtcNow;
+            var usuarioId = User.GetUserIdOrDefault();
+            var tipoUsuario = User.GetTipoUsuario();
+            var agoraUtc = AppDateTime.UtcNow();
 
             IQueryable<Agendamento> query = _context.Agendamentos
                 .Include(a => a.Cliente)
@@ -335,7 +293,7 @@ namespace BarbeariaSaaS.Controllers
             }
             else if (tipoUsuario == "Gerente")
             {
-                var barbeariaId = GetBarbeariaId();
+                var barbeariaId = User.GetBarbeariaId();
                 query = query.Where(a => a.BarbeariaId == barbeariaId);
             }
             else
@@ -398,8 +356,8 @@ namespace BarbeariaSaaS.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<AgendamentoDto>> AtualizarAgendamento(int id, AtualizarAgendamentoDto atualizarDto)
         {
-            var usuarioId = GetUsuarioId();
-            var tipoUsuario = GetTipoUsuario();
+            var usuarioId = User.GetUserIdOrDefault();
+            var tipoUsuario = User.GetTipoUsuario();
 
             var agendamento = await _context.Agendamentos
                 .Include(a => a.Cliente)
@@ -424,14 +382,14 @@ namespace BarbeariaSaaS.Controllers
             }
             else if (tipoUsuario == "Gerente")
             {
-                var barbeariaId = GetBarbeariaId();
+                var barbeariaId = User.GetBarbeariaId();
                 if (agendamento.BarbeariaId != barbeariaId)
                 {
                     return Forbid();
                 }
             }
 
-            if (agendamento.DataHora <= DateTime.UtcNow)
+            if (agendamento.DataHora <= AppDateTime.UtcNow())
             {
                 return BadRequest(new { message = "Não é possível editar um agendamento com data/hora já expirada." });
             }
@@ -444,9 +402,9 @@ namespace BarbeariaSaaS.Controllers
             // Atualizar campos
             if (atualizarDto.NovaDataHora.HasValue && atualizarDto.NovaDataHora.Value != agendamento.DataHora)
             {
-                var novaDataHora = DateTime.SpecifyKind(atualizarDto.NovaDataHora.Value, DateTimeKind.Utc);
+                var novaDataHora = AppDateTime.NormalizeClientDateTimeToUtc(atualizarDto.NovaDataHora.Value);
 
-                if (novaDataHora <= DateTime.UtcNow)
+                if (novaDataHora <= AppDateTime.UtcNow())
                 {
                     return BadRequest(new { message = "Não é possível reagendar para uma data no passado." });
                 }
@@ -537,7 +495,7 @@ namespace BarbeariaSaaS.Controllers
                 agendamento.TipoServico = tipoServicoFinal;
             }
 
-            agendamento.DataAtualizacao = DateTime.UtcNow;
+            agendamento.DataAtualizacao = AppDateTime.UtcNow();
 
             await _context.SaveChangesAsync();
 
@@ -572,8 +530,8 @@ namespace BarbeariaSaaS.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> CancelarAgendamento(int id)
         {
-            var usuarioId = GetUsuarioId();
-            var tipoUsuario = GetTipoUsuario();
+            var usuarioId = User.GetUserIdOrDefault();
+            var tipoUsuario = User.GetTipoUsuario();
 
             var agendamento = await _context.Agendamentos
                 .FirstOrDefaultAsync(a => a.Id == id);
@@ -594,7 +552,7 @@ namespace BarbeariaSaaS.Controllers
             }
             else if (tipoUsuario == "Gerente")
             {
-                var barbeariaId = GetBarbeariaId();
+                var barbeariaId = User.GetBarbeariaId();
                 if (agendamento.BarbeariaId != barbeariaId)
                 {
                     return Forbid("Você não tem permissão para cancelar este agendamento");
@@ -602,7 +560,7 @@ namespace BarbeariaSaaS.Controllers
             }
 
             // Verificar se o agendamento pode ser cancelado (não está no passado)
-            if (agendamento.DataHora <= DateTime.UtcNow)
+            if (agendamento.DataHora <= AppDateTime.UtcNow())
             {
                 return BadRequest(new { message = "Não é possível cancelar agendamentos que já passaram" });
             }
@@ -614,7 +572,7 @@ namespace BarbeariaSaaS.Controllers
             }
 
             agendamento.Status = StatusAgendamento.Cancelado;
-            agendamento.DataAtualizacao = DateTime.UtcNow;
+            agendamento.DataAtualizacao = AppDateTime.UtcNow();
 
             // Liberar horário - buscar pelo HorarioDisponivelId se existir, senão buscar por data/hora
             HorarioDisponivel horario = null;
@@ -641,5 +599,3 @@ namespace BarbeariaSaaS.Controllers
         }
     }
 }
-
-

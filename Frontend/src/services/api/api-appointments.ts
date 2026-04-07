@@ -1,4 +1,5 @@
 import { HttpClient } from './httpClient';
+import { mapAppointmentStatusToFrontend } from '../../utils/appointmentStatus';
 
 export const AppointmentAPI = {
   async getMyAppointments() {
@@ -58,14 +59,6 @@ export const AppointmentAPI = {
   },
 
   mapStatusToFrontend(status: string): string {
-    switch (status.toLowerCase()) {
-      case 'pendente': return 'pending';
-      case 'atendido':
-      case 'confirmado':
-      case 'realizado': return 'attended';
-      case 'cancelado': return 'cancelled';
-      case 'expirado': return 'expired';
-      default: return 'pending';
-    }
+    return mapAppointmentStatusToFrontend(status);
   }
 };

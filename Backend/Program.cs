@@ -15,6 +15,7 @@ using System.Collections.Generic;
 
 // Cria uma instância do WebApplicationBuilder, que é o ponto de entrada para configurar e construir a aplicação web.
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
 
 // Configura as URLs nas quais a aplicação irá escutar. 
 // Prioriza a variável de ambiente 'PORT' para ambientes de produção (como Render.com) ou usa a porta 5000 como padrão.

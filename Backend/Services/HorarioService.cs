@@ -79,8 +79,8 @@ namespace BarbeariaSaaS.Services
 
             var horariosExistentes = await _context.HorariosDisponiveis
                 .Where(h => h.BarbeiroId == barbeiroId && 
-                           h.DataHora >= dataInicio.ToUniversalTime() && 
-                           h.DataHora <= dataFim.ToUniversalTime())
+                           h.DataHora >= AppDateTime.MarkAsUtc(dataInicio) && 
+                           h.DataHora <= AppDateTime.MarkAsUtc(dataFim))
                 .Include(h => h.Agendamentos)
                 .ToListAsync();
 
@@ -109,8 +109,7 @@ namespace BarbeariaSaaS.Services
                     // Se quisermos ser estritos: if (currentTime + TimeSpan.FromMinutes(intervaloMinutos) > closeTime) break;
                     // Mas para atender a solicitação de exibir até o limite:
                     
-                    var dataHora = data.Add(currentTime);
-                    var dataHoraUtc = DateTime.SpecifyKind(dataHora, DateTimeKind.Utc);
+                    var dataHoraUtc = AppDateTime.CreateUtcSlot(data, currentTime);
 
                     horariosIdeais.Add(dataHoraUtc);
 
@@ -121,7 +120,7 @@ namespace BarbeariaSaaS.Services
                             BarbeiroId = barbeiroId,
                             DataHora = dataHoraUtc,
                             EstaDisponivel = true,
-                            DataCriacao = DateTime.UtcNow
+                            DataCriacao = AppDateTime.UtcNow()
                         };
 
                         horariosGerados.Add(horario);
@@ -199,7 +198,7 @@ namespace BarbeariaSaaS.Services
         {
             // Busca horários que já passaram e ainda estão marcados como disponíveis.
             var horariosAntigos = await _context.HorariosDisponiveis
-                .Where(h => h.DataHora < DateTime.UtcNow && h.EstaDisponivel)
+                .Where(h => h.DataHora < AppDateTime.UtcNow() && h.EstaDisponivel)
                 .ToListAsync();
 
             // Se houver horários antigos, remove-os do contexto e salva as mudanças.
@@ -244,5 +243,4 @@ namespace BarbeariaSaaS.Services
         }
     }
 }
-
 

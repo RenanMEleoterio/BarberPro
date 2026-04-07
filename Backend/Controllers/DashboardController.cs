@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 using BarbeariaSaaS.Services;
-using System.Security.Claims;
+using BarbeariaSaaS.Extensions;
 
 namespace BarbeariaSaaS.Controllers
 {
@@ -75,7 +75,7 @@ namespace BarbeariaSaaS.Controllers
         {
             try
             {
-                var userId = GetUserIdFromClaims();
+                var userId = User.TryGetUserId();
                 if (userId == null) return Unauthorized();
 
                 var response = await _dashboardService.GetManagerBarbersAsync(managerId, userId.Value);
@@ -91,16 +91,6 @@ namespace BarbeariaSaaS.Controllers
                 _logger.LogError(ex, "Erro ao buscar barbeiros do gerente {Id}", managerId);
                 return StatusCode(500, "Ocorreu um erro interno");
             }
-        }
-
-        private int? GetUserIdFromClaims()
-        {
-            var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                ?? User.FindFirst("nameid")?.Value
-                ?? User.FindFirst("NameId")?.Value
-                ?? User.FindFirst("UserId")?.Value;
-            if (int.TryParse(id, out var userId)) return userId;
-            return null;
         }
     }
 }

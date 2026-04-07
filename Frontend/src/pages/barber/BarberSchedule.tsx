@@ -3,6 +3,7 @@ import { Calendar, Clock, User, Phone, MapPin, CheckCircle, XCircle, PlayCircle,
 import { apiService } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
+import { getBarberScheduleStatusBadgeClass } from '../../utils/appointmentStatus';
 
 /**
  * Interface que define a estrutura de um objeto de agendamento.
@@ -117,7 +118,7 @@ export default function BarberSchedule() {
    * @param {string} id - O ID do agendamento.
    * @param {string} newStatus - O novo status.
    */
-  const handleUpdateStatus = async (id: string, newStatus: string) => {
+  const handleUpdateStatus = async (id: string, newStatus: string | number) => {
     try {
       await apiService.updateAppointmentStatus(Number(id), newStatus);
       // Recarrega a lista para refletir a mudança
@@ -133,21 +134,6 @@ export default function BarberSchedule() {
    * @param {string} status - O status do agendamento (Confirmado, Pendente, Realizado, Cancelado).
    * @returns {string} - A string de classes CSS Tailwind para a cor correspondente.
    */
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Confirmado':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
-      case 'Pendente':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
-      case 'Realizado':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
-      case 'Cancelado':
-        return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
-    }
-  };
-
   // Exibe um spinner de carregamento enquanto os dados estão sendo buscados.
   if (loading) {
     return (
@@ -317,7 +303,7 @@ export default function BarberSchedule() {
                         <p className="text-lg font-bold text-gray-900 dark:text-white truncate">
                           {appointment.nomeCliente}
                         </p>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(appointment.status)}`}>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${getBarberScheduleStatusBadgeClass(appointment.status)}`}>
                           {appointment.status}
                         </span>
                       </div>

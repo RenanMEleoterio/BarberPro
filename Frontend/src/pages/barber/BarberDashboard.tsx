@@ -5,6 +5,7 @@ import { apiService } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { startOfWeek, endOfWeek, isWithinInterval, parseISO, format, getDay } from 'date-fns';
 import toast from 'react-hot-toast';
+import { isCompletedAppointmentStatus } from '../../utils/appointmentStatus';
 
 // Sub-componentes
 import { DashboardHeader } from './components/DashboardHeader';
@@ -51,7 +52,7 @@ export default function BarberDashboard() {
     // 2. Estatísticas de hoje
     const totalAgendamentosHoje = agendamentosHoje.length;
     const agendamentosConcluidos = agendamentosHoje.filter(apt => 
-      ['Realizado', 'Concluído', 'Atendido'].includes(apt.status)
+      isCompletedAppointmentStatus(apt.status)
     ).length;
 
     // 3. Agendamentos e Ganhos da semana
@@ -66,7 +67,7 @@ export default function BarberDashboard() {
 
     const totalAgendamentosSemana = agendamentosSemana.length;
     const ganhosSemana = agendamentosSemana
-      .filter(apt => ['Realizado', 'Concluído', 'Atendido'].includes(apt.status))
+      .filter(apt => isCompletedAppointmentStatus(apt.status))
       .reduce((total, apt) => total + (Number(apt.precoServico || apt.preco) || 0), 0);
 
     // 4. Mapeamento de performance semanal para o gráfico
@@ -74,7 +75,7 @@ export default function BarberDashboard() {
     const diasSemanaLabels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
     agendamentosSemana.forEach(apt => {
-      if (['Realizado', 'Concluído', 'Atendido'].includes(apt.status)) {
+      if (isCompletedAppointmentStatus(apt.status)) {
         try {
           const diaSemana = getDay(parseISO(apt.dataHora));
           performanceMap[diaSemana].cortes += 1;
