@@ -53,34 +53,14 @@ namespace BarbeariaSaaS.Services
 
             var barbearia = barbeiro.Barbearia;
             var horariosGerados = new List<HorarioDisponivel>();
-
-            var workDays = !string.IsNullOrEmpty(barbearia.WorkDays) 
-                ? barbearia.WorkDays.Split(",", StringSplitOptions.RemoveEmptyEntries).Select(d => d.Trim().ToLower()).ToList()
-                : new List<string> { "monday", "tuesday", "wednesday", "thursday", "friday", "saturday" };
-
-            var openTime = !string.IsNullOrEmpty(barbearia.OpenTime) 
-                ? TimeSpan.Parse(barbearia.OpenTime) 
-                : new TimeSpan(8, 0, 0);
-
-            var closeTime = !string.IsNullOrEmpty(barbearia.CloseTime) 
-                ? TimeSpan.Parse(barbearia.CloseTime) 
-                : new TimeSpan(18, 0, 0);
-
-            var dayMapping = new Dictionary<DayOfWeek, string>
-            {
-                { DayOfWeek.Sunday, "sunday" },
-                { DayOfWeek.Monday, "monday" },
-                { DayOfWeek.Tuesday, "tuesday" },
-                { DayOfWeek.Wednesday, "wednesday" },
-                { DayOfWeek.Thursday, "thursday" },
-                { DayOfWeek.Friday, "friday" },
-                { DayOfWeek.Saturday, "saturday" }
-            };
+            var inicioUtc = AppDateTime.StartOfBusinessDayUtc(dataInicio);
+            var fimUtcExclusive = AppDateTime.EndOfBusinessDayUtcExclusive(dataFim);
+            var agoraUtc = AppDateTime.UtcNow();
 
             var horariosExistentes = await _context.HorariosDisponiveis
                 .Where(h => h.BarbeiroId == barbeiroId && 
-                           h.DataHora >= AppDateTime.MarkAsUtc(dataInicio) && 
-                           h.DataHora <= AppDateTime.MarkAsUtc(dataFim))
+                           h.DataHora >= inicioUtc && 
+                           h.DataHora < fimUtcExclusive)
                 .Include(h => h.Agendamentos)
                 .ToListAsync();
 
@@ -88,46 +68,31 @@ namespace BarbeariaSaaS.Services
                 .Select(h => h.DataHora)
                 .ToHashSet();
 
-            var horariosIdeais = new HashSet<DateTime>();
+            var horariosIdeais = HorarioGenerationPlanner.BuildIdealUtcSlots(
+                dataInicio,
+                dataFim,
+                barbearia.WorkDays,
+                barbearia.OpenTime,
+                barbearia.CloseTime,
+                intervaloMinutos,
+                agoraUtc);
 
-            for (var data = dataInicio.Date; data <= dataFim.Date; data = data.AddDays(1))
+            foreach (var dataHoraUtc in horariosIdeais)
             {
-                var dayOfWeek = data.DayOfWeek;
-                var dayName = dayMapping[dayOfWeek];
-
-                if (!workDays.Contains(dayName))
+                if (datasExistentes.Contains(dataHoraUtc))
                 {
                     continue;
                 }
 
-                var currentTime = openTime;
-                // Alterado para <= para permitir que o último horário seja exatamente o horário de fechamento
-                // (ex: se fecha 17:30, permite agendar 17:30).
-                while (currentTime <= closeTime)
+                var horario = new HorarioDisponivel
                 {
-                    // Verifica se o horário de término (início + intervalo) ultrapassa o fechamento + tolerância
-                    // Se quisermos ser estritos: if (currentTime + TimeSpan.FromMinutes(intervaloMinutos) > closeTime) break;
-                    // Mas para atender a solicitação de exibir até o limite:
-                    
-                    var dataHoraUtc = AppDateTime.CreateUtcSlot(data, currentTime);
+                    BarbeiroId = barbeiroId,
+                    DataHora = dataHoraUtc,
+                    EstaDisponivel = true,
+                    DataCriacao = agoraUtc
+                };
 
-                    horariosIdeais.Add(dataHoraUtc);
-
-                    if (!datasExistentes.Contains(dataHoraUtc))
-                    {
-                        var horario = new HorarioDisponivel
-                        {
-                            BarbeiroId = barbeiroId,
-                            DataHora = dataHoraUtc,
-                            EstaDisponivel = true,
-                            DataCriacao = AppDateTime.UtcNow()
-                        };
-
-                        horariosGerados.Add(horario);
-                    }
-
-                    currentTime = currentTime.Add(TimeSpan.FromMinutes(intervaloMinutos));
-                }
+                horariosGerados.Add(horario);
             }
 
             var horariosParaRemover = horariosExistentes
@@ -243,4 +208,3 @@ namespace BarbeariaSaaS.Services
         }
     }
 }
-

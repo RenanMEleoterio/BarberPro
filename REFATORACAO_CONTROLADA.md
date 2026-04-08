@@ -318,3 +318,8 @@
 - `npm test -- --run` passou com 16 testes aprovados.
 - `dotnet build Backend\\BarbeariaSaaS.csproj` concluiu com sucesso e manteve warnings conhecidos fora do escopo da P1.
 - Hipotese controlada desta fase: a extracao incremental de helpers e a sanitizacao de configuracao preservam o comportamento externo, mas timezone e ambiente deployed precisam de validacao manual antes de avancar.
+- Hotfix aplicado na geracao de horarios para voltar a respeitar `workDays`, `openTime`, `closeTime` e o fuso da operacao em horario Brasil.
+- `Backend/Services/HorarioGenerationPlanner.cs` foi adicionado para concentrar a regra pura da geracao de slots sem mudar o contrato da API.
+- `Backend/Services/AppDateTime.cs`, `Backend/Services/HorarioService.cs`, `Backend/Controllers/HorarioController.cs` e `Backend/Controllers/AgendamentoController.cs` foram ajustados para tratar periodo local da barbearia e conversao correta para UTC.
+- `Validation/HorarioGenerationValidation.csproj` e `Validation/Program.cs` foram adicionados para validar workDays, bloqueio de dias desabilitados, open/close, intervalo, timezone, nao geracao de horarios passados e consistencia dashboard/backend.
+- `dotnet run --project Validation\\HorarioGenerationValidation.csproj` passou com todos os cenarios de validacao da geracao de horarios.

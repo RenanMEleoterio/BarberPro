@@ -32,6 +32,49 @@ namespace BarbeariaSaaS.Services
             return value.Kind == DateTimeKind.Utc ? value : DateTime.SpecifyKind(value, DateTimeKind.Utc);
         }
 
+        public static DateTime TodayInBusinessTimeZone()
+        {
+            var businessNow = DateTimeOffset.UtcNow.ToOffset(DefaultBrazilOffset);
+            return DateTime.SpecifyKind(businessNow.Date, DateTimeKind.Unspecified);
+        }
+
+        public static DateTime GetBusinessDate(DateTime value)
+        {
+            if (value.Kind == DateTimeKind.Utc)
+            {
+                var businessDate = new DateTimeOffset(value).ToOffset(DefaultBrazilOffset).Date;
+                return DateTime.SpecifyKind(businessDate, DateTimeKind.Unspecified);
+            }
+
+            if (value.Kind == DateTimeKind.Local)
+            {
+                var businessDate = new DateTimeOffset(value.ToUniversalTime(), TimeSpan.Zero)
+                    .ToOffset(DefaultBrazilOffset)
+                    .Date;
+
+                return DateTime.SpecifyKind(businessDate, DateTimeKind.Unspecified);
+            }
+
+            return DateTime.SpecifyKind(value.Date, DateTimeKind.Unspecified);
+        }
+
+        public static DateTime StartOfBusinessDayUtc(DateTime value)
+        {
+            return NormalizeClientDateTimeToUtc(GetBusinessDate(value));
+        }
+
+        public static DateTime EndOfBusinessDayUtcExclusive(DateTime value)
+        {
+            return NormalizeClientDateTimeToUtc(GetBusinessDate(value).AddDays(1));
+        }
+
+        public static DateTime CreateBusinessSlotUtc(DateTime date, TimeSpan time)
+        {
+            var businessDate = GetBusinessDate(date);
+            var localSlot = DateTime.SpecifyKind(businessDate.Add(time), DateTimeKind.Unspecified);
+            return NormalizeClientDateTimeToUtc(localSlot);
+        }
+
         public static DateTime CreateUtcDate(int year, int month, int day)
         {
             return new DateTime(year, month, day, 0, 0, 0, DateTimeKind.Utc);

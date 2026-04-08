@@ -72,8 +72,8 @@ namespace BarbeariaSaaS.Controllers
                 }
             }
 
+            var agoraUtc = AppDateTime.UtcNow();
             var barbeiros = await query
-                .Include(u => u.HorariosDisponiveis.Where(h => h.DataHora > AppDateTime.UtcNow()))
                 .Select(u => new BarbeiroDto
                 {
                     Id = u.Id,
@@ -81,14 +81,18 @@ namespace BarbeariaSaaS.Controllers
                     Foto = u.Foto,
                     Especialidades = u.Especialidades,
                     Descricao = u.Descricao,
-                    HorariosDisponiveis = u.HorariosDisponiveis.Select(h => new HorarioDisponivelDto
-                    {
-                        Id = h.Id,
-                        DataHora = h.DataHora,
-                        BarbeiroId = h.BarbeiroId,
-                        NomeBarbeiro = u.Nome,
-                        EstaDisponivel = h.EstaDisponivel || (currentHorarioId.HasValue && h.Id == currentHorarioId.Value)
-                    }).ToList()
+                    HorariosDisponiveis = u.HorariosDisponiveis
+                        .Where(h => h.DataHora > agoraUtc || (currentHorarioId.HasValue && h.Id == currentHorarioId.Value))
+                        .OrderBy(h => h.DataHora)
+                        .Select(h => new HorarioDisponivelDto
+                        {
+                            Id = h.Id,
+                            DataHora = h.DataHora,
+                            BarbeiroId = h.BarbeiroId,
+                            NomeBarbeiro = u.Nome,
+                            EstaDisponivel = h.EstaDisponivel || (currentHorarioId.HasValue && h.Id == currentHorarioId.Value)
+                        })
+                        .ToList()
                 })
                 .ToListAsync();
 
