@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using BarbeariaSaaS.Data;
 using BarbeariaSaaS.Models;
 using BarbeariaSaaS.DTOs;
+using BarbeariaSaaS.Services;
 
 namespace BarbeariaSaaS.Controllers
 {
@@ -14,14 +15,16 @@ namespace BarbeariaSaaS.Controllers
     public class BarbeariaController : ControllerBase
     {
         private readonly BarbeariaContext _context;
+        private readonly HorarioService _horarioService;
 
         /// <summary>
         /// Construtor do controlador. Injeta o contexto do banco de dados (BarbeariaContext) para permitir a interação com o Entity Framework Core.
         /// </summary>
         /// <param name="context">O contexto do banco de dados.</param>
-        public BarbeariaController(BarbeariaContext context)
+        public BarbeariaController(BarbeariaContext context, HorarioService horarioService)
         {
             _context = context;
+            _horarioService = horarioService;
         }
 
         /// <summary>
@@ -152,6 +155,11 @@ namespace BarbeariaSaaS.Controllers
                 return NotFound();
             }
 
+            var scheduleChanged =
+                !string.Equals(barbearia.WorkDays, updateDto.WorkDays, System.StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(barbearia.OpenTime, updateDto.OpenTime, System.StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(barbearia.CloseTime, updateDto.CloseTime, System.StringComparison.OrdinalIgnoreCase);
+
             barbearia.Nome = updateDto.Nome;
             barbearia.Endereco = updateDto.Endereco;
             barbearia.Telefone = updateDto.Telefone;
@@ -162,7 +170,16 @@ namespace BarbeariaSaaS.Controllers
 
             try
             {
+                await using var transaction = await _context.Database.BeginTransactionAsync();
                 await _context.SaveChangesAsync();
+
+                if (scheduleChanged)
+                {
+                    var hoje = AppDateTime.TodayInBusinessTimeZone();
+                    await _horarioService.GerarHorariosParaBarbearia(id, hoje, hoje.AddDays(30));
+                }
+
+                await transaction.CommitAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -180,5 +197,4 @@ namespace BarbeariaSaaS.Controllers
         }
     }
 }
-
 

@@ -1,5 +1,6 @@
 import { HttpClient } from './httpClient';
 import { mapAppointmentStatusToFrontend } from '../../utils/appointmentStatus';
+import { toBrazilDateInputValue, toBrazilTimeValue } from '../../utils/brazilDateTime';
 
 export const AppointmentAPI = {
   async getMyAppointments() {
@@ -46,8 +47,8 @@ export const AppointmentAPI = {
       barbershop: agendamento.nomeBarbearia || 'Barbearia', 
       barberId: agendamento.barbeiroId,
       barber: agendamento.nomeBarbeiro,
-      date: agendamento.dataHora.split('T')[0],
-      time: agendamento.dataHora.split('T')[1].substring(0, 5),
+      date: toBrazilDateInputValue(agendamento.dataHora),
+      time: toBrazilTimeValue(agendamento.dataHora),
       status: this.mapStatusToFrontend(agendamento.status),
       service: agendamento.tipoServico || 'Serviço não informado',
       price: agendamento.precoServico || 0,

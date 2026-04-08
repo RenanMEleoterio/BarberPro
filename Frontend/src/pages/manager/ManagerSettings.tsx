@@ -126,13 +126,7 @@ export default function ManagerSettings() {
         workDays: barbershopData.workDays.join(','),
       });
 
-      try {
-        await apiService.generateHorariosParaBarbearia();
-      } catch (generationError) {
-        console.error("Erro ao gerar horários para a barbearia:", generationError);
-      }
-
-      setSuccessMessage("Configurações salvas com sucesso e horários gerados para a barbearia!");
+      setSuccessMessage("Configurações salvas com sucesso.");
       setError(null);
     } catch (err: any) {
       setError(err.message || "Erro ao salvar configurações.");

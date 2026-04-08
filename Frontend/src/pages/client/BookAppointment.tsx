@@ -5,6 +5,7 @@ import { format, addDays, startOfWeek, addWeeks } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import toast from 'react-hot-toast';
 import { apiService } from '../../services/api';
+import { toBrazilDateInputValue, toBrazilTimeValue } from '../../utils/brazilDateTime';
 
 /**
  * Interface que define a estrutura de um serviço.
@@ -208,14 +209,11 @@ export default function BookAppointment() {
 
     return horarios
       .filter(h => {
-        const [datePart] = h.dataHora.split('T');
-        const matchesDate = datePart === date;
+        const matchesDate = toBrazilDateInputValue(h.dataHora) === date;
         return matchesDate;
       })
       .map(h => {
-        const parts = h.dataHora.split('T');
-        const timeRaw = parts.length > 1 ? parts[1] : '';
-        const time = timeRaw.replace('Z', '').slice(0, 5);
+        const time = toBrazilTimeValue(h.dataHora);
         return { time, horarioId: h.id, estaDisponivel: h.estaDisponivel };
       })
       .sort((a, b) => a.time.localeCompare(b.time));
