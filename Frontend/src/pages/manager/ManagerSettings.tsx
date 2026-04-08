@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, Save, Clock, DollarSign, Users, Bell, Shield, MapPin } from 'lucide-react';
-import { apiService, LoginResponse } from '../../services/api';
+import { apiService } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
+import { requireUserBarbershopId } from '../../contexts/auth-helpers';
 
 /**
  * Componente de configurações para o gerente da barbearia.
@@ -8,6 +10,7 @@ import { apiService, LoginResponse } from '../../services/api';
  * serviços oferecidos e gerenciar a equipe de barbeiros.
  */
 export default function ManagerSettings() {
+  const { user } = useAuth();
   // Estado para controlar a aba ativa (Geral, Horários, Serviços, Equipe).
   const [activeTab, setActiveTab] = useState('general');
   // Estado para armazenar os dados da barbearia, incluindo informações de contato, horários, serviços e notificações.
@@ -52,16 +55,7 @@ export default function ManagerSettings() {
     const fetchBarbershopData = async () => {
       try {
         setLoading(true);
-        const userDataString = localStorage.getItem('user');
-        if (!userDataString) {
-          throw new Error('Dados do usuário não encontrados no localStorage.');
-        }
-        const userData: LoginResponse = JSON.parse(userDataString);
-        const barbeariaId = userData.barbeariaId;
-
-        if (!barbeariaId) {
-          throw new Error('ID da barbearia não encontrado nos dados do usuário.');
-        }
+        const barbeariaId = requireUserBarbershopId(user);
 
         // Realiza chamadas paralelas para obter dados da barbearia e seus serviços.
         const [barbershopResponse, servicesResponse] = await Promise.all([
@@ -78,8 +72,8 @@ export default function ManagerSettings() {
           email: barbershopResponse.email,
           openTime: barbershopResponse.openTime || '08:00',
           closeTime: barbershopResponse.closeTime || '18:00',
-          workDays: barbershopResponse.workDays
-            ? barbershopResponse.workDays.split(',').map((day: string) => day.trim())
+          workDays: Array.isArray(barbershopResponse.workDays)
+            ? barbershopResponse.workDays
             : ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
           services: servicesResponse, // Dados reais do backend
           notifications: {
@@ -97,7 +91,7 @@ export default function ManagerSettings() {
     };
 
     fetchBarbershopData();
-  }, []);
+  }, [user]);
 
   /**
    * Lida com o salvamento das configurações gerais da barbearia.
@@ -105,16 +99,7 @@ export default function ManagerSettings() {
    */
   const handleSave = async () => {
     try {
-      const userDataString = localStorage.getItem("user");
-      if (!userDataString) {
-        throw new Error("Dados do usuário não encontrados no localStorage.");
-      }
-      const userData: LoginResponse = JSON.parse(userDataString);
-      const barbeariaId = userData.barbeariaId;
-
-      if (!barbeariaId) {
-        throw new Error("ID da barbearia não encontrado nos dados do usuário.");
-      }
+      const barbeariaId = requireUserBarbershopId(user);
 
       await apiService.updateBarbearia(barbeariaId, {
         nome: barbershopData.nome,
@@ -140,11 +125,7 @@ export default function ManagerSettings() {
    */
   const handleAddService = async () => {
     try {
-      const userDataString = localStorage.getItem("user");
-      if (!userDataString) throw new Error("Dados do usuário não encontrados no localStorage.");
-      const userData: LoginResponse = JSON.parse(userDataString);
-      const barbeariaId = userData.barbeariaId;
-      if (!barbeariaId) throw new Error("ID da barbearia não encontrado nos dados do usuário.");
+      const barbeariaId = requireUserBarbershopId(user);
 
       // Chama a API para adicionar o novo serviço.
       await apiService.addServico({ nome: newService.nome, preco: newService.preco, duracaoMinutos: newService.duracaoMinutos, barbeariaId });

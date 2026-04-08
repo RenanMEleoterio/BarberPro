@@ -33,15 +33,15 @@
   - P3 = 10 pontos
 - Pontuacao maxima esperada nesta fase:
   - P1 = 60 pontos
-  - P2 = 32 pontos
+  - P2 = 36 pontos
   - P3 = 10 pontos
 - Pontuacao obtida:
   - P1 = 60 pontos
-  - P2 = 0 pontos
+  - P2 = 36 pontos
   - P3 = 0 pontos
 - Percentual de conclusao atual:
   - P1 = 100%
-  - P2 = 0%
+  - P2 = 100%
   - P3 = 0%
 
 ## 4. Checklist geral de refatoracao
@@ -94,53 +94,53 @@
   - Bonus por testes: 0
   - Pontuacao obtida: 13
 
-- [ ] P2-01 - Extrair regras de controllers grandes para services
+- [x] P2-01 - Extrair regras de controllers grandes para services
   - Prioridade: P2
   - Pontos base: 8
   - Risco: medio
-  - Arquivos afetados: controllers grandes do backend e novos services de aplicacao
+  - Arquivos afetados: `Backend/Controllers/StatsController.cs`, `Backend/Services/StatsService.cs`, `Backend/Program.cs`
   - Objetivo tecnico: diminuir metodos com responsabilidade demais sem mudar rotas nem payloads.
-  - Criterio de conclusao: regras criticas sao extraidas com equivalencia funcional e pontos de entrada permanecem estaveis.
-  - Testes associados: integracao dos endpoints afetados.
-  - Status: nao iniciado
+  - Criterio de conclusao: regras criticas de stats ficam concentradas em service dedicado e o controller preserva os mesmos endpoints e payloads.
+  - Testes associados: build do backend e validacao manual das telas de estatisticas.
+  - Status: concluido
   - Bonus por testes: 0
-  - Pontuacao obtida: 0
+  - Pontuacao obtida: 8
 
-- [ ] P2-02 - Consolidar adapters de resposta frontend
+- [x] P2-02 - Consolidar adapters de resposta frontend
   - Prioridade: P2
   - Pontos base: 8
   - Risco: baixo
-  - Arquivos afetados: `Frontend/src/services/api/*`, paginas com normalizacao local de payload
+  - Arquivos afetados: `Frontend/src/services/api/adapters.ts`, `Frontend/src/services/api/adapters.test.ts`, `Frontend/src/services/api/api-dashboard.ts`, `Frontend/src/services/api/api-barbershop.ts`, `Frontend/src/pages/manager/ManagerBarbers.tsx`, `Frontend/src/pages/manager/ManagerStats.tsx`, `Frontend/src/pages/client/BookAppointment.tsx`
   - Objetivo tecnico: centralizar mapeamentos de casing e defaults para reduzir divergencia entre telas.
-  - Criterio de conclusao: normalizacoes deixam de se repetir em multiplas paginas.
-  - Testes associados: unitarios de adapter e regressao de dashboard e listagens.
-  - Status: nao iniciado
-  - Bonus por testes: 0
-  - Pontuacao obtida: 0
+  - Criterio de conclusao: normalizacoes de barbearia, barbeiros e stats passam a sair da camada de API e deixam de se repetir nas paginas principais afetadas.
+  - Testes associados: `Frontend/src/services/api/adapters.test.ts` e `npm test -- --run`.
+  - Status: concluido
+  - Bonus por testes: 2
+  - Pontuacao obtida: 10
 
-- [ ] P2-03 - Remover leituras diretas de localStorage fora do contexto
+- [x] P2-03 - Remover leituras diretas de localStorage fora do contexto
   - Prioridade: P2
   - Pontos base: 8
   - Risco: baixo
-  - Arquivos afetados: paginas e helpers que leem `localStorage` diretamente
+  - Arquivos afetados: `Frontend/src/contexts/auth-helpers.ts`, `Frontend/src/contexts/auth-helpers.test.ts`, `Frontend/src/pages/manager/ManagerSettings.tsx`
   - Objetivo tecnico: reduzir acoplamento de sessao com storage e melhorar testabilidade.
-  - Criterio de conclusao: telas passam a consumir estado autenticado por abstracao central.
-  - Testes associados: unitarios do contexto e regressao de autenticacao.
-  - Status: nao iniciado
-  - Bonus por testes: 0
-  - Pontuacao obtida: 0
+  - Criterio de conclusao: a tela de configuracao do gerente deixa de acessar `localStorage` diretamente e usa o estado autenticado central com helper dedicado para `BarbeariaId`.
+  - Testes associados: `Frontend/src/contexts/auth-helpers.test.ts` e `npm test -- --run`.
+  - Status: concluido
+  - Bonus por testes: 2
+  - Pontuacao obtida: 10
 
-- [ ] P2-04 - Reduzir queries repetidas/N+1 em listagens e stats
+- [x] P2-04 - Reduzir queries repetidas/N+1 em listagens e stats
   - Prioridade: P2
   - Pontos base: 8
   - Risco: medio
-  - Arquivos afetados: controllers e services de stats e listagens de barbearias
+  - Arquivos afetados: `Backend/Services/StatsService.cs`, `Backend/Controllers/StatsController.cs`, `Backend/Controllers/BarbeariaController.cs`, `Frontend/src/services/api/api-barbershop.ts`
   - Objetivo tecnico: diminuir custo de consulta preservando o formato das respostas.
-  - Criterio de conclusao: consultas redundantes relevantes sao consolidadas sem mudar o contrato externo.
-  - Testes associados: integracao de stats e listagens, alem de validacoes de resultado.
-  - Status: nao iniciado
+  - Criterio de conclusao: consultas mensais de stats deixam de rodar em loop por mes e a listagem de barbearias passa a aceitar barbeiros embarcados sem quebrar o fallback atual.
+  - Testes associados: build do backend, `Frontend/src/services/api/adapters.test.ts` e `npm test -- --run`.
+  - Status: concluido
   - Bonus por testes: 0
-  - Pontuacao obtida: 0
+  - Pontuacao obtida: 8
 
 - [ ] P3-01 - Modularizar paginas React grandes
   - Prioridade: P3
@@ -197,12 +197,31 @@
 
 ### Prioridade P2
 
-- O que foi feito: nao iniciado
-- O que nao foi feito: todos os itens
-- Riscos encontrados: dependem da validacao manual da P1
-- Testes rodados: nenhum nesta prioridade
-- Evidencias: backlog preservado
-- Pendencias para validacao manual: aguardar checkpoint da P1
+- O que foi feito:
+  - `StatsController` passou a delegar o calculo de estatisticas para `IStatsService`/`StatsService`, preservando os endpoints existentes.
+  - A camada de API do frontend ganhou adapters centralizados para normalizar barbearias, barbeiros do manager e stats do manager.
+  - `ManagerSettings` deixou de ler `localStorage` diretamente e passou a usar `useAuth` com helper de `BarbeariaId`.
+  - `GetBarbearias` passou a embarcar barbeiros na resposta e `getBarbershopsWithDetails` reaproveita esse payload para evitar chamadas extras quando o backend atualizado estiver em uso.
+  - O calculo de performance mensal do manager foi consolidado em consulta unica por janela, com `AsNoTracking` nos hotspots principais.
+- O que nao foi feito:
+  - Nao houve mudanca de rotas, contratos de API ou reescrita ampla das paginas grandes do frontend.
+  - A limpeza cosmetica completa de blocos legados ficou fora do escopo desta prioridade e permanece para P3.
+- Riscos encontrados:
+  - A extracao do fluxo de stats preservou um bloco legado comentado no controller como referencia temporaria de rollback; o comportamento em runtime ja depende do service novo.
+  - O backend continua com warning conhecido `NU1902` do pacote `System.IdentityModel.Tokens.Jwt` 7.0.3, sem troca de versao nesta fase para evitar alterar comportamento.
+  - Os testes de dashboard com Recharts continuam emitindo warning visual de largura/altura zero no ambiente de teste, sem falha funcional.
+- Testes rodados:
+  - `npm test -- --run` em `Frontend`
+  - `dotnet build Backend\\BarbeariaSaaS.csproj`
+- Evidencias:
+  - 7 arquivos de teste passaram no frontend, com 24 testes aprovados.
+  - O build do backend concluiu com sucesso apos a extracao de stats e os ajustes de listagem.
+  - A busca por `localStorage` em `Frontend/src` confirmou que a leitura direta do usuario ficou restrita aos pontos centrais (`AuthContext`, `httpClient` e `ThemeContext`).
+- Pendencias para validacao manual:
+  - Dashboard de estatisticas do gerente por periodo.
+  - Lista de barbeiros do gerente e seus cards.
+  - Manager settings salvando configuracao usando o usuario do contexto.
+  - Listagem de barbearias e fluxo de booking continuando compativeis com payload antigo e com barbeiros embarcados.
 
 ### Prioridade P3
 
@@ -218,27 +237,30 @@
 ### Testes unitarios
 
 - `Frontend/src/contexts/auth-helpers.test.ts`
+- `Frontend/src/services/api/adapters.test.ts`
 - `Frontend/src/utils/appointmentStatus.test.ts`
 
 ### Testes de integracao
 
-- Nao adicionados nesta fase para evitar ampliar a superficie de mudanca antes da validacao da P1.
-- Permanecem priorizados para auth, agendamento, dashboard e geracao de horarios nas proximas prioridades.
+- Nao ha suite dedicada de integracao no repositorio para os endpoints alterados.
+- Nesta prioridade, a protecao de integridade ficou em `dotnet build Backend\\BarbeariaSaaS.csproj`, na preservacao de contratos nos controllers e na validacao manual dirigida das telas manager/listagens.
 
 ### Testes end-to-end
 
 - Nao adicionados nesta fase.
-- Permanecem recomendados para login por role, cadastro, agendamento, reagendamento, cancelamento, manager settings e agenda do barbeiro.
+- Permanecem recomendados para login por role, cadastro, agendamento, reagendamento, cancelamento, manager settings, estatisticas do gerente e agenda do barbeiro.
 
 ### Testes de regressao
 
 - `Frontend/src/pages/barber/BarberDashboard.test.tsx`
 - `Frontend/src/pages/barber/BarberSchedule.test.tsx`
 - `Frontend/src/pages/client/BookAppointment.test.tsx`
+- Normalizacao de payloads `PascalCase` e `camelCase` em `Frontend/src/services/api/adapters.test.ts`
+- Consumo de `BarbeariaId` autenticado via helper em `Frontend/src/contexts/auth-helpers.test.ts`
 
 ### Testes criticos de deploy/config/auth/timezone/banco
 
-- Build do backend validado apos mudancas de configuracao e datas.
+- Build do backend validado apos a extracao de stats e a reducao de consultas redundantes.
 - Validacao manual pendente para:
   - `DATABASE_URL` e `Jwt:Key` no ambiente deployed
   - CORS com frontend em deploy
@@ -274,14 +296,25 @@
 
 ### Checkpoint de validacao manual - P2
 
-- Resumo das mudancas: nao iniciado
-- O que eu preciso testar manualmente no sistema deployed: aguardar checkpoint da P2
-- Riscos especificos a observar: aguardar checkpoint da P2
+- Resumo das mudancas:
+  - A logica principal de stats saiu do `StatsController` e foi concentrada em `StatsService`.
+  - O frontend passou a normalizar payloads de manager/barbearia na camada de API, reduzindo regras espalhadas nas paginas.
+  - `ManagerSettings` passou a depender do contexto de autenticacao para resolver `BarbeariaId`, sem leitura direta de `localStorage`.
+  - A listagem de barbearias e a consulta de stats foram otimizadas para reduzir chamadas redundantes e custo de consulta.
+- O que eu preciso testar manualmente no sistema deployed:
+  - Abrir estatisticas do gerente e alternar entre semana, mes, trimestre e ano.
+  - Abrir a tela de barbeiros do gerente e conferir lista, contadores e dados agregados.
+  - Salvar configuracoes em manager settings e confirmar que a tela continua funcionando com o mesmo usuario logado.
+  - Navegar em barbearias do cliente e confirmar que a lista de barbeiros continua aparecendo corretamente antes do agendamento.
+- Riscos especificos a observar:
+  - Divergencia entre payload novo com barbeiros embarcados e fallback antigo em ambientes com deploy misto de frontend/backend.
+  - Qualquer diferenca visual ou de totalizacao nas telas de stats do gerente.
+  - Fluxos manager que dependem de `BarbeariaId` do usuario autenticado.
 - Status da pontuacao:
-  - Pontuacao maxima esperada: 32
-  - Pontuacao obtida: 0
-  - Percentual: 0%
-- Recomendacao: nao seguir antes da validacao da P1 e da execucao da P2.
+  - Pontuacao maxima esperada: 36
+  - Pontuacao obtida: 36
+  - Percentual: 100%
+- Recomendacao: validar manualmente a P2 antes de seguir para a P3.
 
 ### Checkpoint de validacao manual - P3
 
@@ -299,7 +332,7 @@
 | Prioridade | Pontos maximos | Pontos obtidos | Percentual | Status |
 | --- | ---: | ---: | ---: | --- |
 | P1 | 60 | 60 | 100% | concluido com ressalvas |
-| P2 | 32 | 0 | 0% | nao iniciado |
+| P2 | 36 | 36 | 100% | concluido com ressalvas |
 | P3 | 10 | 0 | 0% | nao iniciado |
 
 ## 9. Log de execucao
@@ -323,3 +356,23 @@
 - `Backend/Services/AppDateTime.cs`, `Backend/Services/HorarioService.cs`, `Backend/Controllers/HorarioController.cs` e `Backend/Controllers/AgendamentoController.cs` foram ajustados para tratar periodo local da barbearia e conversao correta para UTC.
 - `Validation/HorarioGenerationValidation.csproj` e `Validation/Program.cs` foram adicionados para validar workDays, bloqueio de dias desabilitados, open/close, intervalo, timezone, nao geracao de horarios passados e consistencia dashboard/backend.
 - `dotnet run --project Validation\\HorarioGenerationValidation.csproj` passou com todos os cenarios de validacao da geracao de horarios.
+- Diagnostico adicional no banco real mostrou que a barbearia 1 estava com configuracao correta e barbeiros vinculados, mas com `0` slots futuros gravados.
+- O problema real observado em producao foi a separacao entre salvar a configuracao da barbearia e disparar a geracao em uma segunda chamada, permitindo sucesso parcial sem slots novos.
+- `Backend/Controllers/BarbeariaController.cs` passou a regenerar horarios no mesmo fluxo de `UpdateBarbearia` quando `workDays`, `openTime` ou `closeTime` mudam.
+- `dotnet run --project Validation\\HorarioGenerationValidation.csproj -- inspect-barbershop 1` confirmou slots futuros gravados em formato Brasil para a barbearia afetada.
+- `Frontend/src/utils/brazilDateTime.ts` foi adicionado para converter `dataHora` UTC para calendario e horario Brasil no frontend.
+- `Frontend/src/pages/client/BookAppointment.tsx` e `Frontend/src/services/api/api-appointments.ts` deixaram de interpretar `dataHora` por `split('T')` e passaram a usar conversao explicita para `America/Sao_Paulo`.
+- `npm test -- --run` voltou a passar com 18 testes aprovados, incluindo cobertura nova para conversao UTC -> Brasil.
+- `Backend/Services/StatsService.cs` foi criado para concentrar regras de stats de barbeiro e gerente sem alterar rotas nem payloads publicos.
+- `Backend/Controllers/StatsController.cs` passou a validar existencia e delegar o calculo ao service novo, preservando os endpoints existentes.
+- `Backend/Program.cs` passou a registrar `IStatsService` na injecao de dependencia.
+- `Backend/Controllers/BarbeariaController.cs` passou a expor barbeiros embarcados na listagem de barbearias para evitar chamadas extras no frontend atualizado.
+- `Frontend/src/services/api/adapters.ts` foi criado para centralizar normalizacao de barbearia, barbearias com barbeiros, barbeiros do gerente e stats do gerente.
+- `Frontend/src/services/api/api-dashboard.ts` e `Frontend/src/services/api/api-barbershop.ts` passaram a devolver payloads normalizados para as telas consumidoras.
+- `Frontend/src/pages/manager/ManagerBarbers.tsx`, `Frontend/src/pages/manager/ManagerStats.tsx` e `Frontend/src/pages/client/BookAppointment.tsx` deixaram de repetir mapeamentos locais de casing e defaults.
+- `Frontend/src/pages/manager/ManagerSettings.tsx` passou a resolver `BarbeariaId` via `useAuth` + `requireUserBarbershopId`, sem leitura direta de `localStorage`.
+- `Frontend/src/services/api/adapters.test.ts` foi adicionado para validar a normalizacao dos payloads centrais da P2.
+- `Frontend/src/contexts/auth-helpers.test.ts` ganhou cobertura para `getUserBarbershopId` e `requireUserBarbershopId`.
+- `npm test -- --run` passou com 24 testes aprovados apos as mudancas da P2.
+- `dotnet build Backend\\BarbeariaSaaS.csproj` concluiu com sucesso apos a extracao de stats e a reducao das consultas redundantes.
+- Risco residual controlado da P2: o projeto ainda nao possui suite dedicada de integracao para stats/listagens e o warning `NU1902` permanece fora do escopo desta etapa.

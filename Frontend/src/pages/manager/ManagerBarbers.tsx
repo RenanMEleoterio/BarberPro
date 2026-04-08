@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Users, Plus, Search, Star, Phone, Mail, Calendar, DollarSign, UserCheck } from 'lucide-react';
 import { apiService } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import type { ManagerBarbersData } from '../../services/api/adapters';
 import toast from 'react-hot-toast';
 
 /**
@@ -44,7 +45,7 @@ export default function ManagerBarbers() {
   // Estado para controlar a visibilidade do modal de adição de barbeiro.
   const [showAddModal, setShowAddModal] = useState(false);
   // Estado para armazenar os dados dos barbeiros e estatísticas.
-  const [barbersData, setBarbersData] = useState<BarbersData | null>(null);
+  const [barbersData, setBarbersData] = useState<ManagerBarbersData | null>(null);
   // Estado para controlar o status de carregamento.
   const [loading, setLoading] = useState(true);
   // Estado para armazenar mensagens de erro.
@@ -70,29 +71,7 @@ export default function ManagerBarbers() {
         setError(null);
         // Busca os barbeiros e estatísticas associadas à barbearia do gerente.
         const data = await apiService.getManagerBarbers(Number(user.id));
-        const barbeirosList = data.barbeiros || data.Barbeiros;
-        const estatisticasObj = data.estatisticas || data.Estatisticas;
-
-        setBarbersData({
-          barbeiros: Array.isArray(barbeirosList) ? barbeirosList.map((b: any) => ({
-            id: b.id?.toString() || b.Id?.toString() || '',
-            name: b.name || b.Name || 'Barbeiro',
-            email: b.email || b.Email || '',
-            phone: b.phone || b.Phone || '',
-            specialties: Array.isArray(b.specialties || b.Specialties) ? (b.specialties || b.Specialties) : [],
-            rating: b.rating || b.Rating || 0,
-            totalClients: b.totalClients || b.TotalClients || 0,
-            monthlyRevenue: b.monthlyRevenue || b.MonthlyRevenue || 0,
-            status: b.status || b.Status || 'inactive',
-            joinDate: b.joinDate || b.JoinDate || new Date().toISOString()
-          })) : [],
-          estatisticas: {
-            totalBarbeiros: estatisticasObj?.totalBarbeiros || estatisticasObj?.TotalBarbeiros || 0,
-            barbeirosAtivos: estatisticasObj?.barbeirosAtivos || estatisticasObj?.BarbeirosAtivos || 0,
-            receitaTotal: estatisticasObj?.receitaTotal || estatisticasObj?.ReceitaTotal || 0,
-            avaliacaoMedia: estatisticasObj?.avaliacaoMedia || estatisticasObj?.AvaliacaoMedia || 0
-          }
-        });
+        setBarbersData(data);
       } catch (err: any) {
         console.error("Erro ao carregar barbeiros:", err);
         if (err.response?.status !== 404) {
@@ -407,5 +386,3 @@ export default function ManagerBarbers() {
     </div>
   );
 }
-
-

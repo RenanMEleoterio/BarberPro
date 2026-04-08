@@ -1,14 +1,10 @@
-using System;
-using System.Linq;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using BarbeariaSaaS.Data;
 using BarbeariaSaaS.Models;
 using BarbeariaSaaS.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BarbeariaSaaS.Controllers
 {
@@ -18,16 +14,16 @@ namespace BarbeariaSaaS.Controllers
     public class StatsController : ControllerBase
     {
         private readonly BarbeariaContext _context;
-        private readonly ILogger<StatsController> _logger;
+        private readonly IStatsService _statsService;
 
         /// <summary>
         /// Construtor do controlador. Injeta o contexto do banco de dados (BarbeariaContext) para permitir a interação com o Entity Framework Core.
         /// </summary>
         /// <param name="context">O contexto do banco de dados.</param>
-        public StatsController(BarbeariaContext context, ILogger<StatsController> logger)
+        public StatsController(BarbeariaContext context, IStatsService statsService)
         {
             _context = context;
-            _logger = logger;
+            _statsService = statsService;
         }
 
         /// <summary>
@@ -41,10 +37,16 @@ namespace BarbeariaSaaS.Controllers
         public async Task<ActionResult> GetBarberStats(int id, [FromQuery] string periodo = "semana")
         {
             var barbeiro = await _context.Usuarios
+                .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Id == id && u.TipoUsuario == TipoUsuario.Barbeiro);
 
             if (barbeiro == null)
                 return NotFound();
+
+            var statsResponse = await _statsService.GetBarberStatsAsync(id, periodo);
+            return Ok(statsResponse);
+
+            /*
 
             DateTime dataInicio, dataFim;
             switch (periodo.ToLower())
@@ -160,6 +162,8 @@ namespace BarbeariaSaaS.Controllers
             return Ok(response);
         }
 
+            */
+        }
         /// <summary>
         /// Retorna estatísticas detalhadas para uma barbearia específica, destinadas a gerentes.
         /// O ID passado é o ID do Gerente. A barbearia será inferida a partir do gerente.
@@ -170,7 +174,9 @@ namespace BarbeariaSaaS.Controllers
         [HttpGet("manager/{managerId}")]
         public async Task<ActionResult> GetManagerStats(int managerId, [FromQuery] string periodo = "mes")
         {
-            var manager = await _context.Usuarios.FirstOrDefaultAsync(u => u.Id == managerId && u.TipoUsuario == TipoUsuario.Gerente);
+            var manager = await _context.Usuarios
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == managerId && u.TipoUsuario == TipoUsuario.Gerente);
             if (manager == null || manager.BarbeariaId == null)
             {
                 return NotFound("Gerente não encontrado ou não associado a uma barbearia.");
@@ -178,8 +184,15 @@ namespace BarbeariaSaaS.Controllers
 
             int barbeariaId = manager.BarbeariaId.Value;
 
-            var barbearia = await _context.Barbearias.FirstOrDefaultAsync(b => b.Id == barbeariaId);
+            var barbearia = await _context.Barbearias
+                .AsNoTracking()
+                .FirstOrDefaultAsync(b => b.Id == barbeariaId);
             if (barbearia == null) return NotFound();
+
+            var statsResponse = await _statsService.GetManagerStatsAsync(barbeariaId, barbearia.Nome, periodo);
+            return Ok(statsResponse);
+
+            /*
 
             DateTime dataInicio, dataFim;
             switch (periodo.ToLower())
@@ -315,6 +328,7 @@ namespace BarbeariaSaaS.Controllers
             };
 
             return Ok(response);
+            */
         }
     }
 }

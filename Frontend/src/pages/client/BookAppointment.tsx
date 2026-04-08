@@ -157,15 +157,7 @@ export default function BookAppointment() {
       }
 
       const barbeariaData = await apiService.getBarbeariaById(parseInt(barbershopId));
-      
-      const barbershopWithConfig = {
-        ...barbeariaData,
-        workDays: barbeariaData.workDays || ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
-        openTime: barbeariaData.openTime || '08:00',
-        closeTime: barbeariaData.closeTime || '18:00'
-      };
-      
-      setBarbershop(barbershopWithConfig);
+      setBarbershop(barbeariaData);
 
       const barbeirosData = await apiService.getBarbeirosComHorarios(
         parseInt(barbershopId),
@@ -243,16 +235,11 @@ export default function BookAppointment() {
       'saturday'   // 6
     ];
     
-    let enabledWorkDays: string[] = [];
-    
-    if (Array.isArray(barbershop.workDays)) {
-      enabledWorkDays = barbershop.workDays;
-    } else if (typeof barbershop.workDays === 'string') {
-      enabledWorkDays = barbershop.workDays.split(',').map((day: string) => day.trim());
-    } else {
+    if (!Array.isArray(barbershop.workDays)) {
       return allDays;
     }
-    
+
+    const enabledWorkDays = barbershop.workDays;
     const filteredDays = allDays.filter(day => {
       const dayOfWeek = day.getDay();
       const dayName = dayMapping[dayOfWeek];

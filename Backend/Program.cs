@@ -60,6 +60,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<HorarioService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IStatsService, StatsService>();
 builder.Services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
 
 // Configura as políticas de CORS (Cross-Origin Resource Sharing).

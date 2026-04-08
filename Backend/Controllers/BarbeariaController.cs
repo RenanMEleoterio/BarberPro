@@ -35,12 +35,23 @@ namespace BarbeariaSaaS.Controllers
         public async Task<ActionResult<IEnumerable<Barbearia>>> GetBarbearias()
         {
             var barbearias = await _context.Barbearias
+                .AsNoTracking()
                 .Select(b => new {
                     b.Id,
                     b.Nome,
                     b.Endereco,
                     b.Telefone,
-                    b.Email
+                    b.Email,
+                    b.OpenTime,
+                    b.CloseTime,
+                    Barbers = b.Usuarios
+                        .Where(u => u.TipoUsuario == TipoUsuario.Barbeiro)
+                        .Select(u => new
+                        {
+                            u.Id,
+                            u.Nome
+                        })
+                        .ToList()
                 })
                 .ToListAsync();
 
@@ -197,4 +208,3 @@ namespace BarbeariaSaaS.Controllers
         }
     }
 }
-

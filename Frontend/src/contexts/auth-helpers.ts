@@ -24,3 +24,21 @@ export function mapLoginResponseToUser(response: LoginResponse): User {
     created_at: new Date().toISOString(),
   };
 }
+
+export function getUserBarbershopId(user: User | null): number | null {
+  if (!user || typeof user.barbeariaId !== 'number' || user.barbeariaId <= 0) {
+    return null;
+  }
+
+  return user.barbeariaId;
+}
+
+export function requireUserBarbershopId(user: User | null): number {
+  const barbershopId = getUserBarbershopId(user);
+
+  if (!barbershopId) {
+    throw new Error('ID da barbearia não encontrado nos dados do usuário.');
+  }
+
+  return barbershopId;
+}

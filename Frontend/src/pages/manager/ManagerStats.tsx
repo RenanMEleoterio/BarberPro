@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BarChart3, TrendingUp, Users, DollarSign, Calendar, Star, Clock, Target } from 'lucide-react';
 import { apiService } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import type { ManagerStatsData } from '../../services/api/adapters';
 import toast from 'react-hot-toast';
 
 /**
@@ -57,7 +58,7 @@ export default function ManagerStats() {
   // Estado para o período selecionado (semana, mês, trimestre, ano).
   const [selectedPeriod, setSelectedPeriod] = useState('ano');
   // Estado para armazenar os dados de estatísticas.
-  const [statsData, setStatsData] = useState<StatsData | null>(null);
+  const [statsData, setStatsData] = useState<ManagerStatsData | null>(null);
   // Estado para controlar o status de carregamento.
   const [loading, setLoading] = useState(true);
   // Estado para armazenar mensagens de erro.
@@ -90,7 +91,10 @@ export default function ManagerStats() {
         const periodoBackend = periodoMap[selectedPeriod] || 'mes';
         // Chama o serviço de API para obter as estatísticas do gerente.
         const data = await apiService.getManagerStats(Number(user.id), periodoBackend);
-        setStatsData({
+        setStatsData(data);
+        return;
+        /*
+          setStatsData({
           totalRevenue: data.ReceitaTotal || 0,
           totalClients: data.TotalClientes || 0,
           totalAppointments: data.TotalAgendamentos || 0,
@@ -129,7 +133,8 @@ export default function ManagerStats() {
             bom: data.Satisfacao?.Bom || 18,
             regular: data.Satisfacao?.Regular || 4
           }
-        });
+          });
+        */
       } else {
         setError("ID da barbearia não encontrado.");
       }
@@ -517,5 +522,3 @@ export default function ManagerStats() {
     </div>
   );
 }
-
-

@@ -1,4 +1,5 @@
 import { HttpClient } from './httpClient';
+import { normalizeBarbershopCard, normalizeBarbershopConfig } from './adapters';
 
 export const BarbershopAPI = {
   async getBarbershops() {
@@ -19,7 +20,8 @@ export const BarbershopAPI = {
   },
 
   async getBarbeariaById(id: number) {
-    return HttpClient.request<any>(`/barbearia/${id}`);
+    const response = await HttpClient.request<any>(`/barbearia/${id}`);
+    return normalizeBarbershopConfig(response);
   },
 
   async getBarbeariaDetalhes(id: number) {
@@ -40,11 +42,20 @@ export const BarbershopAPI = {
   async getBarbershopsWithDetails() {
     const response = await this.getBarbershops();
     const barbearias = Array.isArray(response) ? response : [];
+    const hasEmbeddedBarbers = barbearias.every(
+      (barbearia: any) => Array.isArray(barbearia.barbers) || Array.isArray(barbearia.Barbers)
+    );
+
+    if (hasEmbeddedBarbers) {
+      return barbearias.map((barbearia: any) => normalizeBarbershopCard(barbearia));
+    }
 
     return Promise.all(
       barbearias.map(async (barbearia: any) => {
         try {
           const responseBarbeiros = await this.getBarbers(barbearia.id);
+          return normalizeBarbershopCard(barbearia, responseBarbeiros);
+          /*
           const barbeiros = Array.isArray(responseBarbeiros) ? responseBarbeiros : [];
 
           return {
@@ -61,8 +72,11 @@ export const BarbershopAPI = {
             phone: barbearia.telefone || '(11) 99999-9999',
             address: barbearia.endereco || 'Endereço não informado'
           };
+          */
         } catch (error) {
           console.error(`Erro ao buscar barbeiros para barbearia ${barbearia.id}:`, error);
+          return normalizeBarbershopCard(barbearia, []);
+          /*
           return {
             ...barbearia,
             barbers: [],
@@ -73,6 +87,7 @@ export const BarbershopAPI = {
             phone: barbearia.telefone || '(11) 99999-9999',
             address: 'Endereço não informado'
           };
+          */
         }
       })
     );
