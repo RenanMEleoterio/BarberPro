@@ -189,50 +189,57 @@ export interface ManagerStatsData {
 }
 
 export function normalizeManagerStatsData(data: ApiRecord): ManagerStatsData {
+  const performanceMensal = pickFirstDefined(data.performanceMensal, data.PerformanceMensal, []);
+  const rankingBarbeiros = pickFirstDefined(data.rankingBarbeiros, data.RankingBarbeiros, []);
+  const servicosPopulares = pickFirstDefined(data.servicosPopulares, data.ServicosPopulares, []);
+  const metaMensal = pickFirstDefined(data.metaMensal, data.MetaMensal, {});
+  const eficiencia = pickFirstDefined(data.eficiencia, data.Eficiencia, {});
+  const satisfacao = pickFirstDefined(data.satisfacao, data.Satisfacao, {});
+
   return {
-    totalRevenue: toNumber(data.ReceitaTotal),
-    totalClients: toNumber(data.TotalClientes),
-    totalAppointments: toNumber(data.TotalAgendamentos),
-    averageRating: toNumber(data.AvaliacaoMedia),
+    totalRevenue: toNumber(pickFirstDefined(data.receitaTotal, data.ReceitaTotal)),
+    totalClients: toNumber(pickFirstDefined(data.totalClientes, data.TotalClientes)),
+    totalAppointments: toNumber(pickFirstDefined(data.totalAgendamentos, data.TotalAgendamentos)),
+    averageRating: toNumber(pickFirstDefined(data.avaliacaoMedia, data.AvaliacaoMedia)),
     monthlyGrowth: 0,
     barbersCount: 0,
     activeBarbers: 0,
-    topBarbers: Array.isArray(data.RankingBarbeiros)
-      ? data.RankingBarbeiros.map((barber: ApiRecord) => ({
-          name: pickFirstDefined(barber.Nome, barber.name, 'Barbeiro'),
-          revenue: toNumber(pickFirstDefined(barber.Receita, barber.revenue)),
-          clients: toNumber(pickFirstDefined(barber.Clientes, barber.clients)),
-          rating: toNumber(pickFirstDefined(barber.Avaliacao, barber.rating)),
+    topBarbers: Array.isArray(rankingBarbeiros)
+      ? rankingBarbeiros.map((barber: ApiRecord) => ({
+          name: pickFirstDefined(barber.nome, barber.Nome, barber.name, 'Barbeiro'),
+          revenue: toNumber(pickFirstDefined(barber.receita, barber.Receita, barber.revenue)),
+          clients: toNumber(pickFirstDefined(barber.clientes, barber.Clientes, barber.clients)),
+          rating: toNumber(pickFirstDefined(barber.avaliacao, barber.Avaliacao, barber.rating)),
         }))
       : [],
-    monthlyData: Array.isArray(data.PerformanceMensal)
-      ? data.PerformanceMensal.map((month: ApiRecord) => ({
-          month: pickFirstDefined(month.Mes, month.month, 'Mes'),
-          revenue: toNumber(pickFirstDefined(month.Receita, month.revenue)),
-          appointments: toNumber(pickFirstDefined(month.Agendamentos, month.appointments)),
+    monthlyData: Array.isArray(performanceMensal)
+      ? performanceMensal.map((month: ApiRecord) => ({
+          month: pickFirstDefined(month.mes, month.Mes, month.month, 'Mes'),
+          revenue: toNumber(pickFirstDefined(month.receita, month.Receita, month.revenue)),
+          appointments: toNumber(pickFirstDefined(month.agendamentos, month.Agendamentos, month.appointments)),
         }))
       : [],
-    serviceStats: Array.isArray(data.ServicosPopulares)
-      ? data.ServicosPopulares.map((service: ApiRecord) => ({
-          service: pickFirstDefined(service.Servico, service.service, 'Servico'),
-          count: toNumber(pickFirstDefined(service.Quantidade, service.count)),
-          revenue: toNumber(pickFirstDefined(service.Receita, service.revenue)),
-          percentage: toNumber(pickFirstDefined(service.Porcentagem, service.percentage)),
+    serviceStats: Array.isArray(servicosPopulares)
+      ? servicosPopulares.map((service: ApiRecord) => ({
+          service: pickFirstDefined(service.servico, service.Servico, service.service, 'Servico'),
+          count: toNumber(pickFirstDefined(service.quantidade, service.Quantidade, service.count)),
+          revenue: toNumber(pickFirstDefined(service.receita, service.Receita, service.revenue)),
+          percentage: toNumber(pickFirstDefined(service.porcentagem, service.Porcentagem, service.percentage)),
         }))
       : [],
     metaMensal: {
-      receita: toNumber(data.MetaMensal?.Meta, 20000),
-      progresso: toNumber(data.MetaMensal?.Progresso),
+      receita: toNumber(pickFirstDefined(metaMensal.meta, metaMensal.Meta), 20000),
+      progresso: toNumber(pickFirstDefined(metaMensal.progresso, metaMensal.Progresso)),
     },
     eficiencia: {
-      tempoMedioCorte: toNumber(data.Eficiencia?.TempoMedioCorte, 25),
-      tempoMedioBarba: toNumber(data.Eficiencia?.TempoMedioBarba, 15),
-      tempoMedioCompleto: toNumber(data.Eficiencia?.TempoMedioCompleto, 40),
+      tempoMedioCorte: toNumber(pickFirstDefined(eficiencia.tempoMedioCorte, eficiencia.TempoMedioCorte), 25),
+      tempoMedioBarba: toNumber(pickFirstDefined(eficiencia.tempoMedioBarba, eficiencia.TempoMedioBarba), 15),
+      tempoMedioCompleto: toNumber(pickFirstDefined(eficiencia.tempoMedioCompleto, eficiencia.TempoMedioCompleto), 40),
     },
     satisfacao: {
-      excelente: toNumber(data.Satisfacao?.Excelente, 78),
-      bom: toNumber(data.Satisfacao?.Bom, 18),
-      regular: toNumber(data.Satisfacao?.Regular, 4),
+      excelente: toNumber(pickFirstDefined(satisfacao.excelente, satisfacao.Excelente), 78),
+      bom: toNumber(pickFirstDefined(satisfacao.bom, satisfacao.Bom), 18),
+      regular: toNumber(pickFirstDefined(satisfacao.regular, satisfacao.Regular), 4),
     },
   };
 }

@@ -214,7 +214,7 @@
   - `npm test -- --run` em `Frontend`
   - `dotnet build Backend\\BarbeariaSaaS.csproj`
 - Evidencias:
-  - 7 arquivos de teste passaram no frontend, com 24 testes aprovados.
+  - 7 arquivos de teste passaram no frontend, com 25 testes aprovados.
   - O build do backend concluiu com sucesso apos a extracao de stats e os ajustes de listagem.
   - A busca por `localStorage` em `Frontend/src` confirmou que a leitura direta do usuario ficou restrita aos pontos centrais (`AuthContext`, `httpClient` e `ThemeContext`).
 - Pendencias para validacao manual:
@@ -374,5 +374,8 @@
 - `Frontend/src/services/api/adapters.test.ts` foi adicionado para validar a normalizacao dos payloads centrais da P2.
 - `Frontend/src/contexts/auth-helpers.test.ts` ganhou cobertura para `getUserBarbershopId` e `requireUserBarbershopId`.
 - `npm test -- --run` passou com 24 testes aprovados apos as mudancas da P2.
+- Hotfix aplicado apos a P2 para a tela `manager/stats`: o adapter de estatisticas passou a aceitar o JSON `camelCase` serializado pelo ASP.NET Core, preservando compatibilidade com `PascalCase`.
+- `Frontend/src/services/api/adapters.test.ts` ganhou cobertura para a resposta `camelCase` real da API de estatisticas.
+- `npm test -- --run` passou com 25 testes aprovados apos a correcao do adapter de estatisticas.
 - `dotnet build Backend\\BarbeariaSaaS.csproj` concluiu com sucesso apos a extracao de stats e a reducao das consultas redundantes.
 - Risco residual controlado da P2: o projeto ainda nao possui suite dedicada de integracao para stats/listagens e o warning `NU1902` permanece fora do escopo desta etapa.

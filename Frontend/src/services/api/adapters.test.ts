@@ -75,6 +75,32 @@ describe('api adapters', () => {
     expect(result.eficiencia.tempoMedioCorte).toBe(25);
   });
 
+  it('normaliza stats do manager serializados em camelCase pela API ASP.NET', () => {
+    const result = normalizeManagerStatsData({
+      receitaTotal: 5400,
+      totalClientes: 27,
+      totalAgendamentos: 44,
+      avaliacaoMedia: 4.7,
+      performanceMensal: [{ mes: 'Abr', receita: 5400, agendamentos: 44 }],
+      rankingBarbeiros: [{ nome: 'Sandro', receita: 3000, clientes: 12, avaliacao: 4.8 }],
+      servicosPopulares: [{ servico: 'Corte', quantidade: 20, receita: 1000, porcentagem: 55 }],
+      metaMensal: { meta: 20000, progresso: 27 },
+      eficiencia: { tempoMedioCorte: 25, tempoMedioBarba: 15, tempoMedioCompleto: 40 },
+      satisfacao: { excelente: 78, bom: 18, regular: 4 },
+    });
+
+    expect(result.totalRevenue).toBe(5400);
+    expect(result.totalClients).toBe(27);
+    expect(result.totalAppointments).toBe(44);
+    expect(result.averageRating).toBe(4.7);
+    expect(result.monthlyData[0]).toEqual({ month: 'Abr', revenue: 5400, appointments: 44 });
+    expect(result.topBarbers[0]).toEqual({ name: 'Sandro', revenue: 3000, clients: 12, rating: 4.8 });
+    expect(result.serviceStats[0]).toEqual({ service: 'Corte', count: 20, revenue: 1000, percentage: 55 });
+    expect(result.metaMensal).toEqual({ receita: 20000, progresso: 27 });
+    expect(result.eficiencia.tempoMedioCorte).toBe(25);
+    expect(result.satisfacao.excelente).toBe(78);
+  });
+
   it('normaliza card de barbearia aproveitando barbeiros embarcados', () => {
     const result = normalizeBarbershopCard({
       id: 3,
