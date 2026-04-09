@@ -420,3 +420,11 @@
 - `Frontend/src/pages/barber/BarberDashboard.test.tsx` foi corrigido para usar o mesmo calendario local da tela no filtro de agendamentos de hoje.
 - `npm test -- --run` passou com 28 testes aprovados apos a modularizacao segura da P3.
 - `npm run build` do frontend passou apos a modularizacao segura da P3, com warning nao bloqueante de chunk grande.
+- Follow-up pos-P3: o caminho publico de `BarbershopAPI` foi unificado novamente em `Frontend/src/services/api/api-barbershop.ts`, que agora reexporta a implementacao limpa de `api-barbershop-client.ts`.
+- Follow-up pos-P3: `Frontend/src/services/api.ts` voltou a consumir o caminho tradicional `api-barbershop`, reduzindo duplicacao interna sem alterar comportamento.
+- Follow-up pos-P3: `Frontend/src/App.tsx` passou a apontar diretamente para `ManagerStatsPage.tsx` e `ManagerBarbersPage.tsx`, retirando do fluxo ativo os wrappers legados do manager sem alterar as rotas.
+- Follow-up pos-P3: `Frontend/src/services/api.ts` voltou a consumir diretamente `api-barbershop-client.ts`, deixando `api-barbershop.ts` apenas como ponto de compatibilidade legado fora do fluxo principal.
+- Validacao do follow-up pos-P3: `npm test -- --run` permaneceu verde com 28 testes aprovados apos a retirada dos wrappers do fluxo ativo.
+- Validacao do follow-up pos-P3: `npm run build` continuou concluindo com sucesso, mantendo apenas o warning conhecido de chunk grande.
+- Follow-up pos-P3: `Frontend/src/pages/manager/ManagerStats.tsx`, `Frontend/src/pages/manager/ManagerBarbers.tsx` e `Frontend/src/services/api/api-barbershop.ts` foram reduzidos fisicamente a wrappers minimos de compatibilidade.
+- Validacao final do follow-up pos-P3: `npm test -- --run` e `npm run build` continuaram verdes apos a limpeza fisica dos wrappers legados.

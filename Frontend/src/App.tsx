@@ -14,8 +14,8 @@ import BarberSchedule from './pages/barber/BarberSchedule';
 import BarberStats from './pages/barber/BarberStats';
 import BarberSettings from './pages/barber/BarberSettings';
 import ManagerDashboard from './pages/manager/ManagerDashboard';
-import ManagerBarbers from './pages/manager/ManagerBarbers';
-import ManagerStats from './pages/manager/ManagerStats';
+import ManagerBarbers from './pages/manager/ManagerBarbersPage';
+import ManagerStats from './pages/manager/ManagerStatsPage';
 import ManagerSettings from './pages/manager/ManagerSettings';
 
 /**
