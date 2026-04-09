@@ -428,3 +428,7 @@
 - Validacao do follow-up pos-P3: `npm run build` continuou concluindo com sucesso, mantendo apenas o warning conhecido de chunk grande.
 - Follow-up pos-P3: `Frontend/src/pages/manager/ManagerStats.tsx`, `Frontend/src/pages/manager/ManagerBarbers.tsx` e `Frontend/src/services/api/api-barbershop.ts` foram reduzidos fisicamente a wrappers minimos de compatibilidade.
 - Validacao final do follow-up pos-P3: `npm test -- --run` e `npm run build` continuaram verdes apos a limpeza fisica dos wrappers legados.
+- Follow-up de performance: o bootstrap do backend deixou de fazer `CanConnect()` + `Migrate()` + `EnsureCreated()` em toda subida, reduzindo round-trips e custo de boot quando o banco esta frio.
+- Follow-up de performance: `Backend/Services/DatabaseStartupInitializer.cs` e `Backend/Configuration/DatabaseStartupOptions.cs` foram adicionados para tornar a inicializacao do banco configuravel por ambiente.
+- Follow-up de performance: em desenvolvimento, a aplicacao continua favorecendo auto-migracao e fallback local; fora de desenvolvimento, a subida passa a evitar migracao automatica por padrao.
+- Follow-up de performance: o comando `migrate-db` foi adicionado ao backend para permitir execucao explicita de migracoes sem recolocar esse custo no startup normal da aplicacao.

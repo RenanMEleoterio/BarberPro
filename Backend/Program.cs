@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using BarbeariaSaaS.Configuration;
 using BarbeariaSaaS.Data;
 using BarbeariaSaaS.Services;
 using Microsoft.AspNetCore.Builder;
@@ -26,6 +27,8 @@ builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 // Adiciona serviços ao contêiner de injeção de dependência.
 // Adiciona suporte para controladores MVC/API, permitindo que a aplicação responda a requisições HTTP.
 builder.Services.AddControllers();
+builder.Services.Configure<DatabaseStartupOptions>(
+    builder.Configuration.GetSection(DatabaseStartupOptions.SectionName));
 
 // Configura o DbContext (BarbeariaContext) para o Entity Framework Core.
 // A string de conexão é obtida da variável de ambiente 'DATABASE_URL' (para produção) ou do 'DefaultConnection' no appsettings.json (para desenvolvimento).
@@ -61,6 +64,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<HorarioService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IStatsService, StatsService>();
+builder.Services.AddSingleton<DatabaseStartupInitializer>();
 builder.Services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
 
 // Configura as políticas de CORS (Cross-Origin Resource Sharing).
@@ -115,45 +119,30 @@ app.MapControllers();
 // Serve arquivos estáticos (HTML, CSS, JavaScript, imagens) da pasta wwwroot.
 app.UseStaticFiles();
 
-// Aplica migrações do banco de dados na inicialização da aplicação.
-// Garante que o esquema do banco de dados esteja atualizado com o modelo da aplicação.
-using (var scope = app.Services.CreateScope())
+var startupCommand = args.FirstOrDefault();
+var shouldRunMigrateCommand = string.Equals(startupCommand, "migrate-db", StringComparison.OrdinalIgnoreCase);
+var shouldRunCheckBarbeariasCommand = string.Equals(startupCommand, "check-barbearias", StringComparison.OrdinalIgnoreCase);
+
+var databaseStartupInitializer = app.Services.GetRequiredService<DatabaseStartupInitializer>();
+
+if (shouldRunMigrateCommand)
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<BarbeariaContext>();
-    try
+    var migrationSucceeded = await databaseStartupInitializer.InitializeAsync(forceMigration: true, failOnError: false);
+
+    if (!migrationSucceeded)
     {
-        // Verifica se o banco de dados pode ser conectado
-        if (dbContext.Database.CanConnect())
-        {
-            // Aplica as migrações pendentes
-            dbContext.Database.Migrate();
-            Console.WriteLine("Migrações aplicadas com sucesso.");
-        }
-        else
-        {
-            Console.WriteLine("Não foi possível conectar ao banco de dados.");
-        }
+        Environment.ExitCode = 1;
     }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Erro ao aplicar migrações: {ex.Message}");
-        // Em caso de erro, tenta criar o banco de dados do zero
-        try
-        {
-            dbContext.Database.EnsureCreated();
-            Console.WriteLine("Banco de dados criado com EnsureCreated.");
-        }
-        catch (Exception createEx)
-        {
-            Console.WriteLine($"Erro ao criar banco de dados: {createEx.Message}");
-        }
-    }
+
+    return;
 }
+
+await databaseStartupInitializer.InitializeAsync();
 
 // Lógica condicional para executar a verificação de barbearias.
 // Se o argumento "check-barbearias" for passado na linha de comando, executa a função CheckBarbearias.Run.
 // Isso é útil para tarefas de manutenção ou inicialização específicas.
-if (args.Length > 0 && args[0] == "check-barbearias")
+if (shouldRunCheckBarbeariasCommand)
 {
     await CheckBarbearias.Run(app.Services);
     return;
