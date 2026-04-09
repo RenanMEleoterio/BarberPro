@@ -1,60 +1,54 @@
-import React, { useState, useEffect } from 'react';
-import { BarChart3, TrendingUp, Users, DollarSign, Calendar, Star, Clock, Target } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { apiService } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import type { ManagerStatsData } from '../../services/api/adapters';
 import toast from 'react-hot-toast';
+import {
+  ManagerStatsDetailsPanels,
+  ManagerStatsInsightPanels,
+  ManagerStatsSummaryCards,
+} from './components/ManagerStatsSections';
+export { default } from './ManagerStatsPage';
 
 /**
  * Interface que define a estrutura dos dados de estatísticas retornados pela API.
  */
-interface StatsData {
-  totalRevenue: number;
-  totalClients: number;
-  totalAppointments: number;
-  averageRating: number;
-  monthlyGrowth: number;
-  barbersCount: number;
-  activeBarbers: number;
-  topBarbers: Array<{
-    name: string;
-    revenue: number;
-    clients: number;
-    rating: number;
-  }>;
-  monthlyData: Array<{
-    month: string;
-    revenue: number;
-    appointments: number;
-  }>;
-  serviceStats: Array<{
-    service: string;
-    count: number;
-    revenue: number;
-    percentage: number;
-  }>;
-  metaMensal: {
-    receita: number;
-    progresso: number;
-  };
-  eficiencia: {
-    tempoMedioCorte: number;
-    tempoMedioBarba: number;
-    tempoMedioCompleto: number;
-  };
-  satisfacao: {
-    excelente: number;
-    bom: number;
-    regular: number;
-  };
-}
+const PERIOD_OPTIONS = [
+  { value: 'semana', label: 'Esta Semana' },
+  { value: 'mes', label: 'Este Mês' },
+  { value: 'trimestre', label: 'Este Trimestre' },
+  { value: 'ano', label: 'Este Ano' },
+];
+
+const PERIOD_MAP: Record<string, string> = {
+  semana: 'semana',
+  mes: 'mes',
+  trimestre: 'trimestre',
+  ano: 'ano',
+};
+
+const DEFAULT_STATS: ManagerStatsData = {
+  totalRevenue: 0,
+  totalClients: 0,
+  totalAppointments: 0,
+  averageRating: 0,
+  monthlyGrowth: 0,
+  barbersCount: 0,
+  activeBarbers: 0,
+  topBarbers: [],
+  monthlyData: [],
+  serviceStats: [],
+  metaMensal: { receita: 20000, progresso: 0 },
+  eficiencia: { tempoMedioCorte: 25, tempoMedioBarba: 15, tempoMedioCompleto: 40 },
+  satisfacao: { excelente: 78, bom: 18, regular: 4 },
+};
 
 /**
  * Componente para exibir as estatísticas gerais da barbearia para o gerente.
  * Inclui receita total, clientes, agendamentos, avaliação média, top barbeiros,
  * performance mensal, serviços populares, meta mensal e métricas de eficiência e satisfação.
  */
-export default function ManagerStats() {
+function LegacyManagerStats() {
   // Estado para o período selecionado (semana, mês, trimestre, ano).
   const [selectedPeriod, setSelectedPeriod] = useState('ano');
   // Estado para armazenar os dados de estatísticas.
@@ -68,8 +62,35 @@ export default function ManagerStats() {
 
   // Efeito que carrega os dados de estatísticas quando o componente é montado ou o período/usuário muda.
   useEffect(() => {
-    loadStatsData();
-  }, [user, selectedPeriod]);
+    const loadStatsData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        if (!user?.id) {
+          setError('ID da barbearia não encontrado.');
+          return;
+        }
+
+        const periodoBackend = PERIOD_MAP[selectedPeriod] || 'mes';
+        const data = await apiService.getManagerStats(Number(user.id), periodoBackend);
+        setStatsData(data);
+      } catch (err: unknown) {
+        console.error('Erro ao carregar estatísticas:', err);
+        const message =
+          err instanceof Error && err.message
+            ? err.message
+            : 'Erro ao carregar estatísticas';
+
+        setError(message);
+        toast.error(message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadStatsData();
+  }, [selectedPeriod, user]);
 
   /**
    * Carrega os dados de estatísticas da barbearia a partir da API.

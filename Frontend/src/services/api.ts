@@ -2,7 +2,7 @@ import { AuthAPI, LoginResponse } from './api/api-auth';
 import { HttpClient, ApiError } from './api/httpClient';
 import { DashboardAPI } from './api/api-dashboard';
 import { AppointmentAPI } from './api/api-appointments';
-import { BarbershopAPI } from './api/api-barbershop';
+import { BarbershopAPI } from './api/api-barbershop-client';
 import { ServicoAPI, BarberProfileAPI } from './api/api-services';
 
 /**

@@ -1,5 +1,6 @@
 
 import { render, screen, waitFor } from '@testing-library/react';
+import { format } from 'date-fns';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import BarberDashboard from './BarberDashboard';
 import { apiService } from '../../services/api';
@@ -23,7 +24,7 @@ describe('BarberDashboard', () => {
   });
 
   it('deve exibir os contadores corretamente quando houver agendamentos no período', async () => {
-    const hoje = new Date().toISOString().split('T')[0];
+    const hoje = format(new Date(), 'yyyy-MM-dd');
 
     (apiService.getMyAppointments as any).mockResolvedValue([
       {
@@ -45,9 +46,10 @@ describe('BarberDashboard', () => {
     render(<BarberDashboard />);
 
     await waitFor(() => {
-      expect(screen.getByText('Agendamentos Hoje')).toBeInTheDocument();
+      expect(screen.getByText('Cliente 1')).toBeInTheDocument();
     });
 
+    expect(screen.getByText('Agendamentos Hoje')).toBeInTheDocument();
     expect(screen.getByText('Concluídos Hoje')).toBeInTheDocument();
     expect(screen.getByText('Total na Semana')).toBeInTheDocument();
     expect(screen.getByText('Ganhos da Semana')).toBeInTheDocument();

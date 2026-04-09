@@ -4,6 +4,7 @@ import { apiService } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import type { ManagerBarbersData } from '../../services/api/adapters';
 import toast from 'react-hot-toast';
+export { default } from './ManagerBarbersPage';
 
 /**
  * Interface que define a estrutura de um objeto Barbeiro.
@@ -39,7 +40,7 @@ interface BarbersData {
  * Componente para gerenciar os barbeiros de uma barbearia.
  * Permite visualizar, buscar e adicionar barbeiros, além de exibir estatísticas gerais.
  */
-export default function ManagerBarbers() {
+function LegacyManagerBarbers() {
   // Estado para o termo de busca dos barbeiros.
   const [searchTerm, setSearchTerm] = useState('');
   // Estado para controlar a visibilidade do modal de adição de barbeiro.
