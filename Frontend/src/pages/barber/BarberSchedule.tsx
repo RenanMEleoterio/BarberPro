@@ -4,6 +4,7 @@ import { apiService } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { getBarberScheduleStatusBadgeClass } from '../../utils/appointmentStatus';
+import { isSameBrazilDate, toBrazilDateInputValue, toBrazilDateLabel, toBrazilTimeValue } from '../../utils/brazilDateTime';
 
 /**
  * Interface que define a estrutura de um objeto de agendamento.
@@ -32,11 +33,7 @@ export default function BarberSchedule() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedDate, setSelectedDate] = useState(() => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return toBrazilDateInputValue(new Date());
   });
   const [viewMode, setViewMode] = useState<'daily' | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -86,7 +83,7 @@ export default function BarberSchedule() {
 
     // 1. Filtro por Modo de Visualização (Diário vs Todos)
     if (viewMode === 'daily') {
-      filtered = filtered.filter(apt => apt.dataHora?.split('T')[0] === selectedDate);
+      filtered = filtered.filter(apt => apt.dataHora && isSameBrazilDate(apt.dataHora, selectedDate));
     }
 
     // 2. Filtro por Termo de Busca (Nome do Cliente ou Serviço)
@@ -273,7 +270,7 @@ export default function BarberSchedule() {
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               {processedAppointments.length} agendamento(s) encontrado(s)
-              {viewMode === 'daily' && ` para ${new Date(selectedDate).toLocaleDateString('pt-BR')}`}
+              {viewMode === 'daily' && ` para ${toBrazilDateLabel(selectedDate)}`}
             </p>
           </div>
         </div>
@@ -311,11 +308,11 @@ export default function BarberSchedule() {
                       <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex items-center space-x-1">
                           <Calendar className="h-4 w-4 text-yellow-500" />
-                          <span className="font-medium">{appointment.dataHora.split('T')[0].split('-').reverse().join('/')}</span>
+                          <span className="font-medium">{toBrazilDateLabel(appointment.dataHora)}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <Clock className="h-4 w-4 text-yellow-500" />
-                          <span className="font-medium">{appointment.dataHora.split('T')[1].substring(0, 5)}</span>
+                          <span className="font-medium">{toBrazilTimeValue(appointment.dataHora)}</span>
                         </div>
                         {appointment.telefoneCliente && (
                           <div className="flex items-center space-x-1">

@@ -5,7 +5,7 @@ import { format, addDays, startOfWeek, addWeeks } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import toast from 'react-hot-toast';
 import { apiService } from '../../services/api';
-import { toBrazilDateInputValue, toBrazilTimeValue } from '../../utils/brazilDateTime';
+import { toBrazilDateInputValue, toBrazilDateLabel, toBrazilTimeValue } from '../../utils/brazilDateTime';
 
 /**
  * Interface que define a estrutura de um serviço.
@@ -261,7 +261,7 @@ export default function BookAppointment() {
       : '';
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const todayStr = format(today, 'yyyy-MM-dd');
+  const todayStr = toBrazilDateInputValue(new Date());
 
   const changeWeek = (delta: number) => {
     setWeekOffset((prev) => {
@@ -703,11 +703,7 @@ export default function BookAppointment() {
             )}
             {selectedDate && (
               <p className="text-gray-600 dark:text-gray-400">
-                <span className="font-medium">Data:</span>{' '}
-                {(() => {
-                  const [year, month, day] = selectedDate.split('-');
-                  return `${day}/${month}/${year}`;
-                })()}
+                <span className="font-medium">Data:</span> {toBrazilDateLabel(selectedDate)}
               </p>
             )}
             {selectedTime && (

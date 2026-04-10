@@ -432,3 +432,11 @@
 - Follow-up de performance: `Backend/Services/DatabaseStartupInitializer.cs` e `Backend/Configuration/DatabaseStartupOptions.cs` foram adicionados para tornar a inicializacao do banco configuravel por ambiente.
 - Follow-up de performance: em desenvolvimento, a aplicacao continua favorecendo auto-migracao e fallback local; fora de desenvolvimento, a subida passa a evitar migracao automatica por padrao.
 - Follow-up de performance: o comando `migrate-db` foi adicionado ao backend para permitir execucao explicita de migracoes sem recolocar esse custo no startup normal da aplicacao.
+- Hotfix de timezone: o backend passou a assumir UTC como armazenamento e horario Brasil como calendario de exibicao e de filtros de negocio nos dashboards.
+- `Backend/Services/AppDateTime.cs` ganhou helpers de conversao e formatacao para `America/Sao_Paulo`, alem de limites de semana, mes, trimestre e ano no calendario da operacao.
+- `Backend/Services/DashboardService.cs` deixou de formatar `DataHora` UTC diretamente e passou a devolver `Data`/`Hora` do dashboard do cliente no horario do Brasil.
+- `Backend/Services/DashboardService.cs` e `Backend/Services/StatsService.cs` passaram a calcular `hoje`, semana e mes pela data de negocio Brasil em vez de usar `.Date` em UTC.
+- `Frontend/src/utils/brazilDateTime.ts` foi endurecido para tratar corretamente `yyyy-MM-dd`, `yyyy-MM-ddTHH:mm:ss` sem offset e ISO UTC com `Z`, evitando deslocamentos de dia e hora.
+- `Frontend/src/pages/barber/BarberDashboard.tsx`, `Frontend/src/pages/barber/BarberSchedule.tsx`, `Frontend/src/pages/barber/components/AppointmentsList.tsx`, `Frontend/src/pages/client/BookAppointment.tsx` e componentes do manager deixaram de exibir ou filtrar `dataHora` por `split('T')` ou `new Date(...).toLocaleDateString('pt-BR')` sem timezone explicito.
+- `Frontend/src/utils/brazilDateTime.test.ts` e `Frontend/src/pages/barber/BarberSchedule.test.tsx` ganharam cobertura para o cenario critico `2026-04-10T16:00:00Z -> 10/04/2026 13:00`.
+- Validacao do hotfix de timezone: `npm test -- --run` passou com 32 testes aprovados, `npm run build` passou no frontend e `dotnet build Backend\\BarbeariaSaaS.csproj` passou no backend.

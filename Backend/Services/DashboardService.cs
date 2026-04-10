@@ -28,7 +28,7 @@ namespace BarbeariaSaaS.Services
             if (cliente == null)
                 return null;
 
-            var agoraUtc = DateTime.UtcNow;
+            var agoraUtc = AppDateTime.UtcNow();
 
             var agendamentosExpiradosCliente = await _context.Agendamentos
                 .Where(a => a.ClienteId == clienteId && a.DataHora <= agoraUtc && a.Status == StatusAgendamento.Pendente)
@@ -77,8 +77,8 @@ namespace BarbeariaSaaS.Services
             var agendamentosRecentes = agendamentosRecentesDb.Select(a => new
             {
                 Id = a.Id,
-                Data = a.DataHora.ToString("dd/MM/yyyy"),
-                Hora = a.DataHora.ToString("HH:mm"),
+                Data = AppDateTime.FormatBusinessDate(a.DataHora),
+                Hora = AppDateTime.FormatBusinessTime(a.DataHora),
                 Barbeiro = a.Barbeiro?.Nome ?? string.Empty,
                 BarbeiroId = a.BarbeiroId,
                 Barbearia = a.Barbearia?.Nome ?? string.Empty,
@@ -94,8 +94,8 @@ namespace BarbeariaSaaS.Services
                 proximoAgendamentoObj = new
                 {
                     Id = proximoAgendamento.Id,
-                    Data = proximoAgendamento.DataHora.ToString("dd/MM/yyyy"),
-                    Hora = proximoAgendamento.DataHora.ToString("HH:mm"),
+                    Data = AppDateTime.FormatBusinessDate(proximoAgendamento.DataHora),
+                    Hora = AppDateTime.FormatBusinessTime(proximoAgendamento.DataHora),
                     Barbeiro = proximoAgendamento.Barbeiro?.Nome ?? string.Empty,
                     BarbeiroId = proximoAgendamento.BarbeiroId,
                     Barbearia = proximoAgendamento.Barbearia?.Nome ?? string.Empty,
@@ -122,49 +122,67 @@ namespace BarbeariaSaaS.Services
             if (barbeiro == null)
                 return null;
 
-            var hoje = DateTime.UtcNow.Date;
-            var inicioSemana = hoje.AddDays(-(int)hoje.DayOfWeek);
+            var hoje = AppDateTime.TodayInBusinessTimeZone();
+            var inicioHojeUtc = AppDateTime.StartOfBusinessDayUtc(hoje);
+            var fimHojeUtc = AppDateTime.EndOfBusinessDayUtcExclusive(hoje);
+            var inicioSemana = AppDateTime.StartOfBusinessWeek(hoje);
             var fimSemana = inicioSemana.AddDays(7);
+            var inicioSemanaUtc = AppDateTime.NormalizeClientDateTimeToUtc(inicioSemana);
+            var fimSemanaUtc = AppDateTime.NormalizeClientDateTimeToUtc(fimSemana);
 
             var agendamentosHoje = await _context.Agendamentos
-                .CountAsync(a => a.BarbeiroId == barbeiroId && a.DataHora.Date == hoje);
+                .CountAsync(a => a.BarbeiroId == barbeiroId && a.DataHora >= inicioHojeUtc && a.DataHora < fimHojeUtc);
 
             var agendamentosConcluidos = await _context.Agendamentos
-                .CountAsync(a => a.BarbeiroId == barbeiroId && a.DataHora.Date == hoje && a.Status == StatusAgendamento.Realizado);
+                .CountAsync(a => a.BarbeiroId == barbeiroId && a.DataHora >= inicioHojeUtc && a.DataHora < fimHojeUtc && a.Status == StatusAgendamento.Realizado);
 
             var ganhosSemana = await _context.Agendamentos
                 .Include(a => a.AgendamentoServicos)
                 .ThenInclude(asv => asv.Servico)
-                .Where(a => a.BarbeiroId == barbeiroId && a.DataHora >= inicioSemana && a.DataHora < fimSemana &&
+                .Where(a => a.BarbeiroId == barbeiroId && a.DataHora >= inicioSemanaUtc && a.DataHora < fimSemanaUtc &&
                            (a.Status == StatusAgendamento.Realizado || a.Status == StatusAgendamento.Atendido))
                 .SumAsync(a => (a.PrecoServico.HasValue && a.PrecoServico.Value > 0)
                     ? a.PrecoServico.Value
                     : (a.AgendamentoServicos != null ? a.AgendamentoServicos.Sum(s => s.Servico != null ? s.Servico.Preco : 0) : 0));
 
-            var agendamentosHojeDetalhes = await _context.Agendamentos
+            var agendamentosHojeDetalhesDb = await _context.Agendamentos
                 .Include(a => a.Cliente)
                 .Include(a => a.AgendamentoServicos).ThenInclude(asv => asv.Servico)
-                .Where(a => a.BarbeiroId == barbeiroId && a.DataHora.Date == hoje)
+                .Where(a => a.BarbeiroId == barbeiroId && a.DataHora >= inicioHojeUtc && a.DataHora < fimHojeUtc)
                 .OrderBy(a => a.DataHora)
+                .ToListAsync();
+
+            var agendamentosHojeDetalhes = agendamentosHojeDetalhesDb
                 .Select(a => new
                 {
                     Id = a.Id,
                     Cliente = a.Cliente != null ? a.Cliente.Nome : string.Empty,
-                    Hora = a.DataHora.ToString("HH:mm"),
+                    Hora = AppDateTime.FormatBusinessTime(a.DataHora),
                     Status = a.Status.ToString(),
                     Preco = a.PrecoServico,
                     TipoServico = a.AgendamentoServicos != null && a.AgendamentoServicos.Any()
                         ? string.Join(" + ", a.AgendamentoServicos.Select(s => s.Servico != null ? s.Servico.Nome : string.Empty))
                         : a.TipoServico,
                     Telefone = a.Cliente != null ? a.Cliente.Telefone : string.Empty
-                }).ToListAsync();
+                })
+                .ToList();
+
+            var agendamentosRealizadosSemana = await _context.Agendamentos
+                .Where(a => a.BarbeiroId == barbeiroId
+                    && a.DataHora >= inicioSemanaUtc
+                    && a.DataHora < fimSemanaUtc
+                    && a.Status == StatusAgendamento.Realizado)
+                .ToListAsync();
+
+            var agendamentosPorDia = agendamentosRealizadosSemana
+                .GroupBy(a => AppDateTime.GetBusinessDate(a.DataHora))
+                .ToDictionary(g => g.Key, g => g.Count());
 
             var performanceSemanal = new int[7];
             for (int i = 0; i < 7; i++)
             {
-                var dia = inicioSemana.AddDays(i).ToUniversalTime();
-                performanceSemanal[i] = await _context.Agendamentos
-                    .CountAsync(a => a.BarbeiroId == barbeiroId && a.DataHora.Date == dia.Date && a.Status == StatusAgendamento.Realizado);
+                var dia = inicioSemana.AddDays(i);
+                performanceSemanal[i] = agendamentosPorDia.TryGetValue(dia, out var totalDia) ? totalDia : 0;
             }
 
             return new
@@ -200,14 +218,16 @@ namespace BarbeariaSaaS.Services
 
             var totalBarbeiros = barbeiros.Count;
 
-            var hoje = DateTime.UtcNow.Date;
-            var inicioMes = new DateTime(hoje.Year, hoje.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var hoje = AppDateTime.TodayInBusinessTimeZone();
+            var inicioMes = AppDateTime.StartOfBusinessMonth(hoje);
             var fimMes = inicioMes.AddMonths(1);
+            var inicioMesUtc = AppDateTime.NormalizeClientDateTimeToUtc(inicioMes);
+            var fimMesUtc = AppDateTime.NormalizeClientDateTimeToUtc(fimMes);
 
             // Refatoração N+1: Buscar todos agendamentos relevantes do mês para a barbearia
             var agendamentosMes = await _context.Agendamentos
                 .Include(a => a.AgendamentoServicos).ThenInclude(asv => asv.Servico)
-                .Where(a => a.BarbeariaId == barbeariaId && a.DataHora >= inicioMes && a.DataHora < fimMes)
+                .Where(a => a.BarbeariaId == barbeariaId && a.DataHora >= inicioMesUtc && a.DataHora < fimMesUtc)
                 .ToListAsync();
 
             var agendamentosRealizadosMes = agendamentosMes.Where(a => a.Status == StatusAgendamento.Realizado).ToList();
@@ -225,18 +245,22 @@ namespace BarbeariaSaaS.Services
             var receitaTotal = agendamentosRealizadosMes.Sum(a => a.PrecoServico ?? 
                 (a.AgendamentoServicos?.Sum(s => s.Servico?.Preco ?? 0) ?? 0));
 
-            var inicioSemana = hoje.AddDays(-(int)hoje.DayOfWeek);
+            var inicioSemana = AppDateTime.StartOfBusinessWeek(hoje);
             var performanceSemanal = new int[7];
             
             // Otimização: Agrupa em memória para a semana atual
             var agendamentosSemanaRealizados = agendamentosRealizadosMes
-                .Where(a => a.DataHora.Date >= inicioSemana && a.DataHora.Date < inicioSemana.AddDays(7))
-                .GroupBy(a => a.DataHora.Date)
+                .Where(a =>
+                {
+                    var businessDate = AppDateTime.GetBusinessDate(a.DataHora);
+                    return businessDate >= inicioSemana && businessDate < inicioSemana.AddDays(7);
+                })
+                .GroupBy(a => AppDateTime.GetBusinessDate(a.DataHora))
                 .ToDictionary(g => g.Key, g => g.Count());
 
             for (int i = 0; i < 7; i++)
             {
-                var dia = inicioSemana.AddDays(i).Date;
+                var dia = inicioSemana.AddDays(i);
                 performanceSemanal[i] = agendamentosSemanaRealizados.ContainsKey(dia) ? agendamentosSemanaRealizados[dia] : 0;
             }
 
@@ -312,14 +336,16 @@ namespace BarbeariaSaaS.Services
                 .Where(u => u.BarbeariaId == barbeariaId && u.TipoUsuario == TipoUsuario.Barbeiro)
                 .ToListAsync();
 
-            var hoje = DateTime.UtcNow.Date;
-            var inicioMes = new DateTime(hoje.Year, hoje.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var hoje = AppDateTime.TodayInBusinessTimeZone();
+            var inicioMes = AppDateTime.StartOfBusinessMonth(hoje);
             var fimMes = inicioMes.AddMonths(1);
+            var inicioMesUtc = AppDateTime.NormalizeClientDateTimeToUtc(inicioMes);
+            var fimMesUtc = AppDateTime.NormalizeClientDateTimeToUtc(fimMes);
 
             // Refatoração N+1 Similar à GetManagerDashboardAsync
             var agendamentosMes = await _context.Agendamentos
                 .Include(a => a.AgendamentoServicos).ThenInclude(asv => asv.Servico)
-                .Where(a => a.BarbeariaId == barbeariaId && a.DataHora >= inicioMes && a.DataHora < fimMes)
+                .Where(a => a.BarbeariaId == barbeariaId && a.DataHora >= inicioMesUtc && a.DataHora < fimMesUtc)
                 .ToListAsync();
 
             var barbeirosComEstatisticas = barbeiros.Select(barbeiro =>

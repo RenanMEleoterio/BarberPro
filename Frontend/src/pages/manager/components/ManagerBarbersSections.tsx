@@ -10,6 +10,7 @@ import {
   Users,
 } from 'lucide-react';
 import type { ManagerBarber, ManagerBarbersData } from '../../../services/api/adapters';
+import { toBrazilDateLabel } from '../../../utils/brazilDateTime';
 
 interface ManagerBarbersSearchToolbarProps {
   searchTerm: string;
@@ -199,7 +200,7 @@ export function ManagerBarbersListSection({
                       </div>
                       <div className="flex items-center space-x-1">
                         <Calendar className="h-4 w-4" />
-                        <span>Desde {new Date(barber.joinDate).toLocaleDateString('pt-BR')}</span>
+                        <span>Desde {toBrazilDateLabel(barber.joinDate)}</span>
                       </div>
                     </div>
 

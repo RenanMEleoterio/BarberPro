@@ -1,6 +1,6 @@
 
 import { render, screen, waitFor } from '@testing-library/react';
-import { format } from 'date-fns';
+import { toBrazilDateInputValue } from '../../utils/brazilDateTime';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import BarberDashboard from './BarberDashboard';
 import { apiService } from '../../services/api';
@@ -24,7 +24,7 @@ describe('BarberDashboard', () => {
   });
 
   it('deve exibir os contadores corretamente quando houver agendamentos no período', async () => {
-    const hoje = format(new Date(), 'yyyy-MM-dd');
+    const hoje = toBrazilDateInputValue(new Date());
 
     (apiService.getMyAppointments as any).mockResolvedValue([
       {

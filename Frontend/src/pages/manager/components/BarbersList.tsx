@@ -2,6 +2,7 @@
 import React from 'react';
 import { Users, Plus, Settings } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { toBrazilDateLabel } from '../../../utils/brazilDateTime';
 
 interface Barber {
   id: number;
@@ -138,7 +139,7 @@ export const BarbersList: React.FC<BarbersListProps> = ({ barbers, barbershopCod
                       {barber.clientesUnicos}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {barber.ultimaAtividade ? new Date(barber.ultimaAtividade).toLocaleDateString('pt-BR') : 'N/A'}
+                      {barber.ultimaAtividade ? toBrazilDateLabel(barber.ultimaAtividade) : 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">

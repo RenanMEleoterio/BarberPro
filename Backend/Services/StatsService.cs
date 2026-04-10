@@ -196,22 +196,21 @@ namespace BarbeariaSaaS.Services
             {
                 case "mes":
                 case "month":
-                    var inicioMes = AppDateTime.CreateUtcDate(now.Year, now.Month, 1);
-                    return (inicioMes, inicioMes.AddMonths(1), false);
+                    var inicioMes = AppDateTime.StartOfBusinessMonth(now);
+                    return (AppDateTime.NormalizeClientDateTimeToUtc(inicioMes), AppDateTime.NormalizeClientDateTimeToUtc(inicioMes.AddMonths(1)), false);
                 case "trimestre":
                 case "quarter":
-                    var trimestre = (now.Month - 1) / 3;
-                    var inicioTrimestre = AppDateTime.CreateUtcDate(now.Year, trimestre * 3 + 1, 1);
-                    return (inicioTrimestre, inicioTrimestre.AddMonths(3), false);
+                    var inicioTrimestre = AppDateTime.StartOfBusinessQuarter(now);
+                    return (AppDateTime.NormalizeClientDateTimeToUtc(inicioTrimestre), AppDateTime.NormalizeClientDateTimeToUtc(inicioTrimestre.AddMonths(3)), false);
                 case "ano":
                 case "year":
-                    var inicioAno = AppDateTime.CreateUtcDate(now.Year, 1, 1);
-                    return (inicioAno, inicioAno.AddYears(1), false);
+                    var inicioAno = AppDateTime.StartOfBusinessYear(now);
+                    return (AppDateTime.NormalizeClientDateTimeToUtc(inicioAno), AppDateTime.NormalizeClientDateTimeToUtc(inicioAno.AddYears(1)), false);
                 case "semana":
                 case "week":
                 default:
-                    var inicioSemana = AppDateTime.StartOfWeekUtc(now);
-                    return (inicioSemana, inicioSemana.AddDays(7), true);
+                    var inicioSemana = AppDateTime.StartOfBusinessWeek(now);
+                    return (AppDateTime.NormalizeClientDateTimeToUtc(inicioSemana), AppDateTime.NormalizeClientDateTimeToUtc(inicioSemana.AddDays(7)), true);
             }
         }
 
@@ -220,18 +219,17 @@ namespace BarbeariaSaaS.Services
             switch ((periodo ?? string.Empty).ToLower())
             {
                 case "trimestre":
-                    var trimestre = (now.Month - 1) / 3;
-                    var inicioTrimestre = AppDateTime.CreateUtcDate(now.Year, trimestre * 3 + 1, 1);
-                    return (inicioTrimestre, inicioTrimestre.AddMonths(3));
+                    var inicioTrimestre = AppDateTime.StartOfBusinessQuarter(now);
+                    return (AppDateTime.NormalizeClientDateTimeToUtc(inicioTrimestre), AppDateTime.NormalizeClientDateTimeToUtc(inicioTrimestre.AddMonths(3)));
                 case "ano":
-                    var inicioAno = AppDateTime.CreateUtcDate(now.Year, 1, 1);
-                    return (inicioAno, inicioAno.AddYears(1));
+                    var inicioAno = AppDateTime.StartOfBusinessYear(now);
+                    return (AppDateTime.NormalizeClientDateTimeToUtc(inicioAno), AppDateTime.NormalizeClientDateTimeToUtc(inicioAno.AddYears(1)));
                 case "semana":
-                    var inicioSemana = AppDateTime.StartOfWeekUtc(now);
-                    return (inicioSemana, inicioSemana.AddDays(7));
+                    var inicioSemana = AppDateTime.StartOfBusinessWeek(now);
+                    return (AppDateTime.NormalizeClientDateTimeToUtc(inicioSemana), AppDateTime.NormalizeClientDateTimeToUtc(inicioSemana.AddDays(7)));
                 default:
-                    var inicioMes = AppDateTime.CreateUtcDate(now.Year, now.Month, 1);
-                    return (inicioMes, inicioMes.AddMonths(1));
+                    var inicioMes = AppDateTime.StartOfBusinessMonth(now);
+                    return (AppDateTime.NormalizeClientDateTimeToUtc(inicioMes), AppDateTime.NormalizeClientDateTimeToUtc(inicioMes.AddMonths(1)));
             }
         }
 
@@ -244,8 +242,8 @@ namespace BarbeariaSaaS.Services
             {
                 for (var i = 0; i < 7; i++)
                 {
-                    var dia = dataInicio.AddDays(i).Date;
-                    var agendamentosDia = agendamentos.Where(a => a.DataHora.Date == dia);
+                    var dia = AppDateTime.GetBusinessDate(dataInicio).AddDays(i);
+                    var agendamentosDia = agendamentos.Where(a => AppDateTime.GetBusinessDate(a.DataHora) == dia);
                     performanceSemanal[i] = new
                     {
                         Dia = diasSemanaPt[i],
@@ -259,7 +257,7 @@ namespace BarbeariaSaaS.Services
 
             for (var i = 0; i < 7; i++)
             {
-                var agendamentosDiaDaSemana = agendamentos.Where(a => (int)a.DataHora.DayOfWeek == i);
+                var agendamentosDiaDaSemana = agendamentos.Where(a => AppDateTime.GetBusinessDayOfWeek(a.DataHora) == i);
                 performanceSemanal[i] = new
                 {
                     Dia = diasSemanaPt[i],
@@ -273,19 +271,21 @@ namespace BarbeariaSaaS.Services
 
         private async Task<List<PerformanceMesDto>> BuildMonthlyPerformanceAsync(int barbeariaId, DateTime now)
         {
-            var monthCursor = AppDateTime.CreateUtcDate(now.AddMonths(-4).Year, now.AddMonths(-4).Month, 1);
-            var monthEndExclusive = AppDateTime.CreateUtcDate(now.Year, now.Month, 1).AddMonths(1);
+            var monthCursor = AppDateTime.StartOfBusinessMonth(now).AddMonths(-4);
+            var monthEndExclusive = AppDateTime.StartOfBusinessMonth(now).AddMonths(1);
+            var monthCursorUtc = AppDateTime.NormalizeClientDateTimeToUtc(monthCursor);
+            var monthEndExclusiveUtc = AppDateTime.NormalizeClientDateTimeToUtc(monthEndExclusive);
 
             var agendamentosMeses = await _context.Agendamentos
                 .AsNoTracking()
                 .Include(a => a.AgendamentoServicos)
                     .ThenInclude(asv => asv.Servico)
-                .Where(a => a.BarbeariaId == barbeariaId && a.DataHora >= monthCursor && a.DataHora < monthEndExclusive)
+                .Where(a => a.BarbeariaId == barbeariaId && a.DataHora >= monthCursorUtc && a.DataHora < monthEndExclusiveUtc)
                 .ToListAsync();
 
             var groupedByMonth = agendamentosMeses
-                .GroupBy(a => new { a.DataHora.Year, a.DataHora.Month })
-                .ToDictionary(g => (g.Key.Year, g.Key.Month), g => g.ToList());
+                .GroupBy(a => AppDateTime.GetBusinessYearMonth(a.DataHora))
+                .ToDictionary(g => g.Key, g => g.ToList());
 
             var performanceMensal = new List<PerformanceMesDto>();
 

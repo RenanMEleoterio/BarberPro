@@ -2,6 +2,7 @@
 import React from 'react';
 import { Calendar, Clock, CheckCircle } from 'lucide-react';
 import { getAppointmentStatusBadgeClass, isConfirmedAppointmentStatus } from '../../../utils/appointmentStatus';
+import { toBrazilTimeValue } from '../../../utils/brazilDateTime';
 
 interface Appointment {
   id: number;
@@ -64,7 +65,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = ({ appointments
                   <div>
                     <h3 className="font-medium text-gray-900 dark:text-white">{appointment.nomeCliente}</h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {appointment.dataHora.split('T')[1].substring(0, 5)}
+                      {toBrazilTimeValue(appointment.dataHora)}
                     </p>
                   </div>
                 </div>

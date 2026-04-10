@@ -87,4 +87,25 @@ describe('BarberSchedule', () => {
     expect(screen.getAllByText('R$ 65.00').length).toBeGreaterThan(0);
     expect(screen.getByTitle('Confirmar Agendamento')).toBeInTheDocument();
   });
+  it('deve converter dataHora UTC para o horÃ¡rio do Brasil na exibiÃ§Ã£o', async () => {
+    (apiService.getMyAppointments as any).mockResolvedValue([
+      {
+        id: '4',
+        dataHora: '2026-04-10T16:00:00Z',
+        status: 'Pendente',
+        tipoServico: 'Corte Tradicional',
+        precoServico: 40.0,
+        nomeCliente: 'Cliente UTC',
+      },
+    ]);
+
+    render(<BarberSchedule />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Cliente UTC')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('10/04/2026')).toBeInTheDocument();
+    expect(screen.getByText('13:00')).toBeInTheDocument();
+  });
 });

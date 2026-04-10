@@ -3,9 +3,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, DollarSign, BarChart3, CheckCircle } from 'lucide-react';
 import { apiService } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
-import { startOfWeek, endOfWeek, isWithinInterval, parseISO, format, getDay } from 'date-fns';
+import { endOfWeek, format, startOfWeek } from 'date-fns';
 import toast from 'react-hot-toast';
 import { isCompletedAppointmentStatus } from '../../utils/appointmentStatus';
+import { getBrazilDayOfWeek, isSameBrazilDate, toBrazilDateInputValue } from '../../utils/brazilDateTime';
 
 // Sub-componentes
 import { DashboardHeader } from './components/DashboardHeader';
@@ -39,14 +40,16 @@ export default function BarberDashboard() {
    * Processa a lista bruta de agendamentos para gerar as métricas do dashboard.
    */
   const processDashboardData = useCallback((appointments: any[]): ProcessedDashboardData => {
-    const hoje = new Date();
-    const hojeStr = format(hoje, 'yyyy-MM-dd');
+    const hojeStr = toBrazilDateInputValue(new Date());
+    const hoje = new Date(`${hojeStr}T12:00:00`);
     const inicioSemana = startOfWeek(hoje, { weekStartsOn: 0 });
     const fimSemana = endOfWeek(hoje, { weekStartsOn: 0 });
+    const inicioSemanaStr = format(inicioSemana, 'yyyy-MM-dd');
+    const fimSemanaStr = format(fimSemana, 'yyyy-MM-dd');
 
     // 1. Filtrar agendamentos de hoje
     const agendamentosHoje = appointments
-      .filter(apt => apt.dataHora?.split('T')[0] === hojeStr)
+      .filter(apt => apt.dataHora && isSameBrazilDate(apt.dataHora, hojeStr))
       .sort((a, b) => new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime());
 
     // 2. Estatísticas de hoje
@@ -58,8 +61,8 @@ export default function BarberDashboard() {
     // 3. Agendamentos e Ganhos da semana
     const agendamentosSemana = appointments.filter(apt => {
       try {
-        const dataApt = parseISO(apt.dataHora);
-        return isWithinInterval(dataApt, { start: inicioSemana, end: fimSemana });
+        const dataApt = toBrazilDateInputValue(apt.dataHora);
+        return dataApt >= inicioSemanaStr && dataApt <= fimSemanaStr;
       } catch {
         return false;
       }
@@ -77,7 +80,7 @@ export default function BarberDashboard() {
     agendamentosSemana.forEach(apt => {
       if (isCompletedAppointmentStatus(apt.status)) {
         try {
-          const diaSemana = getDay(parseISO(apt.dataHora));
+          const diaSemana = getBrazilDayOfWeek(apt.dataHora);
           performanceMap[diaSemana].cortes += 1;
           performanceMap[diaSemana].ganhos += (Number(apt.precoServico || apt.preco) || 0);
         } catch (e) {
