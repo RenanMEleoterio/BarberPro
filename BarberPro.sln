@@ -1,0 +1,38 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Backend", "Backend", "{1AE8ACA6-933B-BF2A-3671-3E2EAC007D16}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Validation", "Validation", "{3A7EF8F9-A58A-6994-3FF9-E29A10D92AEB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BarbeariaSaaS", "Backend\BarbeariaSaaS.csproj", "{3E012ED6-E523-7A38-F5FA-6099531BD849}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HorarioGenerationValidation", "Validation\HorarioGenerationValidation.csproj", "{CB9D2167-CBDA-E640-D965-A0E3AA266678}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3E012ED6-E523-7A38-F5FA-6099531BD849}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E012ED6-E523-7A38-F5FA-6099531BD849}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E012ED6-E523-7A38-F5FA-6099531BD849}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E012ED6-E523-7A38-F5FA-6099531BD849}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB9D2167-CBDA-E640-D965-A0E3AA266678}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB9D2167-CBDA-E640-D965-A0E3AA266678}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB9D2167-CBDA-E640-D965-A0E3AA266678}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB9D2167-CBDA-E640-D965-A0E3AA266678}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3E012ED6-E523-7A38-F5FA-6099531BD849} = {1AE8ACA6-933B-BF2A-3671-3E2EAC007D16}
+		{CB9D2167-CBDA-E640-D965-A0E3AA266678} = {3A7EF8F9-A58A-6994-3FF9-E29A10D92AEB}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {56F51FF5-7488-40C3-8FCD-1D3265977449}
+	EndGlobalSection
+EndGlobal
