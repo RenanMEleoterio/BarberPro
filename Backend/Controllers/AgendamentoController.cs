@@ -404,50 +404,53 @@ namespace BarbeariaSaaS.Controllers
             }
 
             // Atualizar campos
-            if (atualizarDto.NovaDataHora.HasValue && atualizarDto.NovaDataHora.Value != agendamento.DataHora)
+            if (atualizarDto.NovaDataHora.HasValue)
             {
                 var novaDataHora = AppDateTime.NormalizeClientDateTimeToUtc(atualizarDto.NovaDataHora.Value);
 
-                if (novaDataHora <= AppDateTime.UtcNow())
+                if (novaDataHora != agendamento.DataHora)
                 {
-                    return BadRequest(new { message = "Não é possível reagendar para uma data no passado." });
-                }
-
-                // Verificar disponibilidade do novo horário
-                var novoHorarioDisponivel = await _context.HorariosDisponiveis
-                    .FirstOrDefaultAsync(h => h.BarbeiroId == agendamento.BarbeiroId && 
-                                            h.DataHora == novaDataHora && 
-                                            h.EstaDisponivel);
-
-                if (novoHorarioDisponivel == null)
-                {
-                    return BadRequest(new { message = "O novo horário escolhido não está disponível." });
-                }
-
-                // Liberar o horário antigo
-                if (agendamento.HorarioDisponivelId.HasValue)
-                {
-                    var horarioAntigo = await _context.HorariosDisponiveis.FindAsync(agendamento.HorarioDisponivelId.Value);
-                    if (horarioAntigo != null)
+                    if (novaDataHora <= AppDateTime.UtcNow())
                     {
-                        horarioAntigo.EstaDisponivel = true;
+                        return BadRequest(new { message = "Não é possível reagendar para uma data no passado." });
                     }
-                }
-                else
-                {
-                    // Tentar encontrar o horário antigo pela data/hora se o ID for nulo (compatibilidade)
-                    var horarioAntigo = await _context.HorariosDisponiveis
-                        .FirstOrDefaultAsync(h => h.BarbeiroId == agendamento.BarbeiroId && h.DataHora == agendamento.DataHora);
-                    if (horarioAntigo != null)
-                    {
-                        horarioAntigo.EstaDisponivel = true;
-                    }
-                }
 
-                // Ocupar o novo horário
-                novoHorarioDisponivel.EstaDisponivel = false;
-                agendamento.HorarioDisponivelId = novoHorarioDisponivel.Id;
-                agendamento.DataHora = novaDataHora;
+                    // Verificar disponibilidade do novo horário
+                    var novoHorarioDisponivel = await _context.HorariosDisponiveis
+                        .FirstOrDefaultAsync(h => h.BarbeiroId == agendamento.BarbeiroId && 
+                                                h.DataHora == novaDataHora && 
+                                                h.EstaDisponivel);
+
+                    if (novoHorarioDisponivel == null)
+                    {
+                        return BadRequest(new { message = "O novo horário escolhido não está disponível." });
+                    }
+
+                    // Liberar o horário antigo
+                    if (agendamento.HorarioDisponivelId.HasValue)
+                    {
+                        var horarioAntigo = await _context.HorariosDisponiveis.FindAsync(agendamento.HorarioDisponivelId.Value);
+                        if (horarioAntigo != null)
+                        {
+                            horarioAntigo.EstaDisponivel = true;
+                        }
+                    }
+                    else
+                    {
+                        // Tentar encontrar o horário antigo pela data/hora se o ID for nulo (compatibilidade)
+                        var horarioAntigo = await _context.HorariosDisponiveis
+                            .FirstOrDefaultAsync(h => h.BarbeiroId == agendamento.BarbeiroId && h.DataHora == agendamento.DataHora);
+                        if (horarioAntigo != null)
+                        {
+                            horarioAntigo.EstaDisponivel = true;
+                        }
+                    }
+
+                    // Ocupar o novo horário
+                    novoHorarioDisponivel.EstaDisponivel = false;
+                    agendamento.HorarioDisponivelId = novoHorarioDisponivel.Id;
+                    agendamento.DataHora = novaDataHora;
+                }
             }
 
             if (!string.IsNullOrEmpty(atualizarDto.Observacoes))
